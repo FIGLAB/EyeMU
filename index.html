@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Gaze-Control</title>
+    <!-- Load TensorFlow.js and associated stuff-->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.7.2/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis@1.0.2/dist/tfjs-vis.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/p5.js"></script>
+    <script src="controller_dataset.js"></script>
+    <script src="https://docs.opencv.org/3.4.0/opencv.js"></script>
+    <!-- <script src="processing.min.js"></script> -->
+    <script defer src="script.js"></script>
+
+    <style>
+        /*body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }*/
+
+    </style>
+</head>
+
+<body>
+    <!-- <div id="console"></div> -->
+    <video hidden id="video" playsinline muted autoplay style="-webkit-transform: scaleX(-1);transform: scaleX(-1);width: 256;height: 256;"></video>
+<!--     <button id="class-a">Add A</button>
+    <button id="class-b">Add B</button>
+    <button id="class-c">Add C</button> -->
+<!--     <button id="train">Train</button>
+    <button id="predict">Predict</button> -->
+<!--     <canvas id="thumb-face", width=128, height=128></canvas>
+    <canvas id="thumb-left-eye", width=64, height=64></canvas>
+    <canvas id="thumb-right-eye", width=64, height=64></canvas> -->
+</body>
+
+</html>
