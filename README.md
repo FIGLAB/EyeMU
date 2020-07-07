@@ -1,2 +1,2 @@
-# GAZEL
-Gaze+Accelerometer based interactions
+# gaze-control
+Code for controlling computer with gaze
