@@ -270,7 +270,7 @@ async function main() {
     ctx.font = '17pt Calibri';
 
 
-//    getAccel();
+    getAccel();
 //    let acl = new Accelerometer({frequency: 60});
 //
 //    acl.addEventListener('reading', () => {
