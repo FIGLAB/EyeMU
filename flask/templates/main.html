@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block headextra %}
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
+<!-- Adds the WASM backend to the global backend registry -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/tf-backend-wasm.js"></script>
+
+<!--<script src="{{url_for('static', filename='copy.js')}}"></script>-->
+
+
+{% endblock %}
+
+
+{% block body %}
+yaga
+
+
+<div id="main">
+    <div class="container">
+      <div class="canvas-wrapper">
+        <canvas id="output"></canvas>
+        <video id="video" playsinline style="
+          -webkit-transform: scaleX(-1);
+          transform: scaleX(-1);
+          visibility: hidden;
+          width: auto;
+          height: auto;
+          ">
+        </video>
+      </div>
+      <div id="scatter-gl-container"></div>
+        <button type="button" onclick="saveEyes()">Save Eyes</button>
+
+        eyecache
+        <br><br>
+        <canvas id="eyecache"></canvas>
+
+
+    </div>
+  </div>
+
+
+{% endblock %}
