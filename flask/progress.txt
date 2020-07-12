@@ -1,0 +1,17 @@
+July 12
+Got the eye capture working on the phone by using WASM backend, webgl doesn't work for whatever reason.
+Hosting the Flask-Frozen site on netlify. Very convenient, offers HTTPS and phone access
+iOS Safari Accel access is granted by the button, they made it very difficult for browsers to capture that without the user knowing so it must be manually triggered.
+
+TODO next time:
+transfer learning basic implementation from tutorial (https://codelabs.developers.google.com/codelabs/tensorflowjs-teachablemachine-codelab/index.html#6)
+take parts of the transfer learning that you need, probably using just FC layers? Input the two eye activations, as well as head pitch and yaw, output is eyeVals.
+Make a separate page for the transfer learning as well as mobile net training to keep it neat.
+If mobilenet + some data is good enough, save that model. Otherwise, train a usable one.
+Visualize the accel in 3 axes
+
+July 11
+Ported over eye-grabbing code and facemesh implementation. Saving data works now, as does importing it.
+
+TODO next time:
+get it working on the phone

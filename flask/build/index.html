@@ -1,6 +1,9 @@
-{% extends "base.html" %}
-
-{% block headextra %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GAZEL</title>
+    
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
 <!-- Adds the WASM backend to the global backend registry -->
@@ -8,10 +11,29 @@
 
 
 
-{% endblock %}
 
 
-{% block body %}
+    <style>
+    .dot{
+        width: 52px;
+        height: 52px;
+        background-color: #f00;
+        border-radius: 50%;
+        position: fixed;
+    }
+    
+    .predicdot{
+        width: 30px;
+        height: 30px;
+        background-color: #ffab56;
+        border-radius: 50%;
+        position:fixed;
+    }
+    </style>
+
+</head>
+<body style="background-color:powderblue;">
+
 yaga
 
 
@@ -40,4 +62,6 @@ yaga
   </div>
 
 
-{% endblock %}
+
+</body>
+</html>
