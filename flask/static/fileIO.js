@@ -2,7 +2,6 @@ var LoadedData = [[], []];
 var expos;
 
 window.onload=function yea(){
-    console.log('window loaded, in filesaveload');
     //FileReader reads data from Blob or File
     var textFile = null,
       makeTextFile = function (text) {
