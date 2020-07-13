@@ -17,6 +17,12 @@ def index():
 def datacollection():
     return render_template("datacollection.html")
 
+@app.route('/transfer/')
+def transfer():
+    return render_template("transfer.html")
+
+
+
 # @app.route('/pewpew/')
 # def pewpew():
 #     return render_template('shootingrange.html')
