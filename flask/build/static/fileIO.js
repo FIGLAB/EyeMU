@@ -1,8 +1,8 @@
 var LoadedData = [[], []];
+var loadEyeData;
 var expos;
 
 window.onload=function yea(){
-    console.log('window loaded, in filesaveload');
     //FileReader reads data from Blob or File
     var textFile = null,
       makeTextFile = function (text) {
@@ -25,7 +25,7 @@ window.onload=function yea(){
         console.log('in eyedatadownload');
         var link = document.createElement('a');
         link.setAttribute('download', 'eyeData.json');
-        link.href = makeTextFile(JSON.stringify([eyeData,eyeVals]));
+        link.href = makeTextFile(JSON.stringify([eyeData,eyeVals,headTilts, headSizes]));
         document.body.appendChild(link);
         window.requestAnimationFrame(function () {
           var event = new MouseEvent('click');
@@ -38,7 +38,7 @@ window.onload=function yea(){
         console.log('in eyedatadownload');
         var link = document.createElement('a');
         link.setAttribute('download', 'eyeData.json');
-        link.href = makeTextFile(JSON.stringify([eyeData,eyeVals,headTilts]));
+        link.href = makeTextFile(JSON.stringify([eyeData,eyeVals,headTilts, headSizes]));
         document.body.appendChild(link);
         window.requestAnimationFrame(function () {
           var event = new MouseEvent('click');
@@ -57,7 +57,7 @@ function openFile(event) {
     input.files.forEach(function (filename){
         const reader = new FileReader();
         reader.onload = function(){
-            const loadEyeData=JSON.parse(reader.result);
+            loadEyeData=JSON.parse(reader.result);
             console.log(loadEyeData);
 
             // Convert all eye dicts into Float32 arrays
@@ -70,6 +70,7 @@ function openFile(event) {
             eyeData[1] = eyeData[1].concat(loadEyeData[0][1]);
             eyeVals = eyeVals.concat(loadEyeData[1]);
             headTilts = headTilts.concat(loadEyeData[2]);
+            headSizes = headSizes.concat(loadEyeData[3]);
 
         };
         reader.readAsText(filename);

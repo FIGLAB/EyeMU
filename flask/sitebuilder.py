@@ -17,6 +17,10 @@ def index():
 def datacollection():
     return render_template("datacollection.html")
 
+@app.route('/training/')
+def training():
+    return render_template("training.html")
+
 @app.route('/transfer/')
 def transfer():
     return render_template("transfer.html")
