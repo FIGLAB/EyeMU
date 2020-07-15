@@ -8,6 +8,8 @@ var newFrame
 var eyeData = [[],[]];
 var eyeVals = [];
 var headTilts =[];
+var headSizes = [];
+var head_top, head_left, head_bot, head_right;
 var curLen = 0;
 
 // Resize eyeballs to this size
@@ -112,7 +114,6 @@ async function renderPrediction() {
         rBB = maxminofXY(right_eyebox);
         lBB = maxminofXY(left_eyebox);
     }
-//    requestAnimationFrame(renderPrediction);
     setTimeout(requestAnimationFrame(renderPrediction), 100);
 };
 
@@ -156,6 +157,12 @@ async function eyeSelfie(){
             const nowVals = [x/100, y/100];
             const nowHeadAngles = [getFacePitch(prediction.mesh), getFaceYaw(prediction.mesh)];
 
+            [head_top, head_left] =  prediction.boundingBox.topLeft[0];
+            [head_bot, head_right] = prediction.boundingBox.bottomRight[0];
+
+            const headSize = (head_bot-head_top)*(head_right-head_left)/(videoWidth*videoHeight)/3;
+            // Normalize head size by video capture, also face mesh allows heads bigger than the screen so divide by a bit more to keep under 1.
+
 
             Promise.all([
                 createImageBitmap(video,lBB[0], lBB[2], wl, hl),
@@ -165,6 +172,7 @@ async function eyeSelfie(){
                 rightEyeIms[0] = eyeIms[1];
                 eyeVals.push(nowVals);
                 headTilts.push(nowHeadAngles)
+                headSizes.push(headSize)
 
                 drawCache();
                 dotgenerator();
@@ -268,18 +276,6 @@ async function main() {
     // set text options
     ctx.strokeStyle = "grey";
     ctx.font = '17pt Calibri';
-
-
-//    getAccel();
-//    let acl = new Accelerometer({frequency: 60});
-//
-//    acl.addEventListener('reading', () => {
-//      console.log("Acceleration along the X-axis " + acl.x);
-//      console.log("Acceleration along the Y-axis " + acl.y);
-//      console.log("Acceleration along the Z-axis " + acl.z);
-//    });
-//
-//    acl.start();
 
 
 

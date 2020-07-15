@@ -1,4 +1,10 @@
 
+July 14
+Added head distance, scaled as a proportion of the head to the view of the screen.
+Training a left eye and right eye model, then boosting that output with a simple 5-50-2 NN. Features are the two outputs, head tilts and distance. Should be simple, just gotta set it up.
+
+
+
 July 12 - night
 made the separate page for transfer learning and started on the tutorial. Mobilenet takes 224x224x3 images.
 Figured out mobilenet takes color images. Also I don't think an object classifier is going to do much for us once we transfer learning it.
