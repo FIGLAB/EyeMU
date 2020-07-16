@@ -21,34 +21,50 @@ window.onload=function yea(){
       };
 
     var eyeDataDownloadButton = document.getElementById('eyeDataFile');
-    eyeDataDownloadButton.setAttribute('onclick', function () {
-        console.log('in eyedatadownload');
-        var link = document.createElement('a');
-        link.setAttribute('download', 'eyeData.json');
-        link.href = makeTextFile(JSON.stringify([eyeData,eyeVals,headTilts, headSizes]));
-        document.body.appendChild(link);
-        window.requestAnimationFrame(function () {
-          var event = new MouseEvent('click');
-          link.dispatchEvent(event);
-          document.body.removeChild(link);
+    if (eyeDataDownloadButton != null){
+        eyeDataDownloadButton.setAttribute('onclick', function () {
+            console.log('in eyedatadownload');
+            var link = document.createElement('a');
+            link.setAttribute('download', 'eyeData.json');
+            link.href = makeTextFile(JSON.stringify([eyeData,eyeVals,headTilts, headSizes]));
+            document.body.appendChild(link);
+            window.requestAnimationFrame(function () {
+              var event = new MouseEvent('click');
+              link.dispatchEvent(event);
+              document.body.removeChild(link);
+            });
         });
-    });
 
-    eyeDataDownloadButton.addEventListener('click', function () {
-        console.log('in eyedatadownload');
-        var link = document.createElement('a');
-        link.setAttribute('download', 'eyeData.json');
-        link.href = makeTextFile(JSON.stringify([eyeData,eyeVals,headTilts, headSizes]));
-        document.body.appendChild(link);
-        window.requestAnimationFrame(function () {
-          var event = new MouseEvent('click');
-          link.dispatchEvent(event);
-          document.body.removeChild(link);
-        });        
-    }, false);
+        eyeDataDownloadButton.addEventListener('click', function () {
+            console.log('in eyedatadownload');
+            var link = document.createElement('a');
+            link.setAttribute('download', 'eyeData.json');
+            link.href = makeTextFile(JSON.stringify([eyeData,eyeVals,headTilts, headSizes]));
+            document.body.appendChild(link);
+            window.requestAnimationFrame(function () {
+              var event = new MouseEvent('click');
+              link.dispatchEvent(event);
+              document.body.removeChild(link);
+            });
+        }, false);
+    }
 }
 
 
+//async function testModel(){
+//    saveEyes();
+//    const prediction = eyeModel.predict(tf.tensor(eyeData[0][eyeData[0].length-1], [1, iny, inx, 1]));
+////    const prediction = eyeModel.predict(tf.tensor(eyeData[eyeData.length-1], [1, iny*2, inx, 1]));
+//    prediction.print();
+//    document.getElementById("prediction").innerHTML = tf.mul(prediction,100).arraySync();
+//    myEyesAreUpHere(prediction)
+//}
+
+function rescaleIms(eyeImsArray){
+    eyeImsArray.forEach((imArr) => {
+        console.log(imArr)
+    });
+}
 
 function openFile(event) {
     var input = event.target;
@@ -74,5 +90,6 @@ function openFile(event) {
 
         };
         reader.readAsText(filename);
+        console.log("load done")
     });
 }

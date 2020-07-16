@@ -74,5 +74,6 @@ function openFile(event) {
 
         };
         reader.readAsText(filename);
+        console.log("load done")
     });
 }
