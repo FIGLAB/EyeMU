@@ -1,6 +1,8 @@
 var LoadedData = [[], []];
 var loadEyeData;
 var expos;
+var tensorEyes = [[], []];
+
 
 window.onload=function yea(){
     //FileReader reads data from Blob or File
@@ -50,27 +52,11 @@ window.onload=function yea(){
     }
 }
 
-
-//async function testModel(){
-//    saveEyes();
-//    const prediction = eyeModel.predict(tf.tensor(eyeData[0][eyeData[0].length-1], [1, iny, inx, 1]));
-////    const prediction = eyeModel.predict(tf.tensor(eyeData[eyeData.length-1], [1, iny*2, inx, 1]));
-//    prediction.print();
-//    document.getElementById("prediction").innerHTML = tf.mul(prediction,100).arraySync();
-//    myEyesAreUpHere(prediction)
-//}
-
-function rescaleIms(eyeImsArray){
-    eyeImsArray.forEach((imArr) => {
-        console.log(imArr)
-    });
-}
-
 function openFile(event) {
     var input = event.target;
 
     // Read each and append all eye pics
-    input.files.forEach(function (filename){
+    input.files.forEach(function (filename, ind){
         const reader = new FileReader();
         reader.onload = function(){
             loadEyeData=JSON.parse(reader.result);
@@ -87,9 +73,10 @@ function openFile(event) {
             eyeVals = eyeVals.concat(loadEyeData[1]);
             headTilts = headTilts.concat(loadEyeData[2]);
             headSizes = headSizes.concat(loadEyeData[3]);
+            console.log('file done')
 
         };
         reader.readAsText(filename);
-        console.log("load done")
+        console.log("load not done")
     });
 }

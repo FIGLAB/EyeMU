@@ -1,4 +1,15 @@
 
+July 15
+Collected a lot of data, trained some bad models. Final validation error was coming out like 20%.
+Changed the eye model architecture, I'm down to 11% validation error.
+Training a boosted model with the two eye predictions, head yaw and pitch, and the head distance, the whole thing is 5% error in terms of the screen height and width. This is added error, and my phone screen is around 5x10 cm, meaning we're sub-centimeter when it comes to error. Not bad.
+Saved the boosted model. Need to make a separate page to test out the model live.
+
+TODO next time:
+deploy live testing of the model. It probably won't work on desktop, since it's a mobile model.
+Visualize accel, or at least figure out how to use it to interpret gestures.
+
+
 July 14
 Added head distance, scaled as a proportion of the head to the view of the screen.
 Training a left eye and right eye model, then boosting that output with a simple 5-50-2 NN. Features are the two outputs, head tilts and distance. Should be simple, just gotta set it up.
