@@ -1,4 +1,4 @@
-
+flask/build/*
 .DS_Store
 *.iml
 *.xml

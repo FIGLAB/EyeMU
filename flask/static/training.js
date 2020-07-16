@@ -12,9 +12,9 @@ var iny = 25;
 // Machine learning things
 var eyeModel;
 var lr = .001;
-var epochNums = 40;
+var epochNums = 50;
 var valsplit = .1;
-
+var batchSizeVar = 500;
 
 const state = {
     backend: 'webgl',
@@ -52,12 +52,13 @@ async function trainModel(){
 
     // construct x_vect as the left eye ims and y_vect as the screen coordinates
     aa = tf.tensor(eyeData[0], [eyeData[0].length, iny, inx, 1]);
+//    aa = tf.tensor(eyeData[1], [eyeData[1].length, iny, inx, 1]);
     bb = tf.tensor(eyeVals, [eyeVals.length, 2]);
     epochCount = 0;
 
     eyeModel.fit(aa, bb, {
        epochs: epochNums,
-       batchSize: 100,
+       batchSize: batchSizeVar,
        validationSplit: valsplit,
        callbacks: {
       onEpochEnd: async (batch, logs) => {
@@ -89,6 +90,9 @@ async function main() {
         console.log('setting backend')
     }
 
+    // Load in left and right model and store in models variable
+    loadModel("/static/models/lefteye")
+    loadModel("/static/models/righteye")
 }
 
 
