@@ -60,7 +60,7 @@ function openFile(event) {
         const reader = new FileReader();
         reader.onload = function(){
             loadEyeData=JSON.parse(reader.result);
-            console.log(loadEyeData);
+//            console.log(loadEyeData);
 
             // Convert all eye dicts into Float32 arrays
             for (i = 0; i < loadEyeData[0][0].length; i++){
