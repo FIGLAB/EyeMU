@@ -25,7 +25,9 @@ def training():
 def transfer():
     return render_template("transfer.html")
 
-
+@app.route('/test/')
+def test():
+    return render_template("livetest.html")
 
 # @app.route('/pewpew/')
 # def pewpew():

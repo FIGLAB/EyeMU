@@ -49,6 +49,13 @@ function getFacePitch(mesh){
     return pitch;
 }
 
+function getFaceSize(pred){
+    [head_top, head_left] =  prediction.boundingBox.topLeft[0];
+    [head_bot, head_right] = prediction.boundingBox.bottomRight[0];
+    return (head_bot-head_top)*(head_right-head_left)/(videoWidth*videoHeight)/3;
+}
+
+
 // Convenience function for finding the bounding box of an xy array
 function maxminofXY(array){
     const xs = [];
@@ -60,6 +67,8 @@ function maxminofXY(array){
     const adj = 3;
     return [Math.min(...xs)-adj, Math.max(...xs)+adj,Math.min(...ys)-adj, Math.max(...ys)+adj];
 }
+
+
 
 function waitForIt(){
     if (document.body){
@@ -90,14 +99,12 @@ async function setupCamera() {
 }
 
 async function drawWebcam(){
-
     // Draw face onto canvas 2d context
     ctx.drawImage(video, 0, webcamOffset, videoWidth, videoHeight);
     newFrame = true;
 
     requestAnimationFrame(drawWebcam);
 }
-
 
 async function renderPrediction() {
     const predictions = await model.estimateFaces(video);
@@ -120,30 +127,32 @@ async function renderPrediction() {
 
 async function drawCache(){
 // Draw the eye cache
-//        leftEyeIms.forEach(function (image, index){
-            const tmpx = 0;
-            const tmpy = 0;
+//    leftEyeIms.forEach(function (image, index){
+        const tmpx = 0;
+        const tmpy = 0;
 
-            const image = leftEyeIms[0];
-            const rimage = rightEyeIms[0];
+        const image = leftEyeIms[0];
+        const rimage = rightEyeIms[0];
 
-            ctx.drawImage(image, tmpx, tmpy, inx, iny);
-            ctx.drawImage(rimage, tmpx + 10 + inx, tmpy, inx, iny);
+        ctx.drawImage(image, tmpx, tmpy, inx, iny);
+        ctx.drawImage(rimage, tmpx + 10 + inx, tmpy, inx, iny);
 
-            // Show the label
-            document.getElementById("lastXY").innerHTML = "last XY: " + eyeVals[eyeVals.length-1].toString();
+        // Show the label
+        document.getElementById("lastXY").innerHTML = "last XY: " + eyeVals[eyeVals.length-1].toString();
 
-            // Update main vector with the left and right pics, then the location
-            tmpImage = tf.browser.fromPixels(
-                    ctx.getImageData(tmpx,tmpy, inx, iny))
-            tmpImage = tf.mean(tmpImage,2);
-            eyeData[0].push(tf.div(tmpImage,tf.max(tmpImage)).dataSync());
+        // Update main vector with the left and right pics, then the location
+        tmpImage = tf.browser.fromPixels(
+                ctx.getImageData(tmpx,tmpy, inx, iny))
+        tmpImage = tf.mean(tmpImage,2);
+        eyeData[0].push(tf.div(tmpImage,tf.max(tmpImage)).dataSync());
 
-            tmpImage = tf.browser.fromPixels(
-                    ctx.getImageData(tmpx + 10 + inx ,tmpy, inx, iny))
-            tmpImage = tf.mean(tmpImage,2);
-            eyeData[1].push(tf.div(tmpImage,tf.max(tmpImage)).dataSync());
+        tmpImage = tf.browser.fromPixels(
+                ctx.getImageData(tmpx + 10 + inx ,tmpy, inx, iny))
+        tmpImage = tf.mean(tmpImage,2);
+        eyeData[1].push(tf.div(tmpImage,tf.max(tmpImage)).dataSync());
 }
+
+
 
 async function eyeSelfie(){
         if (started && newFrame){
@@ -156,11 +165,7 @@ async function eyeSelfie(){
             // store head yaw and pitch, also the ground truth dot location
             const nowVals = [x/100, y/100];
             const nowHeadAngles = [getFacePitch(prediction.mesh), getFaceYaw(prediction.mesh)];
-
-            [head_top, head_left] =  prediction.boundingBox.topLeft[0];
-            [head_bot, head_right] = prediction.boundingBox.bottomRight[0];
-
-            const headSize = (head_bot-head_top)*(head_right-head_left)/(videoWidth*videoHeight)/3;
+            const headSize = getFaceSize(prediction)
             // Normalize head size by video capture, also face mesh allows heads bigger than the screen so divide by a bit more to keep under 1.
 
 
@@ -206,14 +211,9 @@ async function main() {
         await tf.setBackend(state.backend);
         console.log('setting backend')
     }
-    console.log("one " + tf.getBackend())
 
     model = await facemesh.load({maxFaces: state.maxFaces});
-    console.log("two " + tf.getBackend())
-
-    await tf.setBackend(state.backend);
-    console.log("three " + tf.getBackend())
-    // This above command takes forever
+    // This above command takes forever on webgl backend
 
     // Set up camera
     await setupCamera();
@@ -231,21 +231,10 @@ async function main() {
     ctx.strokeStyle = "grey";
     ctx.font = '17pt Calibri';
 
-
-
     drawWebcam();
     setInterval(eyeSelfie, 100);
     renderPrediction();
     console.log("after model load");
-
-
-
-
-
-
-
-
-
 
 }
 

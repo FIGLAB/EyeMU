@@ -33,7 +33,7 @@ function waitForIt(){
     }
 }
 
-async function trainModel(){
+async function trainModel(ind){
     console.log("training model");
     document.getElementById("trainingstate").innerHTML = "training...";
 
@@ -53,7 +53,7 @@ async function trainModel(){
 
     // construct x_vect as the left eye ims and y_vect as the screen coordinates
 //    aa = tf.tensor(eyeData[0], [eyeData[0].length, iny, inx, 1]);
-    aa = tf.tensor(eyeData[1], [eyeData[1].length, iny, inx, 1]);
+    aa = tf.tensor(eyeData[ind], [eyeData[ind].length, iny, inx, 1]);
     bb = tf.tensor(eyeVals, [eyeVals.length, 2]);
     epochCount = 0;
 

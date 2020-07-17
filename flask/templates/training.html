@@ -22,15 +22,16 @@
 {% block body %}
 
 <div id="main">
-    <button type="button" onclick="trainModel()">Train Model</button>
+    <button type="button" onclick="trainModel(0)">Train Left Model</button>
+    <button type="button" onclick="trainModel(1)">Train Right Model</button>
     <button type="button" onclick="saveModel(eyeModel)">Save Model</button>
     <input type="file" accept="application/json" id="eyeData" multiple onchange='openFile(event)'></input>
-    <button type="button" onclick="testModel()">test Model</button>
+    <button type="button" onclick="testModel()">Test Model</button>
     <br>
 
-    <button type="button" onclick="eyeData2tensor()">convert eyeData</button>
-    <button type="button" onclick="trainBoostedModel()">train Boosted</button>
-    <button type="button" onclick="saveModel(boostmodel)">Save Boost Model</button>
+    <button type="button" onclick="eyeData2tensor()">Convert eyeData</button>
+    <button type="button" onclick="trainBoostedModel()">Train Boosted</button>
+    <button type="button" onclick="saveModel(boostModel)">Save Boost Model</button>
 
     <br>
 
