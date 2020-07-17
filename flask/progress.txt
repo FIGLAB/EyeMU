@@ -1,3 +1,13 @@
+July 17
+Reduced the model size for the two input eyes and the boosted model, maintaining accuracy.
+Created the /test/ page and all backend code for evaluating the model.
+
+TODO next time:
+Make sense of the accel
+smooth the eye predictions
+speed up eye predictions
+increase accuracy of eye prediction
+
 
 July 15
 Collected a lot of data, trained some bad models. Final validation error was coming out like 20%.
