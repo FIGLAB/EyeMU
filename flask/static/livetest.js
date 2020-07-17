@@ -175,6 +175,9 @@ async function drawPrediction() {
     predX = Math.floor(output[0]*100);
     predY = Math.floor(output[1]*100);
 
+    predX = Math.min(Math.max(predX, 0), 100);
+    predY = Math.min(Math.max(predY, 0), 100);
+
     elem=document.createElement("div");
     elem.setAttribute("class", "predicdot");
     elem.setAttribute("style", "left:"+ predX +"%;top:"+ predY +"%;");
