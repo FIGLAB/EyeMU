@@ -1,3 +1,17 @@
+
+
+July 21
+Added colored eyeData save
+Added an eyeData with color photos to the transfer page
+Ran a small vector through the mobilenet embeddings and trained
+Began porting over real-time capture code from gaze_calib
+
+TODO:
+Get vector of eyes from the calib dots, instead of using dotgenerator
+change backends and train the mobilenet output model
+have it output live prediction as a dot or something
+
+
 July 17
 Reduced the model size for the two input eyes and the boosted model, maintaining accuracy.
 Created the /test/ page and all backend code for evaluating the model.
@@ -7,6 +21,7 @@ Make sense of the accel
 smooth the eye predictions
 speed up eye predictions
 increase accuracy of eye prediction
+add calibration to testing page
 
 
 July 15
