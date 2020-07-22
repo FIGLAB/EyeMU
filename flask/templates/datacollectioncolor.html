@@ -3,23 +3,18 @@
 {% block headextra %}
 <!-- Tensorflow core, model, and backend-->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/tf-backend-wasm.js"></script>
 
 <!-- Javascript specific to this page -->
 <script src="{{url_for('static', filename='ML.js')}}"></script>
 <script src="{{url_for('static', filename='fileIO.js')}}"></script>
-<script src="{{url_for('static', filename='transfer.js')}}"></script>
+<script src="{{url_for('static', filename='dotgenerator.js')}}"></script>
 <script src="{{url_for('static', filename='collectioncolor.js')}}"></script>
 
 
-<!-- Javascript for calibration -->
-<script src="https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/p5.js"></script>
-<script src="{{url_for('static', filename='sketch.js')}}"></script>
-
 <script>
-    main();
+    waitForIt();
 </script>
 
 {% endblock %}
@@ -28,18 +23,22 @@
 {% block body %}
 
 <div id="main">
-    <button type="button" onclick="trainModel()">Train Model</button>
-    <button type="button" onclick="saveModel(eyeModel)">Save Model</button>
-    <input type="file" accept="application/json" id="eyeData" multiple onchange='openFile(event)'></input>
-    <button type="button" onclick="testModel()">test Model</button>
+    <p id="ImageCounter">Images this session: 0</p>
+    <button onclick="dotgenerator()">Start Dots</button>
+    <button onclick="dotStopper()">Stop Dots</button>
+    <button onclick="dotChangeXY()">Change XY</button>
+    <button id="eyeDataFile">Download eyeData</button>
 
-    <br>
+    <button onclick="getAccel()">get Accel</button>
 
-    <button type="button" onclick="colorEyeData2tensor()">Convert colored eyes</button>
+    <br><br>
 
-    <p id="trainingstate"></p>
+    <p>Prediction: </p> <p id="prediction"></p>
 
-                <canvas id="eyecache"></canvas>
+    <p id="lastXY">last XY coordinates: </p>
+
+        <br><br>
+            <canvas style="display:none" id="eyecache"></canvas>
             <video autoplay muted playsinline id="video"  style="
               -webkit-transform: scaleX(-1);
               transform: scaleX(-1);
@@ -48,6 +47,7 @@
               height: auto;
               ">
             </video>
+
 
   </div>
 
