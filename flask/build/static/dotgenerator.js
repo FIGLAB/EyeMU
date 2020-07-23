@@ -50,7 +50,7 @@ function dotgenerator() {
         }
 
         // Add random noise to the dot
-        x = x + velX + Math.floor(Math.random()*3) - 1;
+        x = x + velX + Math.floor(Math.random()*3) + 1;
         y = y + velY + Math.floor(Math.random()*3) - 1;
 
         elem.setAttribute("style", "left:"+ x +"%;top:"+ y +"%;");
