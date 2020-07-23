@@ -1,4 +1,14 @@
 
+July 22
+
+Migrated Karan's calib file, integrated the data collection and training.
+Got output prediction working on desktop as a dot.
+Ran into issues on mobile browser, something about the backends. Gonna have to debug that later.
+
+TODO:
+debug mobile browser transfer learning page
+
+
 
 July 21
 Added colored eyeData save

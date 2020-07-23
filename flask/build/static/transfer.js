@@ -33,9 +33,9 @@ DeviceMotionEvent.requestPermission()
     .catch(console.error)
 }
 
-function trainModel(){
+async function trainModel(){
     console.log("in transfer");
-    tf.setBackend('webgl');
+    await tf.setBackend('webgl');
 
     if (predictions[0].length == 0){
         colorEyeData2tensor();
@@ -80,9 +80,13 @@ function trainModel(){
    console.log( info.history['val_mae']);
     console.log("boost training done");
     document.getElementById("trainingstate").innerHTML = "calib training done";
-//    tf.setBackend('wasm');
+
+//    tf.setBackend('we');
+    console.log("after fit, ", tf.getBackend())
+    done_with_training = true;
     startLivePrediction();
     loop();
+
      });
 
 }
@@ -121,7 +125,8 @@ function startLivePrediction(){
 
 
 async function main() {
-    await tf.setBackend('wasm');
+    await tf.setBackend('webgl');
+    await tf.ready();
 
     // Load mobilenet
     mobnet = await mobilenet.load();

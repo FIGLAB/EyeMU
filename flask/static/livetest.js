@@ -100,18 +100,20 @@ async function drawEyes(){
     ctx.drawImage(video, lBB[0], lBB[2], wl, hl, tmpx, tmpy, inx, iny)
     ctx.drawImage(video, rBB[0], rBB[2], wr, hr, tmpx + 10 + inx, tmpy, inx, iny)
 
-    // Update their normed tensors
-    leftEye = tf.browser.fromPixels(ctx.getImageData(tmpx,tmpy, inx, iny));
-    leftEye = tf.mean(leftEye,2)
-    leftEye = tf.div(leftEye, tf.max(leftEye))
-    leftEye = leftEye.reshape([1,iny, inx, 1])
-//        .dataSync();
+//    // Update their normed tensors
+    leftEye = tf.tidy(() => {return tf.browser.fromPixels(ctx.getImageData(tmpx,tmpy, inx, iny))});
+    leftEye = tf.tidy(() => {
+        res1 = tf.mean(leftEye,2);
+//        res1 = tf.div(res1, tf.max(res1)).reshape([1,iny, inx, 1])
+        return res1;
+    });
 
-    rightEye = tf.browser.fromPixels(ctx.getImageData(tmpx + 10 + inx ,tmpy, inx, iny))
-    rightEye = tf.mean(rightEye,2)
-    rightEye = tf.div(rightEye, tf.max(rightEye))
-    rightEye = rightEye.reshape([1,iny, inx, 1])
-//            .dataSync();
+    rightEye = tf.tidy(() => {return tf.browser.fromPixels(ctx.getImageData(tmpx + 10 + inx ,tmpy, inx, iny))});
+    rightEye = tf.tidy(() => {
+//        res1 = tf.mean(rightEye,2);
+        res1 = tf.div(res1, tf.max(res1)).reshape([1,iny, inx, 1])
+        return res1;
+    });
 
     requestAnimationFrame(drawEyes);
 }
@@ -137,8 +139,9 @@ async function renderPrediction() {
         }
 
     }
-    // Slow down the face mesh loop to relieve stress on user's device
-    setTimeout(requestAnimationFrame(renderPrediction), 100);
+////     Slow down the face mesh loop to relieve stress on user's device
+//    setTimeout(requestAnimationFrame(renderPrediction), 100);
+    requestAnimationFrame(renderPrediction);
 };
 
 
@@ -148,8 +151,11 @@ function predictEyeLocation(){
         const headSize = getFaceSize(prediction)
 
         // Get right
-        const lpred = models[0].predict(leftEye).arraySync()[0];
-        const rpred = models[1].predict(rightEye).arraySync()[0];
+        const lpred = tf.tidy(() => { return models[0].predict(leftEye).arraySync()[0]});
+        const rpred = tf.tidy(() => { return models[1].predict(rightEye).arraySync()[0]});
+
+        rightEye.dispose();
+        leftEye.dispose();
 
         const dataVec = [].concat(lpred,
                                   rpred,
@@ -159,7 +165,9 @@ function predictEyeLocation(){
         output = models[2].predict(dataTensor).arraySync();
         output = output[0];
         drawPrediction()
-        console.log(output)
+
+        dataTensor.dispose()
+//        console.log(output)
 
 }
 
@@ -169,7 +177,7 @@ async function drawPrediction() {
     const predicdots = document.getElementsByClassName('predicdot');
     if (predicdots.length > 0){
         predicdots[0].parentNode.removeChild(predicdots[0]);
-        };
+    };
 
     //Generate prediction dot
     predX = Math.floor(output[0]*100);
@@ -178,25 +186,35 @@ async function drawPrediction() {
     predX = Math.min(Math.max(predX, 0), 100);
     predY = Math.min(Math.max(predY, 0), 100);
 
+
+
     elem=document.createElement("div");
     elem.setAttribute("class", "predicdot");
-    elem.setAttribute("style", "left:"+ predX +"%;top:"+ predY +"%;");
+
+    if (predX > 50){
+        if (predY > 50){
+            elem.setAttribute("style", "left:"+ 95 +"%;top:"+ 95 +"%;");
+        } else{
+            elem.setAttribute("style", "left:"+ 95 +"%;top:"+ 5 +"%;");
+        }
+    } else{
+        if (predY > 50){
+            elem.setAttribute("style", "left:"+ 5 +"%;top:"+ 95 +"%;");
+        } else{
+            elem.setAttribute("style", "left:"+ 5 +"%;top:"+ 5 +"%;");
+        }
+    }
+
     document.body.appendChild(elem);
 };
 
 
 
 async function main() {
-//    await tf.setBackend(state.backend);
     await tf.setBackend(state.backend);
-    while (tf.getBackend().localeCompare(state.backend) != 0){
-        await tf.setBackend(state.backend);
-        console.log('setting backend')
-    }
 
     // Load in face mesh model
     model = await facemesh.load({maxFaces: state.maxFaces});
-
 
     // Set up camera
     await setupCamera();
