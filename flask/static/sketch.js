@@ -91,7 +91,7 @@ function draw(){
             trainModel();
 //            tf.setBackend('webgl');
 
-            done_with_training = true;
+
             eyeSelfie(true);
             noLoop();
 //                ellipse( X, Y, radius, radius );

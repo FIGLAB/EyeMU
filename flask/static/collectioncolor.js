@@ -38,6 +38,7 @@ var started = false;
 
 const state = {
     backend: 'wasm',
+//    backend: 'webgl',
     maxFaces: 1, // Only one mouse, after all
 };
 
@@ -229,6 +230,7 @@ async function collectmain() {
 
     fmesh = await facemesh.load({maxFaces: state.maxFaces});
     // This above command takes forever on webgl backend
+    await tf.setBackend('webgl');
 
     // Set up camera
     await setupCamera();
