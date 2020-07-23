@@ -3,15 +3,17 @@
 {% block headextra %}
 <!-- Tensorflow core, model, and backend-->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/tf-backend-wasm.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/tf-backend-wasm.js"></script>
+
 
 <!-- Javascript specific to this page -->
 <script src="{{url_for('static', filename='ML.js')}}"></script>
 <script src="{{url_for('static', filename='fileIO.js')}}"></script>
-<script src="{{url_for('static', filename='transfer.js')}}"></script>
 <script src="{{url_for('static', filename='collectioncolor.js')}}"></script>
+<script src="{{url_for('static', filename='transfer.js')}}"></script>
 
 
 <!-- Javascript for calibration -->
@@ -38,6 +40,7 @@
     <button type="button" onclick="colorEyeData2tensor()">Convert colored eyes</button>
 
     <p id="trainingstate"></p>
+
 
                 <canvas id="eyecache"></canvas>
             <video autoplay muted playsinline id="video"  style="
