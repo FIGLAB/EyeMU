@@ -171,10 +171,12 @@ async function eyeSelfie(continuous){
         const hl = lBB[3]-lBB[2];
 
         // store head yaw and pitch, also the ground truth dot location
-        const cur_calib = (((calib_counter-1) % nx_arr.length) + nx_arr.length) % nx_arr.length;
+//        const cur_calib = (((calib_counter-1) % nx_arr.length) + nx_arr.length) % nx_arr.length;
 //        console.log(nx_arr[cur_calib]/screen.width, ny_arr[cur_calib]/screen.height);
+//        console.log(X/screen.width, Y/screen.height);
 
-        const nowVals = [nx_arr[cur_calib]/screen.width, ny_arr[cur_calib]/screen.height];
+//        const nowVals = [nx_arr[cur_calib]/screen.width, ny_arr[cur_calib]/screen.height];
+        const nowVals = [X/screen.width, Y/screen.height];
 
         const nowHeadAngles = [getFacePitch(prediction.mesh), getFaceYaw(prediction.mesh)];
         const headSize = getFaceSize(prediction)

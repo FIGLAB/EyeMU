@@ -1,9 +1,20 @@
 
-July 22
+July 23
+Patched the calib rounds and delays to be more friendly
+Still doesn't work on the phone, something about wasm being uninitialized and webgl unable to be loaded. Poison bug I think.
+Memory leak also present in the calibration page :(. Patched a bit with tf.tidy, but seems to be somewhere in the predictions page. Unsure where it's coming from, can look at it more later.
 
+TODO:
+Need to rewrite this page into a more manageable code structure.
+Pretty up the page so user won't have to see themselves all the time.
+Add Accel
+
+
+July 22
 Migrated Karan's calib file, integrated the data collection and training.
 Got output prediction working on desktop as a dot.
 Ran into issues on mobile browser, something about the backends. Gonna have to debug that later.
+found a memory leak in live test, makes the thing go to garbage in like 4 seconds. wild.
 
 TODO:
 debug mobile browser transfer learning page

@@ -96,8 +96,10 @@ function runPredsLive(){
     tmp1 = [];
     tmp2 = [];
     for (i = 0; i < eyeData[0].length; i++){
-        tmp1.push(eyeData[0][i].arraySync());
-        tmp2.push(eyeData[1][i].arraySync());
+//        tmp1.push(eyeData[0][i].arraySync());
+        tmp1.push(tf.tidy(() => {return eyeData[0][i].arraySync()}));
+        tmp2.push(tf.tidy(() => {return eyeData[1][i].arraySync()}));
+//        tmp2.push(eyeData[1][i].arraySync());
 
     }
 
@@ -106,9 +108,10 @@ function runPredsLive(){
     const t2 = tf.tensor(tmp2, [eyeData[1].length, inx, iny, 3])
 
 
-    predictions[0] = mobnet.infer(t1).div(10).arraySync();
-    predictions[1] = mobnet.infer(t2).div(10).arraySync();
-
+    predictions[0] = tf.tidy(() => {return mobnet.infer(t1).div(10).arraySync()});
+    predictions[1] = tf.tidy(() => {return mobnet.infer(t2).div(10).arraySync()});
+    t1.dispose();
+    t2.dispose();
 }
 
 
@@ -118,8 +121,8 @@ function startLivePrediction(){
                        curHeadTilt,
                        curHeadSize)
 //    console.log(temp_x)
-    curPred = eyeModel.predict(tf.tensor(temp_x, [1, 2003])).arraySync()[0]
-    console.log(curPred);
+    curPred = tf.tidy(() => {return eyeModel.predict(tf.tensor(temp_x, [1, 2003])).arraySync()[0]});
+//    console.log(curPred);
     requestAnimationFrame(startLivePrediction);
 }
 
