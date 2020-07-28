@@ -1,4 +1,10 @@
 
+July 27
+Mobile has a new problem: my phone restarts whenever it finishes collecting data >:(. Unsure if it's just because my phone is a bit old. it does run a little laggy on my phone...
+Fixed memory leak in /transfer. It was a combination of tensors being pushed and not tossed, and tf tidys that weren't properly put around everything.
+Also fixed memory leak in the loaded model
+
+
 July 23
 Patched the calib rounds and delays to be more friendly
 Still doesn't work on the phone, something about wasm being uninitialized and webgl unable to be loaded. Poison bug I think.

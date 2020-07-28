@@ -1,7 +1,7 @@
 // Eye saving variables
 var leftEyeIms = [0];
 var rightEyeIms = [0];
-var webcamOffset = 300;
+var webcamOffset = 100;
 var newFrame
 
 // x and y vects
@@ -13,7 +13,7 @@ var head_top, head_left, head_bot, head_right;
 var curLen = 0;
 
 // Live prediction variables
-var curEye
+var curEye = []
 var curHeadTilt = [];
 var curHeadSize = 0;
 
@@ -38,7 +38,6 @@ var started = false;
 
 const state = {
     backend: 'wasm',
-//    backend: 'webgl',
     maxFaces: 1, // Only one mouse, after all
 };
 
@@ -114,6 +113,7 @@ async function drawWebcam(){
     requestAnimationFrame(drawWebcam);
 }
 
+// Calls face mesh on the video and outputs the bounding boxes to global vars
 async function renderPrediction() {
     const predictions = await fmesh.estimateFaces(video);
 
@@ -132,36 +132,33 @@ async function renderPrediction() {
     setTimeout(requestAnimationFrame(renderPrediction), 100);
 };
 
-
+//Draws current eyes onto the canvas
 async function drawCache(continuous){
-// Draw the eye cache
         const tmpx = 0;
         const tmpy = 0;
 
-        const image = leftEyeIms[0];
-        const rimage = rightEyeIms[0];
-
-        ctx.drawImage(image, tmpx, tmpy, inx, iny);
-        ctx.drawImage(rimage, tmpx + 10 + inx, tmpy, inx, iny);
+        ctx.drawImage(leftEyeIms[0], tmpx, tmpy, inx, iny);
+        ctx.drawImage(rightEyeIms[0], tmpx + 10 + inx, tmpy, inx, iny);
 
         if (continuous){
+            if (curEye.length == 2){ // Clean up memory
+                curEye[0].dispose()
+                curEye[1].dispose()
+            }
+
             curEye = [tf.browser.fromPixels(
                     ctx.getImageData(tmpx,tmpy, inx, iny)),
                     tf.browser.fromPixels(
                     ctx.getImageData(tmpx + 10 + inx ,tmpy, inx, iny))]
         } else{
             // Update main vector with the left and right pics, then the location
-            tmpImage = tf.browser.fromPixels(
-                    ctx.getImageData(tmpx,tmpy, inx, iny))
+            tmpImage = tf.browser.fromPixels(ctx.getImageData(tmpx,tmpy, inx, iny));
             eyeData[0].push(tmpImage);
 
-            tmpImage = tf.browser.fromPixels(
-                    ctx.getImageData(tmpx + 10 + inx ,tmpy, inx, iny))
+            tmpImage = tf.browser.fromPixels(ctx.getImageData(tmpx + 10 + inx ,tmpy, inx, iny));
             eyeData[1].push(tmpImage);
         }
 }
-
-
 
 async function eyeSelfie(continuous){
         // Get bounding boxes of the eyes
@@ -171,16 +168,10 @@ async function eyeSelfie(continuous){
         const hl = lBB[3]-lBB[2];
 
         // store head yaw and pitch, also the ground truth dot location
-//        const cur_calib = (((calib_counter-1) % nx_arr.length) + nx_arr.length) % nx_arr.length;
-//        console.log(nx_arr[cur_calib]/screen.width, ny_arr[cur_calib]/screen.height);
-//        console.log(X/screen.width, Y/screen.height);
-
-//        const nowVals = [nx_arr[cur_calib]/screen.width, ny_arr[cur_calib]/screen.height];
         const nowVals = [X/screen.width, Y/screen.height];
-
+//        const nowVals = [0,0 ];
         const nowHeadAngles = [getFacePitch(prediction.mesh), getFaceYaw(prediction.mesh)];
         const headSize = getFaceSize(prediction)
-        // Normalize head size by video capture, also face mesh allows heads bigger than the screen so divide by a bit more to keep under 1.
 
 
         Promise.all([
@@ -206,7 +197,6 @@ async function eyeSelfie(continuous){
     }
 }
 
-
 function getAccel(){
 DeviceMotionEvent.requestPermission()
     .then(response => {
@@ -219,8 +209,6 @@ DeviceMotionEvent.requestPermission()
     })
     .catch(console.error)
 }
-
-
 
 async function collectmain() {
 //    await tf.setBackend(state.backend);
@@ -243,12 +231,11 @@ async function collectmain() {
     // Set up webcam canvas
     canvas = document.getElementById('eyecache');
     canvas.width = screen.width;
-    canvas.height = 900;
+    canvas.height = 200;
     ctx = canvas.getContext('2d');
 
-    drawWebcam();
-//    eyeSelfie();
-//    setInterval(eyeSelfie, 100);
+//    drawWebcam();
+//    setInterval((() => {eyeSelfie(true)}), 100);
     renderPrediction();
     console.log("after model load");
 }
