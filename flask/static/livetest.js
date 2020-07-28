@@ -13,6 +13,10 @@ var rBB, lBB;
 var prediction; // Face mesh predict() output
 var output;
 
+// Live vars
+var curHeadSize;
+var curHeadTilt;
+
 const state = {
     backend: 'wasm',
     maxFaces: 1, // Only one mouse, after all
@@ -100,20 +104,28 @@ async function drawEyes(){
     ctx.drawImage(video, lBB[0], lBB[2], wl, hl, tmpx, tmpy, inx, iny)
     ctx.drawImage(video, rBB[0], rBB[2], wr, hr, tmpx + 10 + inx, tmpy, inx, iny)
 
-//    // Update their normed tensors
-    leftEye = tf.tidy(() => {return tf.browser.fromPixels(ctx.getImageData(tmpx,tmpy, inx, iny))});
+    // Clean up
+    if (leftEye != undefined){
+        leftEye.dispose();
+        rightEye.dispose();
+    }
+
+    // Update eye tensors
     leftEye = tf.tidy(() => {
-        res1 = tf.mean(leftEye,2);
-//        res1 = tf.div(res1, tf.max(res1)).reshape([1,iny, inx, 1])
-        return res1;
+        res = tf.browser.fromPixels(ctx.getImageData(tmpx,tmpy, inx, iny))
+        res = tf.mean(res,2);
+        return tf.div(res, tf.max(res)).reshape([1,iny, inx, 1]);
     });
 
-    rightEye = tf.tidy(() => {return tf.browser.fromPixels(ctx.getImageData(tmpx + 10 + inx ,tmpy, inx, iny))});
     rightEye = tf.tidy(() => {
-//        res1 = tf.mean(rightEye,2);
-        res1 = tf.div(res1, tf.max(res1)).reshape([1,iny, inx, 1])
-        return res1;
+        res = tf.browser.fromPixels(ctx.getImageData(tmpx + 10 + inx ,tmpy, inx, iny))
+        res = tf.mean(res,2);
+        return tf.div(res, tf.max(res)).reshape([1,iny, inx, 1]);
     });
+
+    //Update head angles and size
+    curHeadSize = getFaceSize(prediction)
+    curHeadTilt = [getFacePitch(prediction.mesh), getFaceYaw(prediction.mesh)];
 
     requestAnimationFrame(drawEyes);
 }
@@ -140,35 +152,29 @@ async function renderPrediction() {
 
     }
 ////     Slow down the face mesh loop to relieve stress on user's device
-//    setTimeout(requestAnimationFrame(renderPrediction), 100);
-    requestAnimationFrame(renderPrediction);
+    setTimeout(requestAnimationFrame(renderPrediction), 50);
+//    requestAnimationFrame(renderPrediction);
 };
 
 
+
 function predictEyeLocation(){
-        // get yaw, pitch, and size
-        const nowHeadAngles = [getFacePitch(prediction.mesh), getFaceYaw(prediction.mesh)];
-        const headSize = getFaceSize(prediction)
+        output = tf.tidy(() => {
+            lefttmp = models[0].predict(leftEye).arraySync()[0];
+            righttmp = models[1].predict(rightEye).arraySync()[0]
 
-        // Get right
-        const lpred = tf.tidy(() => { return models[0].predict(leftEye).arraySync()[0]});
-        const rpred = tf.tidy(() => { return models[1].predict(rightEye).arraySync()[0]});
+            dataVec = [].concat(lefttmp,
+                                  righttmp,
+                                  curHeadTilt,
+                                  curHeadSize)
+            dataTensor = tf.tensor(dataVec, [1,7])
+            return models[2].predict(dataTensor).arraySync()[0];
+        });
 
-        rightEye.dispose();
-        leftEye.dispose();
 
-        const dataVec = [].concat(lpred,
-                                  rpred,
-                                  nowHeadAngles,
-                                  headSize)
-        const dataTensor = tf.tensor(dataVec, [1,7])
-        output = models[2].predict(dataTensor).arraySync();
-        output = output[0];
         drawPrediction()
 
         dataTensor.dispose()
-//        console.log(output)
-
 }
 
 //Draw the prediction as an orange dot on the screen.
@@ -207,8 +213,6 @@ async function drawPrediction() {
 
     document.body.appendChild(elem);
 };
-
-
 
 async function main() {
     await tf.setBackend(state.backend);

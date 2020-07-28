@@ -1,10 +1,10 @@
-var n_calib_rounds = 3;
+var n_calib_rounds = 2;
 
 // Global variables
 var radius = 50.0;
 var X, Y;
 var nX, nY;
-var delay = 4; //25
+var delay = 8; //25
 var moveDelay = 30; //120
 var calib_counter = 0;
 var calib_rounds = 0;
@@ -44,7 +44,6 @@ function draw(){
 
     if (done_with_training && curPred != undefined){
         ellipse(curPred[0]*screen.width, curPred[1]*screen.height, radius, radius);
-
     } else if (rBB != undefined){
         if (calib_rounds < n_calib_rounds){
 
@@ -56,16 +55,15 @@ function draw(){
 
             // Draw circle
             ellipse( X, Y, radius, radius );
-//            console.log(X,Y)
-//            console.log(nX, nY);
-            if ((Math.abs(nX-X) + Math.abs(nY-Y)) < 5){
-                eyeSelfie(false);
-                console.log('selfie')
-            }
+
+//            if ((Math.abs(nX-X) + Math.abs(nY-Y)) < 50){
+//                eyeSelfie(false);
+//                console.log('selfie')
+//            }
 
             if(frameCount%moveDelay==0){
                 // Take photo of eye
-//                eyeSelfie(false);
+                eyeSelfie(false);
 
               nX = nx_arr[calib_counter];
               nY = ny_arr[calib_counter];
@@ -94,8 +92,6 @@ function draw(){
 
             console.log('backend set to ', tf.getBackend())
             trainModel();
-
-
 
             eyeSelfie(true);
             noLoop();

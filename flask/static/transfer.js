@@ -81,9 +81,12 @@ async function trainModel(){
     console.log("boost training done");
     document.getElementById("trainingstate").innerHTML = "calib training done";
 
-//    tf.setBackend('we');
     console.log("after fit, ", tf.getBackend())
     done_with_training = true;
+
+    x_vect.dispose();
+    y_vect.dispose();
+
     startLivePrediction();
     loop();
 
@@ -91,23 +94,21 @@ async function trainModel(){
 
 }
 
+// Generate mobilenet predictions on our training data
 function runPredsLive(){
-
+    console.log(tf.memory());
     tmp1 = [];
     tmp2 = [];
     for (i = 0; i < eyeData[0].length; i++){
-//        tmp1.push(eyeData[0][i].arraySync());
         tmp1.push(tf.tidy(() => {return eyeData[0][i].arraySync()}));
         tmp2.push(tf.tidy(() => {return eyeData[1][i].arraySync()}));
-//        tmp2.push(eyeData[1][i].arraySync());
-
     }
 
-
+    console.log(tf.memory());
     const t1 = tf.tensor(tmp1, [eyeData[0].length, inx, iny, 3])
     const t2 = tf.tensor(tmp2, [eyeData[1].length, inx, iny, 3])
 
-
+    console.log(tf.memory());
     predictions[0] = tf.tidy(() => {return mobnet.infer(t1).div(10).arraySync()});
     predictions[1] = tf.tidy(() => {return mobnet.infer(t2).div(10).arraySync()});
     t1.dispose();
@@ -116,19 +117,18 @@ function runPredsLive(){
 
 
 function startLivePrediction(){
-    temp_x = [].concat(mobnet.infer(curEye[0]).div(10).arraySync()[0],
+    curPred = tf.tidy(() => {
+            temp_x = [].concat(mobnet.infer(curEye[0]).div(10).arraySync()[0],
                        mobnet.infer(curEye[1]).div(10).arraySync()[0],
                        curHeadTilt,
-                       curHeadSize)
-//    console.log(temp_x)
-    curPred = tf.tidy(() => {return eyeModel.predict(tf.tensor(temp_x, [1, 2003])).arraySync()[0]});
-//    console.log(curPred);
+                       curHeadSize);
+            return eyeModel.predict(tf.tensor(temp_x, [1, 2003])).arraySync()[0];
+        });
     requestAnimationFrame(startLivePrediction);
 }
 
-
 async function main() {
-    await tf.setBackend('webgl');
+    await tf.setBackend('wasm');
     await tf.ready();
 
     // Load mobilenet
