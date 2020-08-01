@@ -1,4 +1,4 @@
-var n_calib_rounds = 2;
+var n_calib_rounds = 1;
 
 // Global variables
 var radius = 50.0;

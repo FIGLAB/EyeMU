@@ -1,4 +1,9 @@
 
+July 28 night
+Added alternative regression library to use at the end of training on the calibration page. Seems to work ok, however the memory leak is back in full force. Lags the hell out of the webcam, consumes a bunch of memory. Unsure where the problem is coming from, will review code tomorrow
+
+
+
 July 27
 Mobile has a new problem: my phone restarts whenever it finishes collecting data >:(. Unsure if it's just because my phone is a bit old. it does run a little laggy on my phone...
 Fixed memory leak in /transfer. It was a combination of tensors being pushed and not tossed, and tf tidys that weren't properly put around everything.
