@@ -1,12 +1,25 @@
 {% extends "base.html" %}
 
 {% block headextra %}
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
+<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>-->
+<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>-->
 <!-- Adds the WASM backend to the global backend registry -->
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/tf-backend-wasm.js"></script>
+<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/tf-backend-wasm.js"></script>-->
+
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/regression/2.0.1/regression.js"></script>-->
+<script src="https://rawgit.com/chen0040/js-regression/master/build/jsregression.min.js"></script>
+
+<script>
+    var regression = new jsregression.LinearRegression();
+
+    // === Train the linear regression === //
+    var model = regression.fit([[0,1,1,2,8], [0,1,2,3,9]]);
+
+    // === Print the trained model === //
+    console.log(model);
 
 
+</script>
 
 {% endblock %}
 
