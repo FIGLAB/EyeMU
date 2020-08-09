@@ -37,9 +37,23 @@ function boostedModel(){
 function lastFewLayersModel(){
     const model = tf.sequential({
         layers: [
-        tf.layers.dense({inputShape: [2003], units: 100, activation: 'relu'}),
+//        tf.layers.dense({inputShape: [2003], units: 30, activation: 'relu'}),
+//        tf.layers.dense({units: 2})
+
+        tf.layers.dense({inputShape: [2003], units: 2}),
 //        tf.layers.dense({units: 50, activation: 'relu'}),
-        tf.layers.dense({units: 2})
+
+        ]
+    });
+
+    model.summary();
+    return model
+}
+
+function regressionModel(){
+    const model = tf.sequential({
+        layers: [
+        tf.layers.dense({inputShape: [2003], units: 1}),
         ]
     });
 

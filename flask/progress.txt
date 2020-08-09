@@ -1,3 +1,11 @@
+Aug 9
+WASM breakthrough, turns out shallow neural network training works but anything with hidden layers is OUT. Such a silly bug... Now that it's fixed, we can move on to improving existing model.
+Need to up calib rounds and standardize num pics taken at each point. Should take a bit of juggling.
+
+TODO:
+download gazecapture dataset
+train a model on that dataset. Probably need to use desktop for that.
+
 
 July 28 night
 Added alternative regression library to use at the end of training on the calibration page. Seems to work ok, however the memory leak is back in full force. Lags the hell out of the webcam, consumes a bunch of memory. Unsure where the problem is coming from, will review code tomorrow

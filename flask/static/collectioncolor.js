@@ -2,7 +2,7 @@
 var leftEyeIms = [0];
 var rightEyeIms = [0];
 var webcamOffset = 100;
-var newFrame
+var newFrame = true;
 
 // x and y vects
 var eyeData = [[],[]];
@@ -16,6 +16,7 @@ var curLen = 0;
 var curEye = []
 var curHeadTilt = [];
 var curHeadSize = 0;
+var prediction;
 
 // Resize eyeballs to this size
 var inx = 50;
@@ -108,18 +109,16 @@ async function setupCamera() {
 async function drawWebcam(){
     // Draw face onto canvas 2d context
     ctx.drawImage(video, 0, webcamOffset, videoWidth, videoHeight);
-    newFrame = true;
-
     requestAnimationFrame(drawWebcam);
 }
 
 // Calls face mesh on the video and outputs the bounding boxes to global vars
 async function renderPrediction() {
-    const predictions = await fmesh.estimateFaces(video);
+    const facepred = await fmesh.estimateFaces(video);
 
-    if (predictions.length > 0) {
+    if (facepred.length > 0) {
         // If we find a face, proceed with first and only prediction
-        prediction = predictions[0];
+        prediction = facepred[0];
 
         // Find the eyeboxes (you could index directly but it wouldn't be that much faster)
         right_eyebox = (prediction.annotations.rightEyeUpper0).concat(prediction.annotations.rightEyeLower0);
@@ -130,6 +129,7 @@ async function renderPrediction() {
         lBB = maxminofXY(left_eyebox);
     }
     setTimeout(requestAnimationFrame(renderPrediction), 100);
+//    requestAnimationFrame(renderPrediction)
 };
 
 //Draws current eyes onto the canvas
@@ -139,6 +139,7 @@ async function drawCache(continuous){
 
         ctx.drawImage(leftEyeIms[0], tmpx, tmpy, inx, iny);
         ctx.drawImage(rightEyeIms[0], tmpx + 10 + inx, tmpy, inx, iny);
+        newFrame = true;
 
         if (continuous){
             if (curEye.length == 2){ // Clean up memory
@@ -160,6 +161,7 @@ async function drawCache(continuous){
         }
 }
 
+// extracts current eyes to a bitmap, as well as the headtilts and size
 async function eyeSelfie(continuous){
         // Get bounding boxes of the eyes
         const wr = rBB[1]-rBB[0];
@@ -169,7 +171,7 @@ async function eyeSelfie(continuous){
 
         // store head yaw and pitch, also the ground truth dot location
         const nowVals = [X/screen.width, Y/screen.height];
-//        const nowVals = [0,0 ];
+//        const nowVals = [0,0];
         const nowHeadAngles = [getFacePitch(prediction.mesh), getFaceYaw(prediction.mesh)];
         const headSize = getFaceSize(prediction)
 
@@ -197,19 +199,6 @@ async function eyeSelfie(continuous){
     }
 }
 
-function getAccel(){
-DeviceMotionEvent.requestPermission()
-    .then(response => {
-      if (response == 'granted') {
-        window.addEventListener('devicemotion', (e) => {
-          // do something with e
-          console.log(e)
-        })
-      }
-    })
-    .catch(console.error)
-}
-
 async function collectmain() {
 //    await tf.setBackend(state.backend);
     await tf.setBackend(state.backend);
@@ -220,7 +209,7 @@ async function collectmain() {
 
     fmesh = await facemesh.load({maxFaces: state.maxFaces});
     // This above command takes forever on webgl backend
-    await tf.setBackend('webgl');
+//    await tf.setBackend('webgl');
 
     // Set up camera
     await setupCamera();
@@ -235,7 +224,7 @@ async function collectmain() {
     ctx = canvas.getContext('2d');
 
 //    drawWebcam();
-//    setInterval((() => {eyeSelfie(true)}), 100);
+//    setTimeout((() => {eyeSelfie(true)}), 100);
     renderPrediction();
     console.log("after model load");
 }

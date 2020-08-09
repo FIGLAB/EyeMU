@@ -56,7 +56,7 @@ function draw(){
             // Draw circle
             ellipse( X, Y, radius, radius );
 
-//            if ((Math.abs(nX-X) + Math.abs(nY-Y)) < 50){
+//            if ((Math.abs(nX-X) + Math.abs(nY-Y)) < 30){
 //                eyeSelfie(false);
 //                console.log('selfie')
 //            }
@@ -79,7 +79,6 @@ function draw(){
                 }
               }
             }
-
         }
 
         else{
@@ -95,8 +94,6 @@ function draw(){
 
             eyeSelfie(true);
             noLoop();
-//                ellipse( X, Y, radius, radius );
         }
     }
-
 }
