@@ -1,14 +1,17 @@
-var n_calib_rounds = 1;
+var n_calib_rounds = 2;
 
 // Global variables
 var radius = 50.0;
 var X, Y;
 var nX, nY;
 var delay = 8; //25
-var moveDelay = 30; //120
+var moveDelay = 40; //120
 var calib_counter = 0;
 var calib_rounds = 0;
 var train = true;
+
+var num_ims_per_location = 5;
+var locations_traversed = 0;
 
 var nx_arr = [];
 var ny_arr = [];
@@ -56,14 +59,15 @@ function draw(){
             // Draw circle
             ellipse( X, Y, radius, radius );
 
-//            if ((Math.abs(nX-X) + Math.abs(nY-Y)) < 30){
-//                eyeSelfie(false);
-//                console.log('selfie')
-//            }
+            if (((Math.abs(nX-X) + Math.abs(nY-Y)) < 30) &&
+                 (eyeData[0].length < (calib_counter + 8*calib_rounds)*num_ims_per_location)){
+                eyeSelfie(false);
+                console.log(eyeData[0].length);
+            }
 
             if(frameCount%moveDelay==0){
                 // Take photo of eye
-                eyeSelfie(false);
+//                eyeSelfie(false);
 
               nX = nx_arr[calib_counter];
               nY = ny_arr[calib_counter];
