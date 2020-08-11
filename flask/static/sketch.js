@@ -1,16 +1,16 @@
-var n_calib_rounds = 2;
+var n_calib_rounds = 1;
 
 // Global variables
 var radius = 50.0;
 var X, Y;
 var nX, nY;
 var delay = 8; //25
-var moveDelay = 40; //120
+var moveDelay = 50; //120
 var calib_counter = 0;
 var calib_rounds = 0;
 var train = true;
 
-var num_ims_per_location = 5;
+var num_ims_per_location = 3;
 var locations_traversed = 0;
 
 var nx_arr = [];

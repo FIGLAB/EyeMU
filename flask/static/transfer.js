@@ -33,67 +33,6 @@ DeviceMotionEvent.requestPermission()
     .catch(console.error)
 }
 
-//async function trainModel(){
-//    console.log("in transfer, training model");
-//    await tf.setBackend('webgl');
-//
-//    if (predictions[0].length == 0){
-//        colorEyeData2tensor();
-//    }
-//    eyeModel = lastFewLayersModel();
-//
-//    // Display the learning rate and set the optimizer
-//    console.log(lr);
-//    dadam = tf.train.adam(lr);
-//
-//    eyeModel.compile({
-//      optimizer: dadam,
-//      loss: 'meanSquaredError',
-//      metrics: ['mae', 'mse']
-//    });
-//
-//    // x_vect is the left eye pred, right eye pred, head yaw and pitch, and headsize
-//    x_vect = predictions[0]
-//    if (x_vect[0].length != 7){
-//        x_vect.forEach((item, index, arr) =>{
-//            arr[index] = arr[index].concat(predictions[1][index], headTilts[index], headSizes[index])
-//        });
-//        x_vect = tf.tensor(x_vect, [x_vect.length, 2003])
-//    }
-//
-//    y_vect = tf.tensor(eyeVals, [eyeVals.length, 2]);
-//
-//    epochCount = 0;
-//
-//    eyeModel.fit(x_vect, y_vect, {
-//       epochs: epochNums,
-//       batchSize: batchSize,
-//       validationSplit: valsplit,
-//       callbacks: {
-//      onEpochEnd: async (batch, logs) => {
-//          console.log(epochCount++, 'Loss: ' + logs.loss.toFixed(5));
-//      }
-//    }
-//    }).then(info => {
-//   console.log('Final accuracy', info.history);
-//   console.log( info.history['mae']);
-//   console.log( info.history['val_mae']);
-//    console.log("boost training done");
-//    document.getElementById("trainingstate").innerHTML = "calib training done";
-//
-//    console.log("after fit, ", tf.getBackend())
-//    done_with_training = true;
-//
-//    x_vect.dispose();
-//    y_vect.dispose();
-//
-//    startLivePrediction();
-//    loop();
-//
-//     });
-//
-//}
-
 
 async function trainModel(){
     console.log("in transfer, training model");
@@ -102,7 +41,7 @@ async function trainModel(){
         colorEyeData2tensor();
     }
 
-//    eyeModel = regressionModel()
+//    eyeModel = lastFewLayersClassificationModel()
     eyeModel = lastFewLayersModel()
     dadam = tf.train.adam(lr);
 
@@ -110,18 +49,20 @@ async function trainModel(){
       optimizer: dadam,
       loss: 'meanSquaredError',
       metrics: ['mae', 'mse']
+//      loss: tf.losses.sigmoidCrossEntropy,
+//      loss: tf.losses.softmaxCrossEntropy,
+//      metrics: ['categoricalAccuracy']
     });
     console.log("after model init");
 
     // x_vect is the left eye pred, right eye pred, head yaw and pitch, and headsize
-//    let tmp_y = []
     let x_vect = predictions[0]
     if (x_vect[0].length != 7){
         x_vect.forEach((item, index, arr) =>{
             arr[index] = arr[index].concat(predictions[1][index], headTilts[index], headSizes[index])
 //            tmp_y.push(eyeVals[index][0])
         });
-        x_vect = tf.tensor(x_vect, [x_vect.length, 2003])
+        x_vect = tf.tensor(x_vect, [x_vect.length, 2051])
     }
 
 //    y_vect = tf.tensor(tmp_y, [tmp_y.length, 1]);
@@ -198,8 +139,8 @@ function runPredsLive(){
     const t2 = tf.tensor(tmp2, [eyeData[1].length, inx, iny, 3])
 
     console.log(tf.memory());
-    predictions[0] = tf.tidy(() => {return mobnet.infer(t1).div(10).arraySync()});
-    predictions[1] = tf.tidy(() => {return mobnet.infer(t2).div(10).arraySync()});
+    predictions[0] = tf.tidy(() => {return mobnet.infer(t1, embedding = true).div(10).arraySync()});
+    predictions[1] = tf.tidy(() => {return mobnet.infer(t2, embedding = true).div(10).arraySync()});
     t1.dispose();
     t2.dispose();
 }
@@ -208,12 +149,12 @@ function runPredsLive(){
 async function startLivePrediction(){
     if (newFrame){
         curPred = tf.tidy(() => {
-                temp_x = [].concat(mobnet.infer(curEye[0]).div(10).arraySync()[0],
-                           mobnet.infer(curEye[1]).div(10).arraySync()[0],
+                temp_x = [].concat(mobnet.infer(curEye[0], embedding = true).div(10).arraySync()[0],
+                           mobnet.infer(curEye[1], embedding = true).div(10).arraySync()[0],
                            curHeadTilt,
                            curHeadSize);
 //                return [eyeModel.predict(tf.tensor(temp_x, [1, 2003])).arraySync()[0],.5];
-                return eyeModel.predict(tf.tensor(temp_x, [1, 2003])).arraySync()[0];
+                return eyeModel.predict(tf.tensor(temp_x, [1, 2051])).arraySync()[0];
 //                tmp = [eyeModel.transform(temp_x),eyeModel2.transform(temp_x)];
 //                return tmp
             });

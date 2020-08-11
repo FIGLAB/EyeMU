@@ -1,4 +1,9 @@
 Aug 9
+Changed model to use mobilenet embeddings (v1 has embeddings of len 1024, toggleable with .infer(im, embedding=true)). Performance seems about equivalent.
+
+
+
+Aug 8
 WASM breakthrough, turns out shallow neural network training works but anything with hidden layers is OUT. Such a silly bug... Now that it's fixed, we can move on to improving existing model.
 Need to up calib rounds and standardize num pics taken at each point. Should take a bit of juggling.
 
