@@ -55,13 +55,13 @@ function getFacePitch(mesh){
     //Use two points on forehead because it has a z normal vector
     pitch=Math.atan((mesh[10][2]-mesh[8][2])/(mesh[8][1]-mesh[10][1]));
     return pitch;
-}
+};
 
-function getFaceSize(pred){
-    [head_top, head_left] =  prediction.boundingBox.topLeft[0];
-    [head_bot, head_right] = prediction.boundingBox.bottomRight[0];
+function getFaceSize(bb){
+    [head_top, head_left] = bb.topLeft[0];
+    [head_bot, head_right] = bb.bottomRight[0];
     return (head_bot-head_top)*(head_right-head_left)/(videoWidth*videoHeight)/3;
-}
+};
 
 
 // Convenience function for finding the bounding box of an xy array
@@ -171,9 +171,9 @@ async function eyeSelfie(continuous){
 
         // store head yaw and pitch, also the ground truth dot location
         const nowVals = [X/screen.width, Y/screen.height];
-//        const nowVals = [0,0];
         const nowHeadAngles = [getFacePitch(prediction.mesh), getFaceYaw(prediction.mesh)];
-        const headSize = getFaceSize(prediction)
+        const headSize = getFaceSize(prediction.boundingBox);
+//        const headSize = 0
 
 
         Promise.all([
@@ -223,8 +223,8 @@ async function collectmain() {
     canvas.height = 200;
     ctx = canvas.getContext('2d');
 
-//    drawWebcam();
-//    setTimeout((() => {eyeSelfie(true)}), 100);
+    drawWebcam();
+    setTimeout((() => {eyeSelfie(true)}), 100);
     renderPrediction();
     console.log("after model load");
 }

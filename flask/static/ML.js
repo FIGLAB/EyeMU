@@ -37,12 +37,7 @@ function boostedModel(){
 function lastFewLayersModel(){
     const model = tf.sequential({
         layers: [
-//        tf.layers.dense({inputShape: [2003], units: 30, activation: 'relu'}),
-//        tf.layers.dense({units: 2})
-
-        tf.layers.dense({inputShape: [2003], units: 2}),
-//        tf.layers.dense({units: 50, activation: 'relu'}),
-
+        tf.layers.dense({inputShape: [2051], units: 2}),
         ]
     });
 
@@ -50,16 +45,19 @@ function lastFewLayersModel(){
     return model
 }
 
-function regressionModel(){
+
+function lastFewLayersClassificationModel(){
     const model = tf.sequential({
         layers: [
-        tf.layers.dense({inputShape: [2003], units: 1}),
+        tf.layers.dense({inputShape: [2051], units: 2}),
+        tf.layers.softmax(),
         ]
     });
 
     model.summary();
     return model
 }
+
 
 function rescaleIms(eyeImsArray){
     const shape = [eyeImsArray.length, iny, inx, 1]

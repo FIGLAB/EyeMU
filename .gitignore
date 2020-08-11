@@ -2,3 +2,4 @@ flask/build/*
 .DS_Store
 *.iml
 *.xml
+gazecapturedata/eye_tracker_train_and_val.npz
