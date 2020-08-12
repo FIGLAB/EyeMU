@@ -59,10 +59,11 @@ function getFacePitch(mesh){
 };
 
 function getFaceSize(bb){
-    head_top = bb.topLeft[0][0];
-    head_left = bb.topLeft[0][1];
-    head_bot = bb.bottomRight[0][0];
-    head_right = bb.bottomRight[0][1];
+    head_top = bb.topLeft[0];
+    head_left = bb.topLeft[1];
+    head_bot = bb.bottomRight[0];
+    head_right = bb.bottomRight[1];
+
     return (head_bot-head_top)*(head_right-head_left)/(videoWidth*videoHeight)/3;
 };
 
