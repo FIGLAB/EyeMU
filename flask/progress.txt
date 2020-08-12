@@ -1,3 +1,8 @@
+Aug 11
+Changed faceSize function because [x,y] = function() isn't acceptable in js anymore or something.
+Switched to classification of the 9 points, didn't work. Also noticed there's a point missing from the calibration dataset. Going to add back later, since I know it's going to screw some stuff up that relies on that index.
+
+
 Aug 9
 Changed model to use mobilenet embeddings (v1 has embeddings of len 1024, toggleable with .infer(im, embedding=true)). Performance seems about equivalent.
 
