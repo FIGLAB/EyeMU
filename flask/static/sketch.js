@@ -4,8 +4,8 @@ var n_calib_rounds = 1;
 var radius = 50.0;
 var X, Y;
 var nX, nY;
-var delay = 8; //25
-var moveDelay = 50; //120
+var delay = 8;
+var moveDelay = 30;
 var calib_counter = 0;
 var calib_rounds = 0;
 var train = true;
@@ -59,6 +59,7 @@ function draw(){
             // Draw circle
             ellipse( X, Y, radius, radius );
 
+            // Take a certain # of photos at each location
             if (((Math.abs(nX-X) + Math.abs(nY-Y)) < 30) &&
                  (eyeData[0].length < (calib_counter + 8*calib_rounds)*num_ims_per_location)){
                 eyeSelfie(false);

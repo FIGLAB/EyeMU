@@ -41,17 +41,17 @@ async function trainModel(){
         colorEyeData2tensor();
     }
 
-//    eyeModel = lastFewLayersClassificationModel()
-    eyeModel = lastFewLayersModel()
+    eyeModel = lastFewLayersClassificationModel()
+//    eyeModel = lastFewLayersModel()
     dadam = tf.train.adam(lr);
 
     eyeModel.compile({
       optimizer: dadam,
-      loss: 'meanSquaredError',
-      metrics: ['mae', 'mse']
+//      loss: 'meanSquaredError',
+//      metrics: ['mae', 'mse']
 //      loss: tf.losses.sigmoidCrossEntropy,
-//      loss: tf.losses.softmaxCrossEntropy,
-//      metrics: ['categoricalAccuracy']
+      loss: 'categoricalCrossentropy',
+      metrics: ['accuracy']
     });
     console.log("after model init");
 
@@ -65,8 +65,9 @@ async function trainModel(){
         x_vect = tf.tensor(x_vect, [x_vect.length, 2051])
     }
 
-//    y_vect = tf.tensor(tmp_y, [tmp_y.length, 1]);
-    y_vect = tf.tensor(eyeVals, [eyeVals.length, 2]);
+//    y_vect = tf.tensor(eyeVals, [eyeVals.length, 2]);
+    y_vect = tf.oneHot(eyePositions, 9);
+    console.log(y_vect.arraySync());
     console.log("after data processing");
 
 
@@ -105,23 +106,6 @@ async function trainModel(){
 
      });
 
-//    await tf.setBackend('webgl');
-//    x_vect.dispose();
-//    y_vect.dispose();
-
-//    x_vect.forEach((item, index, arr) =>{
-//        x_vect[index][2003] = eyeVals[index][1];
-//    });
-//    console.log("after data processing 2");
-//    eyeModel2.fit(x_vect);
-//    console.log("after model 2 fit");
-
-
-//    done_with_training = true;
-//    curPred = [0.5, 0.5]
-//    setTimeout(startLivePrediction, 100);
-//    setTimeout(loop, 500);
-
 }
 
 // Generate mobilenet predictions on our training data
@@ -137,10 +121,12 @@ function runPredsLive(){
     console.log(tf.memory());
     const t1 = tf.tensor(tmp1, [eyeData[0].length, inx, iny, 3])
     const t2 = tf.tensor(tmp2, [eyeData[1].length, inx, iny, 3])
-
+=
     console.log(tf.memory());
-    predictions[0] = tf.tidy(() => {return mobnet.infer(t1, embedding = true).div(10).arraySync()});
-    predictions[1] = tf.tidy(() => {return mobnet.infer(t2, embedding = true).div(10).arraySync()});
+//    predictions[0] = tf.tidy(() => {return mobnet.infer(t1).div(10).arraySync()});
+    predictions[0] = tf.tidy(() => {return mobnet.infer(t1, embedding = true).arraySync()});
+//    predictions[1] = tf.tidy(() => {return mobnet.infer(t2).div(10).arraySync()});
+    predictions[1] = tf.tidy(() => {return mobnet.infer(t2, embedding = true).arraySync()});
     t1.dispose();
     t2.dispose();
 }
@@ -149,11 +135,10 @@ function runPredsLive(){
 async function startLivePrediction(){
     if (newFrame){
         curPred = tf.tidy(() => {
-                temp_x = [].concat(mobnet.infer(curEye[0], embedding = true).div(10).arraySync()[0],
-                           mobnet.infer(curEye[1], embedding = true).div(10).arraySync()[0],
+                temp_x = [].concat(mobnet.infer(curEye[0], embedding = true).arraySync()[0],
+                           mobnet.infer(curEye[1], embedding = true).arraySync()[0],
                            curHeadTilt,
                            curHeadSize);
-//                return [eyeModel.predict(tf.tensor(temp_x, [1, 2003])).arraySync()[0],.5];
                 return eyeModel.predict(tf.tensor(temp_x, [1, 2051])).arraySync()[0];
 //                tmp = [eyeModel.transform(temp_x),eyeModel2.transform(temp_x)];
 //                return tmp

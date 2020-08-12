@@ -7,6 +7,7 @@ var newFrame = true;
 // x and y vects
 var eyeData = [[],[]];
 var eyeVals = [];
+var eyePositions = [];
 var headTilts =[];
 var headSizes = [];
 var head_top, head_left, head_bot, head_right;
@@ -58,8 +59,10 @@ function getFacePitch(mesh){
 };
 
 function getFaceSize(bb){
-    [head_top, head_left] = bb.topLeft[0];
-    [head_bot, head_right] = bb.bottomRight[0];
+    head_top = bb.topLeft[0][0];
+    head_left = bb.topLeft[0][1];
+    head_bot = bb.bottomRight[0][0];
+    head_right = bb.bottomRight[0][1];
     return (head_bot-head_top)*(head_right-head_left)/(videoWidth*videoHeight)/3;
 };
 
@@ -171,6 +174,7 @@ async function eyeSelfie(continuous){
 
         // store head yaw and pitch, also the ground truth dot location
         const nowVals = [X/screen.width, Y/screen.height];
+        const nowPos = calib_counter-1; // To start at zero
         const nowHeadAngles = [getFacePitch(prediction.mesh), getFaceYaw(prediction.mesh)];
         const headSize = getFaceSize(prediction.boundingBox);
 //        const headSize = 0
@@ -188,6 +192,7 @@ async function eyeSelfie(continuous){
                 curHeadSize = headSize;
             } else{
                 eyeVals.push(nowVals);
+                eyePositions.push(nowPos);
                 headTilts.push(nowHeadAngles)
                 headSizes.push(headSize)
             }
@@ -223,8 +228,8 @@ async function collectmain() {
     canvas.height = 200;
     ctx = canvas.getContext('2d');
 
-    drawWebcam();
-    setTimeout((() => {eyeSelfie(true)}), 100);
+//    drawWebcam();
+//    setTimeout((() => {eyeSelfie(true)}), 100);
     renderPrediction();
     console.log("after model load");
 }
