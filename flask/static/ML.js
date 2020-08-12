@@ -49,8 +49,8 @@ function lastFewLayersModel(){
 function lastFewLayersClassificationModel(){
     const model = tf.sequential({
         layers: [
-        tf.layers.dense({inputShape: [2051], units: 2}),
-        tf.layers.softmax(),
+//        tf.layers.dense({inputShape: [2051], units: 9, activation: 'softmax'}),
+        tf.layers.dense({inputShape: [2051], units: 9}),
         ]
     });
 
