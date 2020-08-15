@@ -10,6 +10,8 @@ var eyeVals = [];
 var eyePositions = [];
 var headTilts =[];
 var headSizes = [];
+var headMeshes = [];
+
 var head_top, head_left, head_bot, head_right;
 var curLen = 0;
 
@@ -17,17 +19,25 @@ var curLen = 0;
 var curEye = []
 var curHeadTilt = [];
 var curHeadSize = 0;
+var curHeadMesh = [];
 var prediction;
 
+
 // Resize eyeballs to this size
-var inx = 50;
+var inx = 100;
 var iny = 50;
 
 // Canvas variables
+var ctx2;
+var videoCanvas;
+
 var ctx;
 var canvas;
+
 var rBB;
 var lBB;
+var xScale;
+var yScale;
 
 // Machine learning things
 var eyeModel;
@@ -68,7 +78,8 @@ function getFaceSize(bb){
 };
 
 
-// Convenience function for finding the bounding box of an xy array
+// Convenience function for finding the bounding box of an xy array.
+// returns: [left, right, top, bottom]
 function maxminofXY(array){
     const xs = [];
     const ys = [];
@@ -99,6 +110,8 @@ async function setupCamera() {
     'audio': false,
     'video': {
       facingMode: 'user',
+      width: { ideal: 4096 },
+      height: { ideal: 2160 }
     },
   });
   video.srcObject = stream;
@@ -112,13 +125,14 @@ async function setupCamera() {
 
 async function drawWebcam(){
     // Draw face onto canvas 2d context
-    ctx.drawImage(video, 0, webcamOffset, videoWidth, videoHeight);
+    ctx2.drawImage(video, 0, 0, videoCanvas.width, videoCanvas.height);
     requestAnimationFrame(drawWebcam);
 }
 
 // Calls face mesh on the video and outputs the bounding boxes to global vars
 async function renderPrediction() {
-    const facepred = await fmesh.estimateFaces(video);
+    const facepred = await fmesh.estimateFaces(videoCanvas);
+//    const facepred = await fmesh.estimateFaces(video);
 
     if (facepred.length > 0) {
         // If we find a face, proceed with first and only prediction
@@ -128,9 +142,23 @@ async function renderPrediction() {
         right_eyebox = (prediction.annotations.rightEyeUpper0).concat(prediction.annotations.rightEyeLower0);
         left_eyebox = (prediction.annotations.leftEyeUpper0).concat(prediction.annotations.leftEyeLower0);
 
-        // find bounding boxes
+        // find bounding boxes [left, right, top, bottom]
         rBB = maxminofXY(right_eyebox);
         lBB = maxminofXY(left_eyebox);
+
+
+        rBB[0] = rBB[0]*xScale;
+        rBB[1] = rBB[1]*xScale;
+        rBB[2] = rBB[2]*yScale;
+        rBB[3] = rBB[3]*yScale;
+
+        lBB[0] = lBB[0]*xScale;
+        lBB[1] = lBB[1]*xScale;
+        lBB[2] = lBB[2]*yScale;
+        lBB[3] = lBB[3]*yScale;
+
+
+        document.getElementById("videostats").innerHTML = "Video size: " + videoWidth + " x " + videoHeight + " eyeSize: " + Math.round(rBB[1]-rBB[0]) + " x " + Math.round(rBB[3]-rBB[2]);
     }
     setTimeout(requestAnimationFrame(renderPrediction), 100);
 //    requestAnimationFrame(renderPrediction)
@@ -178,6 +206,7 @@ async function eyeSelfie(continuous){
         const nowPos = calib_counter-1; // To start at zero
         const nowHeadAngles = [getFacePitch(prediction.mesh), getFaceYaw(prediction.mesh)];
         const headSize = getFaceSize(prediction.boundingBox);
+        const headMesh = JSON.parse(JSON.stringify(prediction.mesh));
 //        const headSize = 0
 
 
@@ -191,11 +220,13 @@ async function eyeSelfie(continuous){
             if (continuous){
                 curHeadTilt = nowHeadAngles;
                 curHeadSize = headSize;
+                curHeadMesh = headMesh;
             } else{
                 eyeVals.push(nowVals);
                 eyePositions.push(nowPos);
                 headTilts.push(nowHeadAngles)
                 headSizes.push(headSize)
+                headMeshes.push(headMesh);
             }
             drawCache(continuous);
         });
@@ -223,13 +254,24 @@ async function collectmain() {
     videoWidth = video.videoWidth;
     videoHeight = video.videoHeight;
 
+    document.getElementById("videostats").innerHTML = videoWidth + " " + videoHeight;
+
     // Set up webcam canvas
     canvas = document.getElementById('eyecache');
     canvas.width = screen.width;
     canvas.height = 200;
     ctx = canvas.getContext('2d');
 
-//    drawWebcam();
+
+    videoCanvas = document.getElementById('streamcanvas');
+    videoCanvas.width = 640;
+    videoCanvas.height = 480;
+    ctx2 = videoCanvas.getContext('2d');
+
+    xScale = videoWidth/videoCanvas.width;
+    yScale = videoHeight/videoCanvas.height;
+
+    drawWebcam();
 //    setTimeout((() => {eyeSelfie(true)}), 100);
     renderPrediction();
     console.log("after model load");

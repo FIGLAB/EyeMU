@@ -1,7 +1,7 @@
 var n_calib_rounds = 1;
 
 // equal collection ims at each point
-var num_ims_per_location = 8;
+var num_ims_per_location = 5;
 var locations_traversed = 0;
 
 // Global variables
@@ -9,7 +9,7 @@ var radius = 50.0;
 var X, Y;
 var nX, nY;
 var delay = 8;
-var moveDelay = num_ims_per_location*4;
+var moveDelay = num_ims_per_location*8;
 var calib_counter = 0;
 var calib_rounds = 0;
 var train = true;
@@ -61,6 +61,7 @@ function draw(){
 
             // Draw circle
             ellipse( X, Y, radius, radius );
+//            console.log(calib_counter);
 
             // Take a certain # of photos at each location
             if (((Math.abs(nX-X) + Math.abs(nY-Y)) < 30) &&
@@ -68,6 +69,7 @@ function draw(){
                 eyeSelfie(false);
                 console.log(eyeData[0].length);
             }
+
 
             if(frameCount%moveDelay==0){
                 // Take photo of eye
@@ -79,12 +81,12 @@ function draw(){
               if (calib_counter > 8){
                 calib_counter = 0;
                 calib_rounds = calib_rounds + 1;
-                if (calib_rounds % 2 == 0){
-                  nx_arr.reverse();
-                }
-                else{
-                  ny_arr.reverse();
-                }
+//                if (calib_rounds % 2 == 0){
+//                  nx_arr.reverse();
+//                }
+//                else{
+//                  ny_arr.reverse();
+//                }
               }
             }
         }

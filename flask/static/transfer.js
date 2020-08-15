@@ -19,6 +19,8 @@ var batchSize = 100;
 
 // Current prediction
 var curPred
+var doingClassification = false;
+var expose;
 
 function getAccel(){
 DeviceMotionEvent.requestPermission()
@@ -41,17 +43,25 @@ async function trainModel(){
         colorEyeData2tensor();
     }
 
-    eyeModel = lastFewLayersClassificationModel()
-//    eyeModel = lastFewLayersModel()
-    dadam = tf.train.adam(lr);
 
-    eyeModel.compile({
-      optimizer: dadam,
-//      loss: 'meanSquaredError',
-//      metrics: ['mae', 'mse']
-      loss: 'categoricalCrossentropy',
-      metrics: ['accuracy']
-    });
+
+    dadam = tf.train.adam(lr);
+    if (doingClassification){
+        eyeModel = lastFewLayersClassificationModel()
+        eyeModel.compile({
+          optimizer: dadam,
+          loss: 'categoricalCrossentropy',
+          metrics: ['accuracy']
+        });
+    } else{
+        eyeModel = lastFewLayersModel()
+        eyeModel.compile({
+          optimizer: dadam,
+          loss: 'meanSquaredError',
+          metrics: ['mae', 'mse']
+        });
+    }
+
     console.log("after model init");
 
     // x_vect is the left eye pred, right eye pred, head yaw and pitch, and headsize
@@ -64,8 +74,12 @@ async function trainModel(){
         x_vect = tf.tensor(x_vect, [x_vect.length, 2051])
     }
 
-//    y_vect = tf.tensor(eyeVals, [eyeVals.length, 2]);
-    y_vect = tf.oneHot(eyePositions, 9);
+    if (doingClassification){
+        y_vect = tf.oneHot(eyePositions, 9);
+    } else{
+        y_vect = tf.tensor(eyeVals, [eyeVals.length, 2]);
+    }
+
 
     console.log("after data processing");
     console.log(x_vect.arraySync());
@@ -140,10 +154,16 @@ async function startLivePrediction(){
                            mobnet.infer(curEye[1], embedding = true).arraySync()[0],
                            curHeadTilt,
                            curHeadSize);
-//                return eyeModel.predict(tf.tensor(temp_x, [1, 2051])).arraySync()[0];
-                const outputVec = eyeModel.predict(tf.tensor(temp_x, [1, 2051]));
-                const ind = outputVec.argMax(1).arraySync()[0];
-                return [nx_arr[ind]/screen.width, ny_arr[ind]/screen.height];
+
+                if (doingClassification){
+                    const outputVec = eyeModel.predict(tf.tensor(temp_x, [1, 2051]));
+                    const ind = outputVec.argMax(1).arraySync()[0];
+                    expose = ind
+                    console.log(ind);
+                    return [nx_arr[ind]/screen.width, ny_arr[ind]/screen.height];
+                } else{
+                    return eyeModel.predict(tf.tensor(temp_x, [1, 2051])).arraySync()[0];
+                }
             });
         newFrame = false;
     }
