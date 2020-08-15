@@ -1,6 +1,18 @@
+Aug 13
+Added higher resolution capture, slows down facemesh continuous execution considerably. I can capture two video resolutions however, and feed one into facemesh to scale up to get higher resolution eye pictures. Pretty cool actually.
+Added copying of the face mesh points to the data capture. Need to incorporate into the training.
+
+TODO:
+try to convert the Caffe iTracker models into TF, into TF.js
+Add face mesh points to the classifier features and training
+channel video2 into face mesh, then scale up the points for the capture.
+
+
 Aug 11
 Changed faceSize function because [x,y] = function() isn't acceptable in js anymore or something.
-Switched to classification of the 9 points, didn't work. Also noticed there's a point missing from the calibration dataset. Going to add back later, since I know it's going to screw some stuff up that relies on that index.
+Switched to classification of the 9 points, didn't work better. Also noticed there's a point missing from the calibration dataset. Going to add back later, since I know it's going to screw some stuff up that relies on that index.
+Added variable to switch from classifier to regressor
+Doesn't work on phone for some reason. Gotta test and compare with regression later.
 
 
 Aug 9
