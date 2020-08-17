@@ -24,8 +24,8 @@ var prediction;
 
 
 // Resize eyeballs to this size
-var inx = 100;
-var iny = 50;
+var inx = 224;
+var iny = 224;
 
 // Canvas variables
 var ctx2;
@@ -264,15 +264,15 @@ async function collectmain() {
 
 
     videoCanvas = document.getElementById('streamcanvas');
-    videoCanvas.width = 640;
-    videoCanvas.height = 480;
+    videoCanvas.width = 320;
+    videoCanvas.height = 240;
     ctx2 = videoCanvas.getContext('2d');
 
     xScale = videoWidth/videoCanvas.width;
     yScale = videoHeight/videoCanvas.height;
 
-    drawWebcam();
 //    setTimeout((() => {eyeSelfie(true)}), 100);
+    drawWebcam();
     renderPrediction();
     console.log("after model load");
 }
