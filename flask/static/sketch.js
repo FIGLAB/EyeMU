@@ -1,7 +1,7 @@
 var n_calib_rounds = 1;
 
 // equal collection ims at each point
-var num_ims_per_location = 5;
+var num_ims_per_location = 6;
 var locations_traversed = 0;
 
 // Global variables
@@ -32,8 +32,8 @@ function setup(){
     nX = X;
     nY = Y;
 
-    nx_arr = [width/2, 9*width/10, width/10,9*width/10,width/2,width/10,width/2,width/10,9*width/10];
-    ny_arr = [height/10, 9*height/10, height/2,height/10,height/2,9*height/10,9*height/10,height/10,height/2];
+    nx_arr = [width/2, 9*width/10, width/10,9*width/10,width/2,width/10,width/2,width/10,9*width/10, 9*width/10];
+    ny_arr = [height/10, 9*height/10, height/2,height/10,height/2,9*height/10,9*height/10,height/10,height/2, height/2];
 }
 
 // Main draw loop
@@ -49,7 +49,31 @@ function draw(){
     stroke(255);
 
     if (done_with_training && curPred != undefined){
-        ellipse(curPred[0]*screen.width, curPred[1]*screen.height, radius, radius);
+        // big blue circle for the user to track
+        fill( 0, 121, 184 );
+        radius = radius + sin( frameCount / 4 );
+
+        // Track circle to new destination
+        X+=(nX-X)/delay;
+        Y+=(nY-Y)/delay;
+
+        // Draw circle
+        ellipse(X, Y, radius, radius);
+
+        if(frameCount % moveDelay==0){
+            nX = nx_arr[calib_counter];
+            nY = ny_arr[calib_counter];
+            calib_counter = calib_counter + 1;
+            if (calib_counter > 9){
+                calib_counter = 0;
+                calib_rounds = calib_rounds + 1;
+            }
+        }
+
+        // small orange circle for prediction
+        fill(204, 102, 0);
+        ellipse(curPred[0]*screen.width, curPred[1]*screen.height, radius/2, radius/2);
+
     } else if (rBB != undefined){
         if (calib_rounds < n_calib_rounds){
 
@@ -72,21 +96,12 @@ function draw(){
 
 
             if(frameCount%moveDelay==0){
-                // Take photo of eye
-//                eyeSelfie(false);
-
               nX = nx_arr[calib_counter];
               nY = ny_arr[calib_counter];
               calib_counter = calib_counter + 1;
-              if (calib_counter > 8){
+              if (calib_counter > 9){
                 calib_counter = 0;
                 calib_rounds = calib_rounds + 1;
-//                if (calib_rounds % 2 == 0){
-//                  nx_arr.reverse();
-//                }
-//                else{
-//                  ny_arr.reverse();
-//                }
               }
             }
         }

@@ -19,7 +19,7 @@ var batchSize = 100;
 
 // Current prediction
 var curPred
-var doingClassification = false;
+var doingClassification = true;
 var expose;
 
 function getAccel(){
@@ -133,7 +133,6 @@ function runPredsLive(){
         tmp2.push(tf.tidy(() => {return eyeData[1][i].arraySync()}));
     }
 
-    console.log(tf.memory());
     const t1 = tf.tensor(tmp1, [eyeData[0].length, inx, iny, 3]);
     const t2 = tf.tensor(tmp2, [eyeData[1].length, inx, iny, 3]);
 
@@ -142,6 +141,8 @@ function runPredsLive(){
     predictions[0] = tf.tidy(() => {return mobnet.infer(t1, embedding = true).arraySync()});
 //    predictions[1] = tf.tidy(() => {return mobnet.infer(t2).div(10).arraySync()});
     predictions[1] = tf.tidy(() => {return mobnet.infer(t2, embedding = true).arraySync()});
+
+    console.log(tf.memory());
     t1.dispose();
     t2.dispose();
 }
@@ -159,7 +160,7 @@ async function startLivePrediction(){
                     const outputVec = eyeModel.predict(tf.tensor(temp_x, [1, 2051]));
                     const ind = outputVec.argMax(1).arraySync()[0];
                     expose = ind
-                    console.log(ind);
+//                    console.log(ind);
                     return [nx_arr[ind]/screen.width, ny_arr[ind]/screen.height];
                 } else{
                     return eyeModel.predict(tf.tensor(temp_x, [1, 2051])).arraySync()[0];
