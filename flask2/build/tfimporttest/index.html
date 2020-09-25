@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GAZEL</title>
+    
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>-->
+<!-- Adds the WASM backend to the global backend registry -->
+<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/tf-backend-wasm.js"></script>-->
+
+<script>
+
+    async function main() {
+        const model = await tf.loadLayersModel('https://drive.google.com/file/d/1PhGwmBjEIViVPwNqZ2TiSnZ3wER-yrCc/view?usp=sharing');
+        model.summary();
+    }
+    main();
+
+
+
+
+</script>
+
+
+
+    <style>
+    .dot{
+        width: 52px;
+        height: 52px;
+        background-color: #f00;
+        border-radius: 50%;
+        position: fixed;
+    }
+    
+    .predicdot{
+        width: 30px;
+        height: 30px;
+        background-color: #ffab56;
+        border-radius: 50%;
+        position:fixed;
+    }
+    </style>
+
+</head>
+<body style="background-color:powderblue;">
+
+
+
+<div id="main">
+    <div class="container">
+      <div class="canvas-wrapper">
+        <canvas id="output"></canvas>
+        <video id="video" playsinline style="
+          -webkit-transform: scaleX(-1);
+          transform: scaleX(-1);
+          visibility: hidden;
+          width: auto;
+          height: auto;
+          ">
+        </video>
+      </div>
+      <div id="scatter-gl-container"></div>
+        <button type="button" onclick="saveEyes()">Save Eyes</button>
+
+
+        <br><br>
+        <canvas id="eyecache"></canvas>
+
+
+    </div>
+  </div>
+
+
+
+</body>
+</html>

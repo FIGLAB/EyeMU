@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block headextra %}
+<!-- Tensorflow core, model, and backend-->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/tf-backend-wasm.js"></script>
+
+<!-- Javascript specific to this page -->
+<script src="{{url_for('static', filename='ML.js')}}"></script>
+<script src="{{url_for('static', filename='fileIO.js')}}"></script>
+<script src="{{url_for('static', filename='dotgenerator.js')}}"></script>
+<script src="{{url_for('static', filename='collection.js')}}"></script>
+
+
+<script>
+    waitForIt();
+</script>
+
+{% endblock %}
+
+
+{% block body %}
+
+<div id="main">
+    <p id="ImageCounter">Images this session: 0</p>
+    <button onclick="dotgenerator()">Start Dots</button>
+    <button onclick="dotStopper()">Stop Dots</button>
+    <button onclick="dotChangeXY()">Change XY</button>
+    <button id="eyeDataFile">Download eyeData</button>
+
+    <button onclick="getAccel()">get Accel</button>
+
+    <br><br>
+
+<!--    <button type="button" onclick="saveEyes()">Save Eyes</button>-->
+<!--    <button type="button" onclick="trainModel()">Train Model</button>-->
+<!--    <button type="button" onclick="saveModel()">Save Model</button>-->
+<!--    <input type="file" accept="application/json" id="eyeData" multiple onchange='openFile(event)'></input>-->
+<!--    <button type="button" onclick="testModel()">test Model</button>-->
+
+
+    <p>Prediction: </p> <p id="prediction"></p>
+
+    <p id="lastXY">last XY coordinates: </p>
+
+        <br><br>
+            <canvas id="eyecache"></canvas>
+            <video autoplay muted playsinline id="video"  style="
+              -webkit-transform: scaleX(-1);
+              transform: scaleX(-1);
+              visibility: hidden;
+              width: auto;
+              height: auto;
+              ">
+            </video>
+
+
+  </div>
+
+
+{% endblock %}

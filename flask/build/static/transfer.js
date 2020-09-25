@@ -19,7 +19,7 @@ var batchSize = 100;
 
 // Current prediction
 var curPred
-var doingClassification = true;
+var doingClassification = false;
 var expose;
 
 function getAccel(){
@@ -163,7 +163,10 @@ async function startLivePrediction(){
 //                    console.log(ind);
                     return [nx_arr[ind]/screen.width, ny_arr[ind]/screen.height];
                 } else{
-                    return eyeModel.predict(tf.tensor(temp_x, [1, 2051])).arraySync()[0];
+                    const newPred = eyeModel.predict(tf.tensor(temp_x, [1, 2051])).arraySync()[0];
+
+                    return [curPred[0]+(newPred[0]-curPred[0])*.25,
+                                curPred[1]+(newPred[1]-curPred[1])*.25]
                 }
             });
         newFrame = false;
