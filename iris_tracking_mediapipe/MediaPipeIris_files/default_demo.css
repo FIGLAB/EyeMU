@@ -1,0 +1,131 @@
+.abs {
+  position: absolute;
+}
+
+a {
+  text-decoration: none;
+}
+
+body {
+  bottom: 0;
+  font-family: 'Titillium Web', sans-serif;
+  left: 0;
+  margin: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transform-origin: 0px 0px;
+}
+
+.fill {
+  width: 100%;
+}
+
+.hover-red {
+  border: 2px solid red;
+}
+
+#notch {
+  left: 0;
+}
+
+.message {
+  color: white;
+  font-size: 36px;
+  left: 0;
+  line-height: 46px;
+  position: absolute;
+  text-align: center;
+  top: 0;
+  width: 100%;
+}
+
+.message-bgfill {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.video-display {
+  position: relative;
+}
+
+.logo {
+  bottom: 10px;
+  right: 10px;
+}
+
+.logo span {
+  color: white;
+  font-size: 28px;
+}
+
+#output {
+  width: 100%;
+}
+
+#frame_notch {
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+#frame_interface {
+  background-color: #5f778c;
+  position: absolute;
+  width: 960px;
+}
+
+#frame_instructions {
+  align-items: center;
+  bottom: 0;
+  color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  font-size: 36px;
+  justify-content: center;
+  left: 12%;
+  pointer-events: none;
+  position: absolute;
+  right: 12%;
+  text-align: center;
+  top: 0;
+  visibility: hidden;
+}
+
+#frame_instructions p {
+  text-align: center;
+}
+
+.idle #frame_instructions {
+  visibility: visible;
+}
+
+.idle #single_output {
+  visibility: hidden;
+}
+
+#process_image_button {
+  left: 0;
+}
+
+.interface {
+  line-height: 0;
+}
+
+.controls {
+  background-color: black;
+  border-top: 1px solid #888;
+  padding-bottom: 5px;
+  padding-top: 5px;
+  position: relative;
+}
+
+.demo-selector {
+  background-color: rgba(10, 10, 10, 0.8);
+  color: white;
+  font-size: 14pt;
+  left: 10px;
+  position: relative;
+}

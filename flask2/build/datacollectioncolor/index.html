@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GAZEL</title>
+    
+<!-- Tensorflow core, model, and backend-->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/tf-backend-wasm.js"></script>
+
+<!-- Javascript specific to this page -->
+<script src="/static/ML.js"></script>
+<script src="/static/fileIO.js"></script>
+<script src="/static/dotgenerator.js"></script>
+<script src="/static/collectioncolor.js"></script>
+
+
+<script>
+    waitForIt();
+</script>
+
+
+
+    <style>
+    .dot{
+        width: 52px;
+        height: 52px;
+        background-color: #f00;
+        border-radius: 50%;
+        position: fixed;
+    }
+    
+    .predicdot{
+        width: 30px;
+        height: 30px;
+        background-color: #ffab56;
+        border-radius: 50%;
+        position:fixed;
+    }
+    </style>
+
+</head>
+<body style="background-color:powderblue;">
+
+
+<div id="main">
+    <p id="ImageCounter">Images this session: 0</p>
+    <button onclick="dotgenerator()">Start Dots</button>
+    <button onclick="dotStopper()">Stop Dots</button>
+    <button onclick="dotChangeXY()">Change XY</button>
+    <button id="eyeDataFile">Download eyeData</button>
+
+    <button onclick="getAccel()">get Accel</button>
+
+    <br><br>
+
+    <p>Prediction: </p> <p id="prediction"></p>
+
+    <p id="lastXY">last XY coordinates: </p>
+
+        <br><br>
+            <canvas style="display:none" id="eyecache"></canvas>
+            <video autoplay muted playsinline id="video"  style="
+              -webkit-transform: scaleX(-1);
+              transform: scaleX(-1);
+              visibility: hidden;
+              width: auto;
+              height: auto;
+              ">
+            </video>
+
+
+  </div>
+
+
+
+</body>
+</html>
