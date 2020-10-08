@@ -121,42 +121,13 @@ def getEyeCrops(im, eyeCorners):
     return l_eye, r_eye
 
 def doubleFilter(filepath):
+    g = open("doubleFilteredData.txt", "w+")
+
     with open(filepath, "r") as f:
         lines = f.read().split("\n")
 
-    newLines = []
-    for line in lines:
+    for i,line in enumerate(lines):
         # unpack the line of data, try to load in the image
-        tmp = line.strip()
-        tmpVals = tmp.split(",")
-        im = cv2.imread(tmpVals[0])
-        if im is None:
-            continue
-
-        # Extract the eye corners (xy, xy)
-        eyeCorners = getEyeCorners(im)
-        if not eyeCorners:
-            continue
-
-
-        newLines.append(line)
-        print(line, "is good")
-
-    with open("doubleFilteredData.txt", "w+") as f:
-        f.write("\n".join(newLines))
-
-
-
-# Creates a generator given a file with data paths listed in it
-def dataGenerator(filepath):
-    eyePicOutputSize = (128,128)
-
-    with open(filepath, "r") as f:
-        lines = f.read().split("\n")
-    random.shuffle(lines) # data order randomization
-
-    for line in lines:
-        # unpack the line of data, load in the image
         tmp = line.strip()
         tmpVals = tmp.split(",")
         im = cv2.imread(tmpVals[0])
@@ -169,11 +140,50 @@ def dataGenerator(filepath):
             continue
         eyeCorners = eyeCorners[:-1]
 
+        if i % 100 == 0:
+            print(line, "is good")
+
+        g.write(line + ",")
+        for (x,y) in eyeCorners:
+            g.write(str(x) + "," + str(y) + ",")
+        g.write("\n")
+
+    print("done!")
+    g.close()
+
+# doubleFilter("filteredDataXYHW.txt")
+
+import time
+# Creates a generator given a file with data paths listed in it
+def dataGenerator(filepath):
+    eyePicOutputSize = (128,128)
+
+    with open(filepath, "r") as f:
+        lines = f.read().split("\n")
+    random.shuffle(lines) # data order randomization
+
+    for line in lines:
+        # unpack the line of data, load in the image
+        now = time.time()
+        tmp = line.strip()
+        tmpVals = tmp.split(",")
+        im = cv2.imread(tmpVals[0])
+        if im is None:
+            continue
+        print('im import',time.time()-now)
+        now = time.time()
+
+        flatCorners = [int(x) for x in tmpVals[6:-1]]
+        eyeCorners = [flatCorners[i:i+2] for i in range(0, 8, 2)]
+
         # Extract eye boxes, resize to eyePicSize
         l_eye, r_eye = getEyeCrops(im, eyeCorners)
         l_eye = cv2.flip(l_eye, 1) # flip one eye crop horizontally to share NN weights
         l_eye = cv2.resize(l_eye, eyePicOutputSize).astype('float32')
         r_eye = cv2.resize(r_eye, eyePicOutputSize).astype('float32')
+
+        print('get eye crops', time.time() - now)
+        now = time.time()
 
         # normalize eye images by subtracting mean and dividing by std, per color channel
         # UPDATE: May not have to do this by integrating into the pipeline
@@ -193,10 +203,13 @@ def dataGenerator(filepath):
                  tf.reshape(r_eye, (1,128,128,3)),
                  eyeCorners.flatten().reshape((1,8))]
 
-        yield (x_out, np.array([dot_X, dot_Y]))
+        print('data massaging', time.time() - now)
 
+        yield (x_out, np.array([dot_X, dot_Y]))
+# a = dataGenerator("doubleFilteredData.txt")
 
 # a = dataGenerator("filteredDataXYHW.txt")
+# a = dataGenerator("doubleFilteredData.txt")
 # [x,y] = next(a)
 
 
