@@ -1,12 +1,6 @@
-import numpy as np
 from tensorflow import keras
 from tensorflow.keras import layers
 import tensorflow as tf
-import tensorflow.keras.backend as K
-
-def euclidean_distance_error(y_true, y_pred):
-    return K.sqrt(K.sum(K.square(y_pred - y_true), axis=-1))
-
 
 def makeModel():
     # Construct model architecture
@@ -80,9 +74,9 @@ def makeModel():
                                                                 decay_rate=.64,
                                                                 staircase=True)
     model.compile(
-        loss = euclidean_distance_error,
+        loss = keras.losses.MeanSquaredError(),
         optimizer = keras.optimizers.Adam(learning_rate=decayLearning),
-        metrics = [tf.keras.metrics.MeanSquaredError(), tf.keras.metrics.RootMeanSquaredError()]
+        metrics = [keras.metrics.MeanSquaredError(), tf.keras.metrics.RootMeanSquaredError()]
     )
 
     return model
