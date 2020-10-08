@@ -120,6 +120,33 @@ def getEyeCrops(im, eyeCorners):
 
     return l_eye, r_eye
 
+def doubleFilter(filepath):
+    with open(filepath, "r") as f:
+        lines = f.read().split("\n")
+
+    newLines = []
+    for line in lines:
+        # unpack the line of data, try to load in the image
+        tmp = line.strip()
+        tmpVals = tmp.split(",")
+        im = cv2.imread(tmpVals[0])
+        if im is None:
+            continue
+
+        # Extract the eye corners (xy, xy)
+        eyeCorners = getEyeCorners(im)
+        if not eyeCorners:
+            continue
+
+
+        newLines.append(line)
+        print(line, "is good")
+
+    with open("doubleFilteredData.txt", "w+") as f:
+        f.write("\n".join(newLines))
+
+
+
 # Creates a generator given a file with data paths listed in it
 def dataGenerator(filepath):
     eyePicOutputSize = (128,128)
@@ -137,9 +164,10 @@ def dataGenerator(filepath):
             continue
 
         # Extract the eye corners (xy, xy)
-        eyeCorners = getEyeCorners(im)[:-1]
+        eyeCorners = getEyeCorners(im)
         if not eyeCorners:
             continue
+        eyeCorners = eyeCorners[:-1]
 
         # Extract eye boxes, resize to eyePicSize
         l_eye, r_eye = getEyeCrops(im, eyeCorners)
@@ -160,17 +188,11 @@ def dataGenerator(filepath):
         # Normalize eye corners by the screen height and width
         eyeCorners = np.array([[x/screen_w, y/screen_h] for [x,y] in eyeCorners])
 
-
-        # yield x (eye crops, eye corners) and y (normalized
-        # outVec = [l_eye, r_eye, tf.convert_to_tensor(eyeCorners), tf.convert_to_tensor([dot_X, dot_Y])]
-        # print(outVec)
-        # yield outVec
-        # print("left eye stats", l_eye.shape, l_eye.dtype)
         x_out = [tf.reshape(tf.convert_to_tensor(l_eye), (1,128,128,3)),
-                 tf.reshape(tf.convert_to_tensor(r_eye), (1,128,128,3)),
+                 # tf.reshape(tf.convert_to_tensor(r_eye), (1,128,128,3)),
+                 tf.reshape(r_eye, (1,128,128,3)),
                  eyeCorners.flatten().reshape((1,8))]
 
-        # print((x_out[0].shape, x_out[1].shape, x_out[2].shape, np.array([dot_X, dot_Y])))
         yield (x_out, np.array([dot_X, dot_Y]))
 
 
@@ -178,8 +200,39 @@ def dataGenerator(filepath):
 # [x,y] = next(a)
 
 
-def lastPreprocessStep(filepath):
-    eyePicOutputSize = (128, 128)
-
-    with open(filepath, "r") as f:
-        lines = f.read().split("\n")
+# def lastPreprocessStep(filepath):
+#     eyePicOutputSize = (128, 128)
+#
+#     with open(filepath, "r") as f:
+#         lines = f.read().split("\n")
+#
+#     for line in lines:
+#         # unpack the line of data, load in the image
+#         tmp = line.strip()
+#         tmpVals = tmp.split(",")
+#         im = cv2.imread(tmpVals[0])
+#         if im is None:
+#             continue
+#
+#         # Extract the eye corners (xy, xy)
+#         eyeCorners = getEyeCorners(im)[:-1]
+#         if not eyeCorners:
+#             continue
+#
+#         # Extract eye boxes, resize to eyePicSize
+#         l_eye, r_eye = getEyeCrops(im, eyeCorners)
+#         l_eye = cv2.flip(l_eye, 1) # flip one eye crop horizontally to share NN weights
+#         # l_eye = cv2.resize(l_eye, eyePicOutputSize).astype('float32')
+#         # r_eye = cv2.resize(r_eye, eyePicOutputSize).astype('float32')
+#
+#         # extract the dot ground truth, and normalize the xy of the dot location
+#         # dot is in XY, screen in HW (reversed)
+#         screen_h = float(tmpVals[3])
+#         screen_w = float(tmpVals[4])
+#         dot_X = float(tmpVals[1])/screen_w
+#         dot_Y = float(tmpVals[2])/screen_h
+#
+#         # Normalize eye corners by the screen height and width
+#         eyeCorners = np.array([[x/screen_w, y/screen_h] for [x,y] in eyeCorners])
+#
+#         yield (x_out, np.array([dot_X, dot_Y]))
