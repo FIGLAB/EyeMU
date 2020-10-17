@@ -76,7 +76,6 @@ function draw(){
 
     } else if (rBB != undefined){
         if (calib_rounds < n_calib_rounds){
-
             radius = radius + sin( frameCount / 4 );
 
             // Track circle to new destination
@@ -85,7 +84,6 @@ function draw(){
 
             // Draw circle
             ellipse( X, Y, radius, radius );
-//            console.log(calib_counter);
 
             // Take a certain # of photos at each location
             if (((Math.abs(nX-X) + Math.abs(nY-Y)) < 30) &&
@@ -112,10 +110,10 @@ function draw(){
             text('Training.....', width/3, height/2);
 
             console.log('calib done, training')
-            runPredsLive();
+//            runPredsLive();
 
             console.log('backend set to ', tf.getBackend())
-            trainModel();
+            trainNatureModel();
 
             eyeSelfie(true);
             noLoop();

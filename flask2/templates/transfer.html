@@ -3,14 +3,11 @@
 {% block headextra %}
 <!-- Tensorflow core, model, and backend-->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/tf-backend-wasm.js"></script>
+<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/tf-backend-wasm.js"></script>-->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>-->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
 
-
-<!-- External regression library -->
-<script src="https://rawgit.com/chen0040/js-regression/master/build/jsregression.min.js"></script>
 
 <!-- Javascript specific to this page -->
 <script src="{{url_for('static', filename='ML.js')}}"></script>
@@ -21,7 +18,7 @@
 
 <!-- Javascript for calibration -->
 <script src="https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/p5.js"></script>
-<script src="{{url_for('static', filename='sketch.js')}}"></script>
+<!--<script src="{{url_for('static', filename='sketch.js')}}"></script>-->
 
 <script>
     main();
@@ -33,7 +30,8 @@
 {% block body %}
 
 <div id="main">
-    <button type="button" onclick="trainModel()">Train Model</button>
+<!--    <button type="button" onclick="trainModel()">Train Model</button>-->
+    <button type="button" onclick="trainNatureModel()">Train Model</button>
     <button type="button" onclick="saveModel(eyeModel)">Save Model</button>
     <input type="file" accept="application/json" id="eyeData" multiple onchange='openFile(event)'></input>
     <button type="button" onclick="testModel()">test Model</button>

@@ -6,15 +6,21 @@ from tensorflow import keras
 
 print("tf has CUDA", tf.test.is_built_with_cuda())
 
-a = dataGenerator("filteredDataXYHW.txt")
+# a = dataGenerator("filteredDataXYHW.txt")
 
 model = makeModel()
 
 # Training loop
-epochs = 5
+epochs = 10
 batchSize = 10
 for i in range(epochs):
-    a = dataGenerator("filteredDataXYHW.txt")
-    model.fit(a, initial_epoch=i, batch_size=batchSize, verbose=True)
+    a = dataGenerator("doubleFilteredData.txt", batchSize = batchSize)
+    model.fit(a, verbose=True)
+
+
+    # model.save("checkpoints/curModel" + str(i))
+
+
 
 model.save("curModel")
+# tfjs.converters.save_keras_model(model2, "tfjsmodel")

@@ -93,7 +93,7 @@ def getEyeCorners(im):
     return pts
 
 # Gets the top left and bottom right cropping coordinates of a pair of eyecorners
-def eyeBoundsFromCorners(leftCorner, rightCorner, boundsIncrease = 4):
+def eyeBoundsFromCorners(leftCorner, rightCorner, boundsIncrease = 5):
     eyeLen = leftCorner[0] - rightCorner[0]
     xshift = eyeLen // boundsIncrease
     eyeLen += 2 * xshift
@@ -155,23 +155,24 @@ def doubleFilter(filepath):
 
 import time
 # Creates a generator given a file with data paths listed in it
-def dataGenerator(filepath):
+def dataGenerator(filepath, batchSize = 5):
     eyePicOutputSize = (128,128)
 
     with open(filepath, "r") as f:
         lines = f.read().split("\n")
     random.shuffle(lines) # data order randomization
 
+    batchHolder = []
     for line in lines:
         # unpack the line of data, load in the image
-        now = time.time()
+        # now = time.time()
         tmp = line.strip()
         tmpVals = tmp.split(",")
         im = cv2.imread(tmpVals[0])
         if im is None:
             continue
-        print('im import',time.time()-now)
-        now = time.time()
+        # print('im import',time.time()-now)
+        # now = time.time()
 
         flatCorners = [int(x) for x in tmpVals[6:-1]]
         eyeCorners = [flatCorners[i:i+2] for i in range(0, 8, 2)]
@@ -179,14 +180,12 @@ def dataGenerator(filepath):
         # Extract eye boxes, resize to eyePicSize
         l_eye, r_eye = getEyeCrops(im, eyeCorners)
         l_eye = cv2.flip(l_eye, 1) # flip one eye crop horizontally to share NN weights
-        l_eye = cv2.resize(l_eye, eyePicOutputSize).astype('float32')
-        r_eye = cv2.resize(r_eye, eyePicOutputSize).astype('float32')
 
-        print('get eye crops', time.time() - now)
-        now = time.time()
+        l_eye = cv2.resize(l_eye, eyePicOutputSize)
+        r_eye = cv2.resize(r_eye, eyePicOutputSize)
 
-        # normalize eye images by subtracting mean and dividing by std, per color channel
-        # UPDATE: May not have to do this by integrating into the pipeline
+        # print('get eye crops', time.time() - now)
+        # now = time.time()
 
         # extract the dot ground truth, and normalize the xy of the dot location
         # dot is in XY, screen in HW (reversed)
@@ -195,18 +194,58 @@ def dataGenerator(filepath):
         dot_X = float(tmpVals[1])/screen_w
         dot_Y = float(tmpVals[2])/screen_h
 
-        # Normalize eye corners by the screen height and width
-        eyeCorners = np.array([[x/screen_w, y/screen_h] for [x,y] in eyeCorners])
+        h,w,_ = im.shape
+        # Normalize eye corners by the image height and width
+        eyeCorners = np.array([[x/w, y/h] for [x,y] in eyeCorners])
 
-        x_out = [tf.reshape(tf.convert_to_tensor(l_eye), (1,128,128,3)),
-                 # tf.reshape(tf.convert_to_tensor(r_eye), (1,128,128,3)),
-                 tf.reshape(r_eye, (1,128,128,3)),
-                 eyeCorners.flatten().reshape((1,8))]
+        # x_out = [tf.reshape(tf.convert_to_tensor(l_eye), (1,128,128,3)),
+        #          # tf.reshape(tf.convert_to_tensor(r_eye), (1,128,128,3)),
+        #          tf.reshape(r_eye, (1,128,128,3)),
+        #          eyeCorners.flatten().reshape((1,8))]
 
-        print('data massaging', time.time() - now)
+        x_out = [l_eye,
+                 r_eye,
+                 eyeCorners.flatten()]
 
-        yield (x_out, np.array([dot_X, dot_Y]))
-# a = dataGenerator("doubleFilteredData.txt")
+        # print("tmpvals", tmpVals)
+        # print(im.shape)
+        # print(eyeCorners)
+        # print([dot_X, dot_Y])
+        #
+        # cv2.imshow("im", l_eye)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+        #
+        # cv2.imshow("im", r_eye)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+
+        batchHolder.append([x_out, [dot_X, dot_Y]])
+        # print("append time", time.time()-now)
+
+        if len(batchHolder) == batchSize:
+            now = time.time()
+            x_vec = [x[0] for x in batchHolder]
+            # l_eyes = tf.reshape([x[0] for x in x_vec], (batchSize, 128, 128, 3))
+            # r_eyes = tf.reshape([x[1] for x in x_vec], (batchSize, 128, 128, 3))
+            # eye_corners = tf.reshape([x[2] for x in x_vec], (batchSize, 8))
+            l_eyes = np.array([x[0] for x in x_vec])
+            r_eyes = np.array([x[1] for x in x_vec])
+            eye_corners = np.array([x[2] for x in x_vec])
+
+            y_vec = [x[1] for x in batchHolder]
+            # y_vec = tf.reshape(y_vec, (batchSize, 2))
+            y_vec = np.array(y_vec)
+
+            print('reshape time', time.time()-now)
+            yield ([l_eyes, r_eyes, eye_corners], y_vec)
+            # yield (x_vec, y_vec)
+            batchHolder = []
+
+a = dataGenerator("doubleFilteredData.txt", batchSize=256)
+now = time.time()
+b = next(a)
+print(time.time()-now)
 
 # a = dataGenerator("filteredDataXYHW.txt")
 # a = dataGenerator("doubleFilteredData.txt")
@@ -249,3 +288,24 @@ def dataGenerator(filepath):
 #         eyeCorners = np.array([[x/screen_w, y/screen_h] for [x,y] in eyeCorners])
 #
 #         yield (x_out, np.array([dot_X, dot_Y]))
+
+
+
+# from tensorflow import keras
+#
+# def importModel(modelPath):
+#     model = keras.models.load_model(modelPath)
+#     return model
+#
+# natureModel = importModel("/Users/andykong/Dropbox/archive/newBNlocation/")
+#
+# for i in range(10):
+#     n = 1
+#     inVec = [np.random.rand(n,128,128,3),
+#                          np.random.rand(n,128,128,3),
+#                          np.random.rand(n,8)]
+#     print(inVec[0][0][0][0], inVec[2])
+#     outVec = [np.random.rand(n,2)]
+#     res = natureModel.fit(inVec, outVec)
+#     print(res)
+#     print()

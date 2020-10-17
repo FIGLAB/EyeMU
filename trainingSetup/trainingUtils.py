@@ -15,6 +15,7 @@ def makeModel():
     imNorm = layers.LayerNormalization(1)  # Normalize on a per-channel basis
     normedLeftEye = imNorm(inputLeftEye)
     normedRightEye = imNorm(inputRightEye)
+    # print(normedLeftEye)
 
     # Define conv layers
     conv1 = layers.Conv2D(filters=32, kernel_size=7, strides=2,
@@ -76,7 +77,7 @@ def makeModel():
     model.compile(
         loss = keras.losses.MeanSquaredError(),
         optimizer = keras.optimizers.Adam(learning_rate=decayLearning),
-        metrics = [keras.metrics.MeanSquaredError(), tf.keras.metrics.RootMeanSquaredError()]
+        metrics = [keras.metrics.MeanAbsolutePercentageError(), keras.metrics.MeanSquaredError()]
     )
 
     return model
