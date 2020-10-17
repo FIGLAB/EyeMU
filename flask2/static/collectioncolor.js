@@ -2,16 +2,15 @@
 var newFrame = true;
 
 // x and y vects for training
-var eyeData = [[],[], []];
-var eyeVals = [];
-var eyePositions = [];
+var leftEyes_x = [];
+var rightEyes_x = [];
+var eyeCorners_x = [];
+var screenXYs_y = [];
 
 var curLen = 0;
 
 // Live prediction variables
-var curEye = []
-var eyeCorners;
-var flatEyeCorners;
+var curEyes = []
 var prediction;
 
 // Top left xy to draw the eyes at (debugging)
@@ -81,21 +80,36 @@ function maxminofXY(array){
         ys.push(array[i][1]);
     }
     const adj = 3;
-    tmp = [Math.min(...xs)-adj, Math.max(...xs)+adj,Math.min(...ys)-adj, Math.max(...ys)+adj];
+    tmp = [Math.min(...xs)-adj*3, Math.max(...xs)+adj*3,Math.min(...ys)-adj, Math.max(...ys)+adj];
     tmp.push(tmp[1]-tmp[0]); // Add width
     tmp.push(tmp[3]-tmp[2]); // Add height
     return tmp; // returns: [left, right, top, bottom, width, height]
 }
 
+
 // using [left, right, top, bottom] for the bounding box,
 // returns [left_leftcorner, left_rightcorner], [right_rightcorner, right_leftcorner]
+// The order is flipped because the data was aggregated and fed into the NN in that order
+
 // x coordinates by size should be 1 2 4 3
 function boundingBoxToEyeCorners(right_bb, left_bb, h, w){
     const leftY = (left_bb[2] + left_bb[3])/2/h
     const rightY = (right_bb[2] + right_bb[3])/2/h
 
-    return [[[left_bb[1]/w, leftY], [left_bb[0]/w, leftY] ],
+    return [[[left_bb[1]/w, leftY], [left_bb[0]/w, leftY]],
                 [[right_bb[0]/w, rightY], [right_bb[1]/w, rightY]]]
+}
+
+// pull true eye corner coordinates straight from the scaled-up face mesh
+function getEyeCorners(eyePred, h, w){
+    let mesh = eyePred.scaledMesh;
+    const left_leftcorner = mesh[263].slice(0,2)
+    const left_rightcorner = mesh[362].slice(0,2)
+    const right_rightcorner = mesh[33].slice(0,2)
+    const right_leftcorner = mesh[133].slice(0,2)
+
+    return [left_leftcorner[0]/w, left_leftcorner[1]/h, left_rightcorner[0]/w, left_rightcorner[1]/h,
+            right_rightcorner[0]/w, right_rightcorner[1]/h, right_leftcorner[0]/w, right_leftcorner[1]/h]
 }
 
 
@@ -151,7 +165,8 @@ async function renderPrediction() {
         rBB = maxminofXY(right_eyebox);
         lBB = maxminofXY(left_eyebox);
 
-        eyeCorners =
+        // find eye corners
+        eyeCorners = getEyeCorners(prediction, videoHeight, videoWidth)
 
         document.getElementById("videostats").innerHTML = "Video size: " + videoWidth + " x " + videoHeight + " eyeSize: " + Math.round(rBB[1]-rBB[0]) + " x " + Math.round(rBB[3]-rBB[2]);
     }
@@ -159,7 +174,7 @@ async function renderPrediction() {
     setTimeout(requestAnimationFrame(renderPrediction), 100); // call self after 100 ms
 };
 
-//Draws current eyes onto the canvas
+// Draws the current eyes onto the canvas, directly from video streams
 async function drawCache(continuous){
         // Get eye images from the video stream directly
         ctx.drawImage(video, lBB[0], lBB[2], lBB[4], lBB[5], // Source x,y,w,h
@@ -168,95 +183,42 @@ async function drawCache(continuous){
                        tmpx + 10 + inx, tmpy, inx, iny);
 
         newFrame = true;
-
-//        if (continuous){
-//            if (curEye.length == 2){ // Clean up memory
-//                curEye[0].dispose()
-//                curEye[1].dispose()
-//            }
-//
-//            curEye = [tf.browser.fromPixels(
-//                    ctx.getImageData(tmpx,tmpy, inx, iny)).reverse(1),
-//                    tf.browser.fromPixels(
-//                    ctx.getImageData(tmpx + 10 + inx ,tmpy, inx, iny))]
-//            flatEyeCorners = tf.tensor(eyeCorners).flatten();
-//        } else{
-//            // Update main vector with the left and right pics, then the location
-//            tmpImage = tf.browser.fromPixels(ctx.getImageData(tmpx,tmpy, inx, iny)).reverse(1);
-//            eyeData[0].push(tmpImage);
-//            tmpImage = tf.browser.fromPixels(ctx.getImageData(tmpx + 10 + inx ,tmpy, inx, iny));
-//            eyeData[1].push(tmpImage);
-//            eyeData[2].push(tf.tensor(eyeCorners).flatten());
-//
-//            const nowVals = [X/screen.width, Y/screen.height];
-//            eyeVals.push(nowVals);
-//        }
 }
 
-var tfscreenshot;
+
 // extracts current eyes to a tensor, as well as the eye corners
 async function eyeSelfie(continuous){
-    curEye = [tf.browser.fromPixels(
-                    ctx.getImageData(tmpx,tmpy, inx, iny)).reverse(1),
-                    tf.browser.fromPixels(
-                    ctx.getImageData(tmpx + 10 + inx ,tmpy, inx, iny))]
-    flatEyeCorners = tf.tensor(eyeCorners).flatten();
-
-
+    // If running continuously, update the curEyes and curCorners vec AS TENSORS, BUT THROW AWAY OLD VALS
     if (continuous){
+        if (curEyes.length == 3){
+            curEyes[0].dispose();
+            curEyes[1].dispose();
+            curEyes[2].dispose();
+        }
+        curEyes = [tf.browser.fromPixels(
+                        ctx.getImageData(tmpx,tmpy, inx, iny)).reverse(1),
+                   tf.browser.fromPixels(
+                        ctx.getImageData(tmpx + 10 + inx ,tmpy, inx, iny)),
+                   tf.tensor(eyeCorners)]
 
+    } else{ // If calling once, push the eyes, corners, and screenVals into a vector AS TENSORS
+        // Add x vars
+        let left = tf.browser.fromPixels(
+                    ctx.getImageData(tmpx,tmpy, inx, iny)).reverse(1)
+        let right = tf.browser.fromPixels(
+                    ctx.getImageData(tmpx + 10 + inx ,tmpy, inx, iny))]
+        let tmpEyeCorn= tf.tensor(eyeCorners);
 
-    } else{
+        leftEyes.push(left);
+        rightEyes.push(right);
+        eyeCorners_x.push(tmpEyeCorn);
 
+        // Add y vars
         const nowVals = [X/screen.width, Y/screen.height];
-        const nowPos = calib_counter-1; // To start at zero
-
-//                eyeVals.push(nowVals);
-//                eyePositions.push(nowPos);
-//                headTilts.push(nowHeadAngles)
-//                headSizes.push(headSize)
-//                headMeshes.push(headMesh);
-            }
+        screenXYs_y.push(nowVals);
+        // const nowPos = calib_counter-1; // This var is for classification. -1 To start at zero
+    }
     drawCache(continuous);
-
-
-//        ctx.drawImage(video, lBB[0], lBB[2], lBB[4], lBB[5], // Source x,y,w,h
-//                        tmpx, tmpy, inx, iny); // Destination x,y,w,h
-
-
-//        tfscreenshot.dispose()
-//        tfscreenshot = tf.browser.fromPixels(video)
-
-//         // find bounding boxes [left, right, top, bottom]
-//        Promise.all([
-//            createImageBitmap(video,lBB[0], lBB[2], wl, hl),
-//            createImageBitmap(video,rBB[0], rBB[2], wr, hr)
-//        ]).then(function (eyeIms){
-//            leftEyeIms[0] = eyeIms[0];
-//            rightEyeIms[0] = eyeIms[1];
-//
-//            if (continuous){
-//                curEye = [tf.browser.fromPixels(
-//                    ctx.getImageData(tmpx,tmpy, inx, iny)).reverse(1),
-//                    tf.browser.fromPixels(
-//                    ctx.getImageData(tmpx + 10 + inx ,tmpy, inx, iny))]
-//                flatEyeCorners = tf.tensor(eyeCorners).flatten();
-//
-//            } else{
-//
-//                const nowVals = [X/screen.width, Y/screen.height];
-//                const nowPos = calib_counter-1; // To start at zero
-//
-////                eyeVals.push(nowVals);
-////                eyePositions.push(nowPos);
-////                headTilts.push(nowHeadAngles)
-////                headSizes.push(headSize)
-////                headMeshes.push(headMesh);
-//            }
-//            drawCache(continuous);
-//        });
-
-
 
     if (continuous){
         requestAnimationFrame(() => {eyeSelfie(continuous)});
@@ -285,7 +247,6 @@ async function collectmain() {
     canvas.width = 300;
     canvas.height = 200;
     ctx = canvas.getContext('2d');
-
 
 //    drawWebcam();
     renderPrediction();
