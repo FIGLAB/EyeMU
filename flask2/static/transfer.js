@@ -36,39 +36,26 @@ DeviceMotionEvent.requestPermission()
 }
 
 
-async function trainNatureModel(){
+async function trainNatureModel(left_x, right_x, corn_x, screenxy_y){
     // Compile the model
     naturemodel.compile({
-      optimizer: tf.train.adam(),
-//      loss: 'meanSquaredError',
-      loss: 'meanAbsoluteError',
+      optimizer: tf.train.adam(0.0042),
+      loss: 'meanSquaredError',
       metrics: ['mae', 'mse']
     });
 
+    leye_tensor = tf.concat(left_x)
+    reye_tensor = tf.concat(right_x)
+    eyeCorners_tensor = tf.concat(corn_x)
+    y_vect = tf.tensor(screenxy_y, [screenxy_y.length, 2])
 
-
-    y_vect = tf.tensor(eyeVals, [eyeVals.length, 2]);
-
-    leyes = []
-    reyes = []
-    tmpeyeCorns = []
-    eyeData[0].forEach((item, index, arr) => {
-        console.log(index);
-        leyes.push(item.arraySync());
-        reyes.push(eyeData[1][index].arraySync());
-        tmpeyeCorns.push(eyeData[2][index].arraySync());
-    });
-
-    leye_tensor = tf.tensor(leyes)//.reshape(leyes.length, inx, iny, 3)
-    reye_tensor = tf.tensor(reyes)//.reshape(reyes.length, inx, iny, 3)
-    eyeCorners_tensor = tf.tensor(tmpeyeCorns)//.reshape(eyeCorners.length, 8)
 
     let epochCount = 0;
 //    await naturemodel.fit([eyeData[0], eyeData[1], eyeData[2]], y_vect, {
     await naturemodel.fit([leye_tensor, reye_tensor, eyeCorners_tensor], y_vect, {
-       epochs: 50,
-       batchSize: 1,
-       validationSplit: 0,
+       epochs: 5,
+       batchSize: 10,
+       validationSplit: 0.1,
        callbacks: {
       onEpochEnd: async (batch, logs) => {
           console.log(epochCount++, 'Loss: ' + logs.loss.toFixed(5));
@@ -176,25 +163,12 @@ function runPredsLive(){
     const t2 = tf.tensor(tmp2, [eyeData[1].length, inx, iny, 3]);
 
     console.log(tf.memory());
-//    predictions[0] = tf.tidy(() => {return mobnet.infer(t1).div(10).arraySync()});
     predictions[0] = tf.tidy(() => {return mobnet.infer(t1, embedding = true).arraySync()});
-//    predictions[1] = tf.tidy(() => {return mobnet.infer(t2).div(10).arraySync()});
     predictions[1] = tf.tidy(() => {return mobnet.infer(t2, embedding = true).arraySync()});
 
     console.log(tf.memory());
     t1.dispose();
     t2.dispose();
-}
-
-// using [left, right, top, bottom] for the bounding box,
-// returns [left_leftcorner, left_rightcorner], [right_rightcorner, right_leftcorner]
-// x coordinates by size should be 1 2 4 3
-function boundingBoxToEyeCorners(right_bb, left_bb, h, w){
-    const leftY = (left_bb[2] + left_bb[3])/2/h
-    const rightY = (right_bb[2] + right_bb[3])/2/h
-
-    return [[[left_bb[1]/w, leftY], [left_bb[0]/w, leftY] ],
-                [[right_bb[0]/w, rightY], [right_bb[1]/w, rightY]]]
 }
 
 async function runNaturePredsLive(){
@@ -245,7 +219,7 @@ async function startLivePrediction(){
 }
 
 async function main() {
-    await tf.setBackend('wasm');
+    await tf.setBackend('webgl');
 
 
     // import custom model
@@ -254,7 +228,7 @@ async function main() {
     await loadModel("/static/models/tfjsmodel");
     naturemodel = models[0];
     console.log('Successfully loaded model');
-    naturemodel.summary();
+//    naturemodel.summary();
 
     waitForIt();
 //    setTimeout(runNaturePredsLive, 3000);
