@@ -37,6 +37,8 @@ DeviceMotionEvent.requestPermission()
 
 
 async function trainNatureModel(left_x, right_x, corn_x, screenxy_y){
+    console.log("training started")
+    console.log(tf.memory())
     // Compile the model
     naturemodel.compile({
       optimizer: tf.train.adam(0.0042),
@@ -44,24 +46,58 @@ async function trainNatureModel(left_x, right_x, corn_x, screenxy_y){
       metrics: ['mae', 'mse']
     });
 
-    leye_tensor = tf.concat(left_x)
-    reye_tensor = tf.concat(right_x)
-    eyeCorners_tensor = tf.concat(corn_x)
-    y_vect = tf.tensor(screenxy_y, [screenxy_y.length, 2])
 
 
-    let epochCount = 0;
-//    await naturemodel.fit([eyeData[0], eyeData[1], eyeData[2]], y_vect, {
-    await naturemodel.fit([leye_tensor, reye_tensor, eyeCorners_tensor], y_vect, {
-       epochs: 5,
-       batchSize: 10,
-       validationSplit: 0.1,
-       callbacks: {
-      onEpochEnd: async (batch, logs) => {
-          console.log(epochCount++, 'Loss: ' + logs.loss.toFixed(5));
-      }
-    }
-    })
+//    await tf.tidy(() => {
+        tf.setBackend('webgl');
+        leye_tensor = tf.stack(left_x).div(255).sub(0.5)
+        reye_tensor = tf.stack(right_x).div(255).sub(0.5)
+        eyeCorners_tensor = tf.stack(corn_x)
+        y_vect = tf.tensor(screenxy_y, [screenxy_y.length, 2])
+        console.log("data massaging done")
+
+
+        let epochCount = 0;
+//        await naturemodel.fit([eyeData[0], eyeData[1], eyeData[2]], y_vect, {
+        await naturemodel.fit([leye_tensor, reye_tensor, eyeCorners_tensor], y_vect, {
+               epochs: 15,
+               batchSize: 10,
+               validationSplit: 0.1,
+               callbacks: {
+          onEpochEnd: async (batch, logs) => {
+                  console.log(epochCount++, 'Loss: ' + logs.loss.toFixed(5));
+          }
+        }
+        }).then(info => {
+                // Give us the details of the training, and show the user
+               console.log('Final accuracy', info.history);
+               console.log( info.history['mae']);
+               console.log( info.history['val_mae']);
+                console.log("boost training done");
+                document.getElementById("trainingstate").innerHTML = "calib training done";
+
+                // clean up memory
+                console.log(tf.memory())
+                leye_tensor.dispose()
+                reye_tensor.dispose()
+                eyeCorners_tensor.dispose()
+                y_vect.dispose()
+
+                left_x.forEach((item, index, arr) =>{
+                    left_x[index].dispose();
+                    right_x[index].dispose();
+                    corn_x[index].dispose();
+                })
+                console.log(tf.memory())
+
+
+                // Start the live testing loop
+                done_with_training = true;
+                curPred = [0.5, 0.5];
+                eyeSelfie(true);
+                setTimeout(runNaturePredsLive, 100);
+                setTimeout(loop, 500);
+        });
 }
 
 //async function trainModel(){
@@ -149,42 +185,41 @@ async function trainNatureModel(left_x, right_x, corn_x, screenxy_y){
 //
 //}
 
-// Generate mobilenet predictions on our training data
-function runPredsLive(){
-    console.log(tf.memory());
-    tmp1 = [];
-    tmp2 = [];
-    for (i = 0; i < eyeData[0].length; i++){
-        tmp1.push(tf.tidy(() => {return eyeData[0][i].arraySync()}));
-        tmp2.push(tf.tidy(() => {return eyeData[1][i].arraySync()}));
-    }
-
-    const t1 = tf.tensor(tmp1, [eyeData[0].length, inx, iny, 3]);
-    const t2 = tf.tensor(tmp2, [eyeData[1].length, inx, iny, 3]);
-
-    console.log(tf.memory());
-    predictions[0] = tf.tidy(() => {return mobnet.infer(t1, embedding = true).arraySync()});
-    predictions[1] = tf.tidy(() => {return mobnet.infer(t2, embedding = true).arraySync()});
-
-    console.log(tf.memory());
-    t1.dispose();
-    t2.dispose();
-}
+//// Generate mobilenet predictions on our training data
+//function runPredsLive(){
+//    console.log(tf.memory());
+//    tmp1 = [];
+//    tmp2 = [];
+//    for (i = 0; i < eyeData[0].length; i++){
+//        tmp1.push(tf.tidy(() => {return eyeData[0][i].arraySync()}));
+//        tmp2.push(tf.tidy(() => {return eyeData[1][i].arraySync()}));
+//    }
+//
+//    const t1 = tf.tensor(tmp1, [eyeData[0].length, inx, iny, 3]);
+//    const t2 = tf.tensor(tmp2, [eyeData[1].length, inx, iny, 3]);
+//
+//    console.log(tf.memory());
+//    predictions[0] = tf.tidy(() => {return mobnet.infer(t1, embedding = true).arraySync()});
+//    predictions[1] = tf.tidy(() => {return mobnet.infer(t2, embedding = true).arraySync()});
+//
+//    console.log(tf.memory());
+//    t1.dispose();
+//    t2.dispose();
+//}
 
 async function runNaturePredsLive(){
 //    console.log(tf.memory());
 
     pred = tf.tidy(() => {
-//        return model.predict([fLeft,fRight, fEyeCorners])
         console.log("predicting")
-        return naturemodel.predict([curEye[0].reshape([1, 128, 128, 3]),
-                                curEye[1].reshape([1, 128, 128, 3]),
-                                flatEyeCorners.reshape([1, 8])])
+        return naturemodel.predict([curEyes[0].reshape([1, 128, 128, 3]),
+                                curEyes[1].reshape([1, 128, 128, 3]),
+                                curEyes[2].reshape([1, 8])])
     })
     predictions[0] = pred[0];
     predictions[1] = pred[1];
-
-    pred.print()
+    curPred = pred.arraySync()[0];
+//    pred.print()
 //    console.log(tf.memory());
 
     pred.dispose();
@@ -192,31 +227,31 @@ async function runNaturePredsLive(){
 }
 
 
-async function startLivePrediction(){
-    if (newFrame){
-        curPred = tf.tidy(() => {
-                temp_x = [].concat(mobnet.infer(curEye[0], embedding = true).arraySync()[0],
-                           mobnet.infer(curEye[1], embedding = true).arraySync()[0],
-                           curHeadTilt,
-                           curHeadSize);
-
-                if (doingClassification){
-                    const outputVec = eyeModel.predict(tf.tensor(temp_x, [1, 2051]));
-                    const ind = outputVec.argMax(1).arraySync()[0];
-                    expose = ind
-//                    console.log(ind);
-                    return [nx_arr[ind]/screen.width, ny_arr[ind]/screen.height];
-                } else{
-                    const newPred = eyeModel.predict(tf.tensor(temp_x, [1, 2051])).arraySync()[0];
-
-                    return [curPred[0]+(newPred[0]-curPred[0])*.25,
-                                curPred[1]+(newPred[1]-curPred[1])*.25]
-                }
-            });
-        newFrame = false;
-    }
-        requestAnimationFrame(startLivePrediction);
-}
+//async function startLivePrediction(){
+//    if (newFrame){
+//        curPred = tf.tidy(() => {
+//                temp_x = [].concat(mobnet.infer(curEye[0], embedding = true).arraySync()[0],
+//                           mobnet.infer(curEye[1], embedding = true).arraySync()[0],
+//                           curHeadTilt,
+//                           curHeadSize);
+//
+//                if (doingClassification){
+//                    const outputVec = eyeModel.predict(tf.tensor(temp_x, [1, 2051]));
+//                    const ind = outputVec.argMax(1).arraySync()[0];
+//                    expose = ind
+////                    console.log(ind);
+//                    return [nx_arr[ind]/screen.width, ny_arr[ind]/screen.height];
+//                } else{
+//                    const newPred = eyeModel.predict(tf.tensor(temp_x, [1, 2051])).arraySync()[0];
+//
+//                    return [curPred[0]+(newPred[0]-curPred[0])*.25,
+//                                curPred[1]+(newPred[1]-curPred[1])*.25]
+//                }
+//            });
+//        newFrame = false;
+//    }
+//        requestAnimationFrame(startLivePrediction);
+//}
 
 async function main() {
     await tf.setBackend('webgl');
