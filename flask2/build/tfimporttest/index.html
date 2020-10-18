@@ -7,17 +7,16 @@
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
 <!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>-->
 <!-- Adds the WASM backend to the global backend registry -->
-<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/tf-backend-wasm.js"></script>-->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/tf-backend-wasm.js"></script>
+<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>-->
+
+
+
+<script src="/static/ML.js"></script>
+<script src="/static/tfimporttest.js"></script>
+
 
 <script>
-
-    async function main() {
-        const model = await tf.loadLayersModel('https://drive.google.com/file/d/1PhGwmBjEIViVPwNqZ2TiSnZ3wER-yrCc/view?usp=sharing');
-        model.summary();
-    }
-    main();
-
-
 
 
 </script>
@@ -49,6 +48,9 @@
 
 <div id="main">
     <div class="container">
+        <input type="file" accept="application/json" id="eyeData" multiple onchange='openFile(event)'></input>
+
+
       <div class="canvas-wrapper">
         <canvas id="output"></canvas>
         <video id="video" playsinline style="

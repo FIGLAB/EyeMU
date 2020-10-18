@@ -1,7 +1,7 @@
 var n_calib_rounds = 1;
 
 // equal collection ims at each point
-var num_ims_per_location = 6;
+var num_ims_per_location = 4;
 var locations_traversed = 0;
 
 // Global variables
@@ -38,16 +38,12 @@ function setup(){
 
 // Main draw loop
 function draw(){
-
-    // Fill canvas grey
+    // Fill canvas grey, Set fill-color to blue, and make stroke-color white
     background( 100 );
-
-    // Set fill-color to blue
     fill( 0, 121, 184 );
-
-    // Set stroke-color white
     stroke(255);
 
+    // If done with training, start evaluation
     if (done_with_training && curPred != undefined){
         // big blue circle for the user to track
         fill( 0, 121, 184 );
@@ -70,13 +66,11 @@ function draw(){
             }
         }
 
-        // small orange circle for prediction
+        // draw small orange circle for prediction
         fill(204, 102, 0);
         ellipse(curPred[0]*screen.width, curPred[1]*screen.height, radius/2, radius/2);
-
-    } else if (rBB != undefined){
+    } else if (rBB != undefined){  //
         if (calib_rounds < n_calib_rounds){
-
             radius = radius + sin( frameCount / 4 );
 
             // Track circle to new destination
@@ -85,7 +79,6 @@ function draw(){
 
             // Draw circle
             ellipse( X, Y, radius, radius );
-//            console.log(calib_counter);
 
             // Take a certain # of photos at each location
             if (((Math.abs(nX-X) + Math.abs(nY-Y)) < 30) &&
@@ -112,10 +105,10 @@ function draw(){
             text('Training.....', width/3, height/2);
 
             console.log('calib done, training')
-            runPredsLive();
+//            runPredsLive();
 
             console.log('backend set to ', tf.getBackend())
-            trainModel();
+            trainNatureModel(leftEyes_x, rightEyes_x, eyeCorners_x,screenXYs_y);
 
             eyeSelfie(true);
             noLoop();

@@ -23,10 +23,6 @@ def tfimporttest():
     # response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
-@app.route('/datacollection/')
-def datacollection():
-    return render_template("datacollection.html")
-
 @app.route('/datacollectioncolor/')
 def datacollectioncolor():
     return render_template("datacollectioncolor.html")

@@ -181,13 +181,21 @@ async function drawCache(continuous){
                         tmpx, tmpy, inx, iny); // Destination x,y,w,h
         ctx.drawImage(video, rBB[0], rBB[2], rBB[4], rBB[5],
                        tmpx + 10 + inx, tmpy, inx, iny);
-
         newFrame = true;
 }
 
 
 // extracts current eyes to a tensor, as well as the eye corners
 async function eyeSelfie(continuous){
+    // Wait to start if rBB not defined
+    if (rBB == undefined){
+//        setTimeout(() => eyeSelfie(continuous), 500);
+        return
+    }
+
+    // Draw from video onto canvas BEFORE you try to clip it out of the canvas
+    drawCache(continuous);
+
     // If running continuously, update the curEyes and curCorners vec AS TENSORS, BUT THROW AWAY OLD VALS
     if (continuous){
         if (curEyes.length == 3){
@@ -195,22 +203,23 @@ async function eyeSelfie(continuous){
             curEyes[1].dispose();
             curEyes[2].dispose();
         }
-        curEyes = [tf.browser.fromPixels(
+
+        curEyes = tf.tidy(() => {
+                    return [tf.browser.fromPixels(
                         ctx.getImageData(tmpx,tmpy, inx, iny)).reverse(1),
                    tf.browser.fromPixels(
                         ctx.getImageData(tmpx + 10 + inx ,tmpy, inx, iny)),
-                   tf.tensor(eyeCorners)]
-
+                   tf.tensor(eyeCorners)]})
     } else{ // If calling once, push the eyes, corners, and screenVals into a vector AS TENSORS
         // Add x vars
-        let left = tf.browser.fromPixels(
-                    ctx.getImageData(tmpx,tmpy, inx, iny)).reverse(1)
-        let right = tf.browser.fromPixels(
-                    ctx.getImageData(tmpx + 10 + inx ,tmpy, inx, iny))]
+        let left = tf.tidy(() => {return tf.browser.fromPixels(
+                    ctx.getImageData(tmpx,tmpy, inx, iny)).reverse(1)})
+        let right = tf.tidy(() => {return tf.browser.fromPixels(
+                    ctx.getImageData(tmpx + 10 + inx ,tmpy, inx, iny))})
         let tmpEyeCorn= tf.tensor(eyeCorners);
 
-        leftEyes.push(left);
-        rightEyes.push(right);
+        leftEyes_x.push(left);
+        rightEyes_x.push(right);
         eyeCorners_x.push(tmpEyeCorn);
 
         // Add y vars
@@ -218,7 +227,7 @@ async function eyeSelfie(continuous){
         screenXYs_y.push(nowVals);
         // const nowPos = calib_counter-1; // This var is for classification. -1 To start at zero
     }
-    drawCache(continuous);
+
 
     if (continuous){
         requestAnimationFrame(() => {eyeSelfie(continuous)});
@@ -248,11 +257,11 @@ async function collectmain() {
     canvas.height = 200;
     ctx = canvas.getContext('2d');
 
-//    drawWebcam();
     renderPrediction();
+//    setTimeout(() => eyeSelfie(true), 1000);
+    setTimeout(() => eyeSelfie(false), 1000);
 
-    setTimeout(eyeSelfie(true), 1000);
-//    setTimeout(eyeSelfie(true), 100);
+//    setTimeout(()eyeSelfie(true), 100);
     console.log("after model load");
 }
 
