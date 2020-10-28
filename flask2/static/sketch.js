@@ -1,7 +1,7 @@
 var n_calib_rounds = 1;
 
 // equal collection ims at each point
-var num_ims_per_location = 5;
+var num_ims_per_location = 2;
 var locations_traversed = 0;
 
 // Global variables
@@ -9,7 +9,8 @@ var radius = 50.0;
 var X, Y;
 var nX, nY;
 var delay = 8;
-var moveDelay = num_ims_per_location*8;
+//var moveDelay = num_ims_per_location*7;
+var moveDelay = 35;
 var calib_counter = 0;
 var calib_rounds = 0;
 var train = true;
@@ -56,7 +57,7 @@ function draw(){
         // Draw circle
         ellipse(X, Y, radius, radius);
 
-        if(frameCount % moveDelay==0){
+        if(frameCount % (delay+moveDelay)==0){
             nX = nx_arr[calib_counter];
             nY = ny_arr[calib_counter];
             calib_counter = calib_counter + 1;
@@ -68,7 +69,9 @@ function draw(){
 
         // draw small orange circle for prediction
         fill(204, 102, 0);
-        ellipse(curPred[0]*screen.width, curPred[1]*screen.height, radius/2, radius/2);
+//        console.log("curPred", curPred, curPred[0]*windowWidth, curPred[1]*windowHeight)
+        ellipse(curPred[0]*windowWidth, curPred[1]*windowHeight, radius/2, radius/2);
+
     } else if (rBB != undefined){  //
         if (calib_rounds < n_calib_rounds){
             radius = radius + sin( frameCount / 4 );
@@ -82,9 +85,9 @@ function draw(){
 
             // Take a certain # of photos at each location
             if (((Math.abs(nX-X) + Math.abs(nY-Y)) < 30) &&
-                 (eyeData[0].length < (calib_counter + 8*calib_rounds)*num_ims_per_location)){
+                 (leftEyes_x.length < (calib_counter + 8*calib_rounds)*num_ims_per_location)){
                 eyeSelfie(false);
-                console.log(eyeData[0].length);
+                console.log(leftEyes_x.length);
             }
 
 
@@ -107,7 +110,7 @@ function draw(){
             console.log('calib done, training')
 //            runPredsLive();
 
-            console.log('backend set to ', tf.getBackend())
+            console.log('backend is', tf.getBackend(), "before training")
             trainNatureModel(leftEyes_x, rightEyes_x, eyeCorners_x,screenXYs_y);
 
             eyeSelfie(true);

@@ -61,7 +61,6 @@ if __name__ == "__main__":
         if len(sys.argv) > 2 and sys.argv[2] == "local":
             app.config["FREEZER_DESTINATION"] = "/firebase/public"
             freezer.freeze()
-
         else:
             freezer.freeze()
     else:

@@ -94,7 +94,7 @@ async function saveModel(model){
 }
 
 
-async function loadModel(path){
+async function loadTFJSModel(path){
     // Don't know how to make the templating render this properly but it works
     const tmpmodel = await tf.loadLayersModel(window.location.origin + path + "/my-model.json").then((model) => {
     models.push(model);
