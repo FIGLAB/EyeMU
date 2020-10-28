@@ -130,8 +130,8 @@ async function setupCamera() {
     'audio': false,
     'video': {
       facingMode: 'user',
-      width: { ideal: 4096 },
-      height: { ideal: 2160 }
+      width: { ideal: 1280 },
+      height: { ideal: 1280 }
     },
   });
   video.srcObject = stream;
@@ -149,17 +149,22 @@ async function drawWebcam(){
     requestAnimationFrame(drawWebcam);
 }
 
+var now;
 // Calls face mesh on the video and outputs the bounding boxes to global vars
 async function renderPrediction() {
 //    const facepred = await fmesh.estimateFaces(videoCanvas);
     const facepred = await fmesh.estimateFaces(video);
+
+
     if (facepred.length > 0) {
         // If we find a face, proceed with first and only prediction
         prediction = facepred[0];
 
         // Find the eyeboxes (you could index directly but it wouldn't be that much faster)
-        right_eyebox = (prediction.annotations.rightEyeUpper1).concat(prediction.annotations.rightEyeLower1);
-        left_eyebox = (prediction.annotations.leftEyeUpper1).concat(prediction.annotations.leftEyeLower1);
+//        right_eyebox = (prediction.annotations.rightEyeUpper1).concat(prediction.annotations.rightEyeLower1);
+//        left_eyebox = (prediction.annotations.leftEyeUpper1).concat(prediction.annotations.leftEyeLower1);
+        right_eyebox = (prediction.annotations.rightEyeUpper2).concat(prediction.annotations.rightEyeLower2);
+        left_eyebox = (prediction.annotations.leftEyeUpper2).concat(prediction.annotations.leftEyeLower2);
 
         // find bounding boxes [left, right, top, bottom]
         rBB = maxminofXY(right_eyebox);
@@ -169,6 +174,7 @@ async function renderPrediction() {
         eyeCorners = getEyeCorners(prediction, videoHeight, videoWidth)
 
         document.getElementById("videostats").innerHTML = "Video size: " + videoWidth + " x " + videoHeight + " eyeSize: " + Math.round(rBB[1]-rBB[0]) + " x " + Math.round(rBB[3]-rBB[2]);
+//        console.log("fmesh loop took", performance.now()-now)
     }
 
     setTimeout(requestAnimationFrame(renderPrediction), 100); // call self after 100 ms
@@ -189,7 +195,8 @@ async function drawCache(continuous){
 async function eyeSelfie(continuous){
     // Wait to start if rBB not defined
     if (rBB == undefined){
-//        setTimeout(() => eyeSelfie(continuous), 500);
+        console.log("rBB undefined in eyeSelfie, trying again")
+        setTimeout(function(){eyeSelfie(continuous)}, 500);
         return
     }
 
@@ -223,7 +230,7 @@ async function eyeSelfie(continuous){
         eyeCorners_x.push(tmpEyeCorn);
 
         // Add y vars
-        const nowVals = [X/screen.width, Y/screen.height];
+        const nowVals = [X/windowWidth, Y/windowHeight];
         screenXYs_y.push(nowVals);
         // const nowPos = calib_counter-1; // This var is for classification. -1 To start at zero
     }
@@ -235,13 +242,12 @@ async function eyeSelfie(continuous){
 }
 
 async function collectmain() {
-    await tf.setBackend(state.backend);
-    while (tf.getBackend().localeCompare(state.backend) != 0){
-        await tf.setBackend(state.backend);
-        console.log('setting backend')
-    }
-
     fmesh = await facemesh.load({maxFaces: state.maxFaces});
+
+//    console.log("start of collect main backend:", tf.getBackend())
+//    setTimeout(() => tf.setBackend(state.backend), 300);
+
+
 
     // Set up camera
     await setupCamera();
@@ -257,12 +263,22 @@ async function collectmain() {
     canvas.height = 200;
     ctx = canvas.getContext('2d');
 
-    renderPrediction();
-//    setTimeout(() => eyeSelfie(true), 1000);
-    setTimeout(() => eyeSelfie(false), 1000);
 
-//    setTimeout(()eyeSelfie(true), 100);
-    console.log("after model load");
+        // start in the eval loop
+//    done_with_training = true;
+//    curPred = [0,0];
+//    renderPrediction();
+//    setTimeout(function(){
+//            eyeSelfie(true);
+//        }
+//        , 2000);
+//    setTimeout(runNaturePredsLive, 3000);
+
+
+        // start in training loop
+    renderPrediction();
+
+    console.log("collection color main complete");
 }
 
 
