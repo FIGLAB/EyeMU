@@ -1,7 +1,7 @@
 var n_calib_rounds = 1;
 
 // equal collection ims at each point
-var num_ims_per_location = 2;
+var num_ims_per_location = 12;
 var locations_traversed = 0;
 
 // Global variables
@@ -10,7 +10,7 @@ var X, Y;
 var nX, nY;
 var delay = 8;
 //var moveDelay = num_ims_per_location*7;
-var moveDelay = 35;
+var moveDelay = 38;
 var calib_counter = 0;
 var calib_rounds = 0;
 var train = true;
@@ -84,7 +84,7 @@ function draw(){
             ellipse( X, Y, radius, radius );
 
             // Take a certain # of photos at each location
-            if (((Math.abs(nX-X) + Math.abs(nY-Y)) < 30) &&
+            if (((Math.abs(nX-X) + Math.abs(nY-Y)) < 50) &&
                  (leftEyes_x.length < (calib_counter + 8*calib_rounds)*num_ims_per_location)){
                 eyeSelfie(false);
                 console.log(leftEyes_x.length);
@@ -111,7 +111,8 @@ function draw(){
 //            runPredsLive();
 
             console.log('backend is', tf.getBackend(), "before training")
-            trainNatureModel(leftEyes_x, rightEyes_x, eyeCorners_x,screenXYs_y);
+//            trainNatureModel(leftEyes_x, rightEyes_x, eyeCorners_x,screenXYs_y);
+            trainNatureRegHead(leftEyes_x, rightEyes_x, eyeCorners_x,screenXYs_y);
 
             eyeSelfie(true);
             noLoop();
