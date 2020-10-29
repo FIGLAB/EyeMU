@@ -2,12 +2,6 @@
 var inx = 50;
 var iny = 25;
 
-// Drawing vars
-var webcamOffset = 100;
-var tmpx = 0;
-var tmpy = 0;
-var leftEye, rightEye;
-
 // Prediction vars
 var rBB, lBB;
 var prediction; // Face mesh predict() output
@@ -16,11 +10,6 @@ var output;
 // Live vars
 var curHeadSize;
 var curHeadTilt;
-
-const state = {
-    backend: 'wasm',
-    maxFaces: 1, // Only one mouse, after all
-};
 
 function waitForIt(){
     if (document.body){
@@ -177,48 +166,47 @@ function predictEyeLocation(){
         dataTensor.dispose()
 }
 
-//Draw the prediction as an orange dot on the screen.
-async function drawPrediction() {
-    // Remove all existing predicdots
-    const predicdots = document.getElementsByClassName('predicdot');
-    if (predicdots.length > 0){
-        predicdots[0].parentNode.removeChild(predicdots[0]);
-    };
 
-    //Generate prediction dot
-    predX = Math.floor(output[0]*100);
-    predY = Math.floor(output[1]*100);
+async function runNaturePredsLive(){
+//    console.log(tf.memory());
 
-    predX = Math.min(Math.max(predX, 0), 100);
-    predY = Math.min(Math.max(predY, 0), 100);
-
-
-
-    elem=document.createElement("div");
-    elem.setAttribute("class", "predicdot");
-
-    if (predX > 50){
-        if (predY > 50){
-            elem.setAttribute("style", "left:"+ 95 +"%;top:"+ 95 +"%;");
-        } else{
-            elem.setAttribute("style", "left:"+ 95 +"%;top:"+ 5 +"%;");
-        }
-    } else{
-        if (predY > 50){
-            elem.setAttribute("style", "left:"+ 5 +"%;top:"+ 95 +"%;");
-        } else{
-            elem.setAttribute("style", "left:"+ 5 +"%;top:"+ 5 +"%;");
-        }
+    if (curEyes[0] == undefined){
+        console.log("curEyes undefined while running prediction, trying again")
+        setTimeout(runNaturePredsLive, 500);
+        return
     }
 
-    document.body.appendChild(elem);
-};
+    now = performance.now();
+    pred = tf.tidy(() => {
+        return naturemodel.predict([curEyes[0].div(255).sub(0.5).reshape([1, 128, 128, 3]),
+                                curEyes[1].div(255).sub(0.5).reshape([1, 128, 128, 3]),
+                                curEyes[2].reshape([1, 8])])
+    })
+    pred = pred.clipByValue(0.0, 1.0)
+    pred.print()
+
+    predictions[0] = pred[0];
+    predictions[1] = pred[1];
+    curPred = pred.arraySync()[0];
+
+    pred.dispose();
+    setTimeout(runNaturePredsLive, 100);
+}
+
 
 async function main() {
-    await tf.setBackend(state.backend);
+    tf.setBackend('webgl');
+    await tf.ready();
+
+    // import custom model
+    models = [];
+    console.log("loading model");
+    await loadTFJSModel("/static/models/tfjsmodel");
+    naturemodel = models[0];
+    console.log('Successfully loaded model');
 
     // Load in face mesh model
-    model = await facemesh.load({maxFaces: state.maxFaces});
+    fmesh = await facemesh.load({maxFaces: state.maxFaces});
 
     // Set up camera
     await setupCamera();
@@ -226,22 +214,23 @@ async function main() {
     videoWidth = video.videoWidth;
     videoHeight = video.videoHeight;
 
-    // Set up webcam canvas
-    canvas = document.getElementById('webcam');
-    canvas.width = screen.width;
-    canvas.height = 1000;
+    document.getElementById("videostats").innerHTML = videoWidth + " " + videoHeight;
+
+    // Set up canvas to draw the eyes of the user (debugging feature)
+    canvas = document.getElementById('eyecache');
+    canvas.width = 300;
+    canvas.height = 200;
     ctx = canvas.getContext('2d');
 
-    // Load in left and right model and store in models variable
-    // Make sure boost loads in last with the awaits
-    await loadModel("/static/models/lefteye")
-    await loadModel("/static/models/righteye")
-    loadModel("/static/models/boost")
 
-
+        // start in the eval loop
+    done_with_training = true;
+    curPred = [0,0];
     renderPrediction();
-    drawWebcam();
-    setInterval(drawEyes, 100);
+    setTimeout(function(){
+            eyeSelfie(true);
+        }, 2000);
+    setTimeout(runNaturePredsLive, 3000);
 }
 
 

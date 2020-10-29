@@ -35,22 +35,6 @@ DeviceMotionEvent.requestPermission()
     .catch(console.error)
 }
 
-//function* x_generator(lefts, rights, corners){
-//    const genBatchSize = 3;
-//    for (let i = 0; i < (Math.trunc(lefts.length/genBatchSize) - 1); i++){
-//        yield tf.tidy(() => [tf.stack(lefts.slice(i*genBatchSize, (i+1)*genBatchSize)).div(255).sub(0.5),
-//               tf.stack(rights.slice(i*genBatchSize, (i+1)*genBatchSize)).div(255).sub(0.5),
-//               tf.stack(corners.slice(i*genBatchSize, (i+1)*genBatchSize))])
-//        console.log("x generator called")
-//    }
-//}
-//
-//function* y_generator(xys){
-//    const genBatchSize = 3;
-//    for (let i = 0; i < (Math.trunc(xys.length/genBatchSize) - 1); i++){
-//        yield [tf.tensor(xys.slice(i*genBatchSize, (i+1)*genBatchSize))]
-//    }
-//}
 
 
 function* x_generator(){
@@ -294,9 +278,6 @@ async function main() {
 //    tf.ENV.set('WEBGL_CONV_IM2COL', false);
 //    tf.ENV.set('WEBGL_CHECK_NUMERICAL_PROBLEMS', true);
 //    tf.ENV.set('WEBGL_PACK_DEPTHWISECONV', true);
-
-
-
     tf.ENV.set('WEBGL_CPU_FORWARD', false);
 
     // import custom model
@@ -316,19 +297,9 @@ async function main() {
     natureModelEmbeddings = tf.model({inputs: naturemodel.inputs, outputs: naturemodel.layers[35].output});
     boostModel = natureModelFineTune(natureModelEmbeddings.outputShape[1])
 
-
 //    for (let i = 0; i <= 36; i++){
 //        console.log(i, naturemodel.layers[i].name)
 //    }
-
-
-    // Warm up the model
-    let a = naturemodel.predict([tf.randomNormal([1, 128,128, 3]),
-    tf.randomNormal([1, 128,128, 3]),
-    tf.randomNormal([1,8])]);
-    a.dataSync();
-    a.dispose();
-
 
     waitForIt();
 }
