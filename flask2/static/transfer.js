@@ -35,22 +35,6 @@ DeviceMotionEvent.requestPermission()
     .catch(console.error)
 }
 
-//function* x_generator(lefts, rights, corners){
-//    const genBatchSize = 3;
-//    for (let i = 0; i < (Math.trunc(lefts.length/genBatchSize) - 1); i++){
-//        yield tf.tidy(() => [tf.stack(lefts.slice(i*genBatchSize, (i+1)*genBatchSize)).div(255).sub(0.5),
-//               tf.stack(rights.slice(i*genBatchSize, (i+1)*genBatchSize)).div(255).sub(0.5),
-//               tf.stack(corners.slice(i*genBatchSize, (i+1)*genBatchSize))])
-//        console.log("x generator called")
-//    }
-//}
-//
-//function* y_generator(xys){
-//    const genBatchSize = 3;
-//    for (let i = 0; i < (Math.trunc(xys.length/genBatchSize) - 1); i++){
-//        yield [tf.tensor(xys.slice(i*genBatchSize, (i+1)*genBatchSize))]
-//    }
-//}
 
 
 function* x_generator(){

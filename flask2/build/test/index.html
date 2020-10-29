@@ -7,11 +7,15 @@
 <!-- Tensorflow core, model, and backend-->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/tf-backend-wasm.js"></script>
 
 <!-- Javascript specific to this page -->
 <script src="/static/ML.js"></script>
+<script src="/static/fileIO.js"></script>
 <script src="/static/livetest.js"></script>
+<script src="/static/collectioncolor.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/p5.js"></script>
+<script src="/static/sketch.js"></script>
 
 
 <script>
@@ -43,18 +47,21 @@
 
 
 <div id="main">
+    <p id="videostats">Stats: </p>
     <p id="prediction"></p>
     <br>
 
-    <canvas id="webcam"></canvas>
-    <video autoplay muted playsinline id="video"  style="
-      -webkit-transform: scaleX(-1);
-      transform: scaleX(-1);
-      visibility: hidden;
-      width: auto;
-      height: auto;
-      ">
-    </video>
+    <canvas hidden id="streamcanvas"></canvas>
+    <canvas id="eyecache"></canvas>
+
+    <video hidden autoplay muted playsinline id="video"  style="
+              -webkit-transform: scaleX(-1);
+              transform: scaleX(-1);
+              visibility: hidden;
+              width: auto;
+              height: auto;
+              ">
+            </video>
 
 </div>
 

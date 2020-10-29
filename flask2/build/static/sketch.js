@@ -40,7 +40,7 @@ function setup(){
 // Main draw loop
 function draw(){
     // Fill canvas grey, Set fill-color to blue, and make stroke-color white
-    background( 100 );
+    background( 150 );
     fill( 0, 121, 184 );
     stroke(255);
 
