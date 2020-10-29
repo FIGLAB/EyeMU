@@ -77,7 +77,75 @@ function* y_generator(){
 }
 
 
-var expose;
+async function trainNatureRegHead(left_x, right_x, corn_x, screenxy_y){
+
+    boostModel.compile({
+      optimizer: tf.train.adam(0.001),
+      loss: 'meanSquaredError',
+      metrics: ['mae', 'mse']
+    });
+
+    leye_tensor = tf.tidy(() => tf.stack(left_x).div(255).sub(0.5))
+    reye_tensor = tf.tidy(() => tf.stack(right_x).div(255).sub(0.5))
+    eyeCorners_tensor = tf.tidy(() => tf.stack(corn_x))
+    x_vect = await tf.tidy(() => natureModelEmbeddings.predict([leye_tensor, reye_tensor, eyeCorners_tensor]))
+    console.log("embeddings extracted")
+    y_vect = tf.tensor(screenxy_y, [screenxy_y.length, 2])
+
+    x_vect.print();
+    y_vect.print();
+
+    let epochCount = 0;
+    await boostModel.fit(x_vect, y_vect, {
+               epochs: 100,
+               batchSize: 20,
+               validationSplit: 0.1,
+               callbacks: {
+          onEpochEnd: async (batch, logs) => {
+                  console.log(boostModel.predict(tf.randomNormal([1,natureModelEmbeddings.outputShape[1]])).arraySync())
+                  console.log(epochCount++, 'Loss: ' + logs.loss.toFixed(5));
+          }
+        }
+        }).then(info => {
+                // Give us the details of the training, and show the user
+                console.log('Final accuracy', info.history);
+                console.log( info.history['mae']);
+                console.log("val mae", info.history['val_mae']);
+                console.log("finished training the fine tuned google model")
+                document.getElementById("trainingstate").innerHTML = "nature model calibration training done";
+
+                console.log("test on random data after fitting")
+                console.log(boostModel.predict(tf.randomNormal([1,natureModelEmbeddings.outputShape[1]])).arraySync())
+                console.log("last layer weights after training: ")
+
+               //  clean up memory
+                console.log(tf.memory())
+                leye_tensor.dispose()
+                reye_tensor.dispose()
+                eyeCorners_tensor.dispose()
+                y_vect.dispose()
+
+                left_x.forEach((item, index, arr) =>{
+                    left_x[index].dispose();
+                    right_x[index].dispose();
+                    corn_x[index].dispose();
+                })
+                console.log(tf.memory())
+
+                tf.ENV.set('WEBGL_CPU_FORWARD', true);
+
+                // Start the live testing loop
+                done_with_training = true;
+                curPred = [0.5, 0.5];
+                eyeSelfie(true);
+                setTimeout(runNaturePredsLive, 100);
+                setTimeout(loop, 500);
+        });
+}
+
+
+
+
 
 async function trainNatureModel(left_x, right_x, corn_x, screenxy_y){
 //function trainNatureModel(left_x, right_x, corn_x, screenxy_y){
@@ -92,33 +160,13 @@ async function trainNatureModel(left_x, right_x, corn_x, screenxy_y){
       metrics: ['mae', 'mse']
     });
 
-
         leye_tensor = tf.tidy(() => tf.stack(left_x).div(255).sub(0.5))
         reye_tensor = tf.tidy(() => tf.stack(right_x).div(255).sub(0.5))
         eyeCorners_tensor = tf.tidy(() => tf.stack(corn_x))
 //        y_vect = tf.tidy(() => tf.tensor(screenxy_y, [screenxy_y.length, 2]))
         y_vect = tf.tensor(screenxy_y, [screenxy_y.length, 2])
         console.log("data massaging done")
-        expose = leye_tensor
 
-
-
-//        console.log("memory after massage and cleanup")
-//        console.log(tf.memory())
-//        console.log(leye_tensor.shape)
-//        console.log(reye_tensor.shape)
-//        eyeCorners_tensor.print()
-//        console.log(eyeCorners_tensor.shape)
-//        y_vect.print()
-//        console.log(y_vect.shape)
-
-
-        // using generators
-//        const X_vec = tf.data.generator(x_generator);
-//        const Y_vec = tf.data.generator(y_generator);
-//        console.log("X and Y generators made")
-//        const ds = tf.data.zip({xs:X_vec, ys:Y_vec});
-//        console.log("X and Y zipped")
         console.log("prediction before training: ")
         console.log(naturemodel.predict([tf.randomNormal([1,128,128,3]), tf.randomNormal([1,128,128,3]), tf.randomNormal([1,8])]).arraySync())
         console.log("last layer weights before training: ")
@@ -180,7 +228,6 @@ async function trainNatureModel(left_x, right_x, corn_x, screenxy_y){
         });
     }
 
-
 async function runNaturePredsLive(){
 //    console.log(tf.memory());
 
@@ -192,25 +239,18 @@ async function runNaturePredsLive(){
 
     now = performance.now();
     pred = tf.tidy(() => {
-//        console.log("predicting")
-        return naturemodel.predict([curEyes[0].div(255).sub(0.5).reshape([1, 128, 128, 3]),
-                                curEyes[1].div(255).sub(0.5).reshape([1, 128, 128, 3]),
-                                curEyes[2].reshape([1, 8])])
+        return boostModel.predict(natureModelEmbeddings.predict([curEyes[0].div(255).sub(0.5).reshape([1, 128, 128, 3]), curEyes[1].div(255).sub(0.5).reshape([1, 128, 128, 3]), curEyes[2].reshape([1, 8])]));
+
+//        return naturemodel.predict([curEyes[0].div(255).sub(0.5).reshape([1, 128, 128, 3]),
+//                                curEyes[1].div(255).sub(0.5).reshape([1, 128, 128, 3]),
+//                                curEyes[2].reshape([1, 8])])
     })
-//    pred.print()
-//    console.log(performance.now() - now)
     pred = pred.clipByValue(0.0, 1.0)
     pred.print()
 
     predictions[0] = pred[0];
     predictions[1] = pred[1];
     curPred = pred.arraySync()[0];
-//    let tmp = pred.arraySync()[0];
-//    curPred[0] = curPred[0] + (tmp[0] - curPred[0])/2;
-//    curPred[1] = curPred[1] + (tmp[1] - curPred[1])/2
-
-//    pred.print()
-//    console.log(tf.memory());
 
     pred.dispose();
     setTimeout(runNaturePredsLive, 100);
@@ -243,13 +283,17 @@ async function runNaturePredsLive(){
 //        requestAnimationFrame(startLivePrediction);
 //}
 
+var boostModel
+var natureModelEmbeddings; // Model for getting the embeddings from things
 async function main() {
     tf.setBackend('webgl');
     await tf.ready();
 
     // Need to keep all computation in the GPU/webGL by removing forward CPU computation
     // True at least for iOS Safari
-    tf.ENV.set('WEBGL_CONV_IM2COL', false);
+//    tf.ENV.set('WEBGL_CONV_IM2COL', false);
+//    tf.ENV.set('WEBGL_CHECK_NUMERICAL_PROBLEMS', true);
+//    tf.ENV.set('WEBGL_PACK_DEPTHWISECONV', true);
     tf.ENV.set('WEBGL_CPU_FORWARD', false);
 
     // import custom model
@@ -261,18 +305,17 @@ async function main() {
 
 //    naturemodel.summary()
     // freeze the first 28 layers (up to the final dense ones), 29 leaves first dense also untrained
-    for (let i = 0; i <= 35; i++){
+    for (let i = 0; i <= 36; i++){
         naturemodel.layers[i].trainable = false;
     }
-    naturemodel.summary()
 
-    // Warm up the model
-    let a = naturemodel.predict([tf.randomNormal([1, 128,128, 3]),
-    tf.randomNormal([1, 128,128, 3]),
-    tf.randomNormal([1,8])]);
-    a.dataSync();
-    a.dispose();
+    // Copy of original outputting embeddings
+    natureModelEmbeddings = tf.model({inputs: naturemodel.inputs, outputs: naturemodel.layers[35].output});
+    boostModel = natureModelFineTune(natureModelEmbeddings.outputShape[1])
 
+//    for (let i = 0; i <= 36; i++){
+//        console.log(i, naturemodel.layers[i].name)
+//    }
 
     waitForIt();
 }

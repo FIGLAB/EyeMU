@@ -1,3 +1,19 @@
+October 28
+Made video resolution 1280x1280 at most, any larger adds too much overhead without increasing pixel capture density
+
+To freeze layers, iterate through the model.layers Array and set their .trainable = false.
+
+To get embeddings, pop off layers and generate a new model and use that. Not sure what to do with graph models
+const model = tf.sequential({
+    layers: baseModel.layers
+  });
+graph models use the tf.model({}) function, which doesn't take layers but does take inputs and outputs. Can't give a layer directly (a tensor), but need to give the .input or .output variable.
+var modelcopy = tf.model({inputs: naturemodel.inputs, outputs: naturemodel.layers[29].output}); // Outputs 8 length vec
+var modelcopy = tf.model({inputs: naturemodel.inputs, outputs: naturemodel.layers[28].output}); // Outputs 4112 length vec from the concat
+Credits: https://stackoverflow.com/questions/50942677/tensorflowjs-how-to-get-inner-layer-output-in-a-cnn-prediction
+
+Making copy of the model using the above trick does not fix the NaN during inference but not during loss thing. Wack!
+
 Aug 13
 Added higher resolution capture, slows down facemesh continuous execution considerably. I can capture two video resolutions however, and feed one into facemesh to scale up to get higher resolution eye pictures. Pretty cool actually.
 Added copying of the face mesh points to the data capture. Need to incorporate into the training.
