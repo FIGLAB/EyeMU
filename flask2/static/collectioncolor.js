@@ -1,54 +1,33 @@
-// Eye saving variables
-var newFrame = true;
-
-// x and y vects for training
+// x and y vects for collecting data for training
 var leftEyes_x = [];
 var rightEyes_x = [];
 var eyeCorners_x = [];
+var faceGeom;
+var faceGeom_x = [];
+
 var screenXYs_y = [];
 
-var curLen = 0;
-
-// Live prediction variables
+// real-time testing variable
 var curEyes = []
-var prediction;
 
-// Top left xy to draw the eyes at (debugging)
-const tmpx = 0;
-const tmpy = 0;
+var prediction;
 
 // Resize eyeballs to this size
 var inx = 128;
 var iny = 128;
 
-// Canvas variables
-var ctx2;
-//var videoCanvas;
-
+// eye image drawing zone
 var ctx;
 var canvas;
 
+// eye bounding boxes
 var rBB;
 var lBB;
-
-// Machine learning things
-var eyeModel;
-var lr = .001;
-var epochNums = 50;
-var valsplit = .1;
-
-//Tmps
-var started = false;
-
-const state = {
-    backend: 'webgl',
-    maxFaces: 1, // Only one mouse, after all
-};
 
 //Yaw is the angle in the x-z plane with the vertical axis at the origin
 //Return is in radians. Turning the head left is a positive angle, right is a negative angle, 0 is head on.
 function getFaceYaw(mesh){
-    yaw=Math.atan((mesh[50][2]-mesh[280][2])/(mesh[50][0]-mesh[280][0]));
+    yaw=Math.atan((mesh[50][2]-mesh[280][2])/(mesh[50][0]-mesh[280][0])); // Uses two cheek points
     return yaw;
 }
 
@@ -56,9 +35,19 @@ function getFaceYaw(mesh){
 //Return is in radians. Turning the head up is a positive angle, down is a negative angle, 0 is head on.
 function getFacePitch(mesh){
     //Use two points on forehead because it has a z normal vector
-    pitch=Math.atan((mesh[10][2]-mesh[8][2])/(mesh[8][1]-mesh[10][1]));
+    pitch=Math.atan((mesh[10][2]-mesh[168][2])/(mesh[168][1]-mesh[10][1]));
     return pitch;
 };
+
+// Roll is the angle in the x-y plane (face plane)
+// returns in radians.
+function getFaceRoll(mesh){
+//    roll = Math.atan2(((mesh[280][0]-mesh[50][0]), mesh[50][1]-mesh[280][1]))
+    let a = 151;
+    let b = 6;
+    roll = Math.atan2(mesh[a][0]-mesh[b][0], mesh[b][1]-mesh[a][1]);
+    return roll;
+}
 
 function getFaceSize(bb){
     head_top = bb.topLeft[0];
@@ -66,8 +55,28 @@ function getFaceSize(bb){
     head_bot = bb.bottomRight[0];
     head_right = bb.bottomRight[1];
 
-    return (head_bot-head_top)*(head_right-head_left)/(videoWidth*videoHeight)/3;
-};
+    return (head_bot-head_top)*(head_right-head_left)/(videoWidth*videoHeight);
+}
+
+class FaceGeometry{
+    constructor(){
+        this.numFeatures = 4;
+    }
+
+    update(fmeshOutput){
+        let mesh = fmeshOutput.mesh;
+        this.curYaw = getFaceYaw(mesh);
+        this.curPitch = getFacePitch(mesh);
+        this.curRoll = getFaceRoll(mesh);
+        this.curFaceSize = getFaceSize(fmeshOutput.boundingBox);
+    }
+
+    getGeom(){
+        return [this.curYaw, this.curPitch, this.curRoll, this.curFaceSize];
+    }
+}
+faceGeom = new FaceGeometry();
+
 
 
 // Convenience function for finding the bounding box of an xy array.
@@ -111,6 +120,7 @@ function getEyeCorners(eyePred, h, w){
     return [left_leftcorner[0]/w, left_leftcorner[1]/h, left_rightcorner[0]/w, left_rightcorner[1]/h,
             right_rightcorner[0]/w, right_rightcorner[1]/h, right_leftcorner[0]/w, right_leftcorner[1]/h]
 }
+// Live facemesh prediction variables
 
 
 function waitForIt(){
@@ -143,26 +153,16 @@ async function setupCamera() {
   });
 }
 
-async function drawWebcam(){
-    // Draw face onto canvas 2d context
-    ctx2.drawImage(video, 0, 0, videoCanvas.width, videoCanvas.height);
-    requestAnimationFrame(drawWebcam);
-}
-
 var now;
-// Calls face mesh on the video and outputs the bounding boxes to global vars
+// Calls face mesh on the video and outputs the eyes and face bounding boxes to global vars
 async function renderPrediction() {
-//    const facepred = await fmesh.estimateFaces(videoCanvas);
     const facepred = await fmesh.estimateFaces(video);
-
 
     if (facepred.length > 0) {
         // If we find a face, proceed with first and only prediction
         prediction = facepred[0];
 
         // Find the eyeboxes (you could index directly but it wouldn't be that much faster)
-//        right_eyebox = (prediction.annotations.rightEyeUpper1).concat(prediction.annotations.rightEyeLower1);
-//        left_eyebox = (prediction.annotations.leftEyeUpper1).concat(prediction.annotations.leftEyeLower1);
         right_eyebox = (prediction.annotations.rightEyeUpper2).concat(prediction.annotations.rightEyeLower2);
         left_eyebox = (prediction.annotations.leftEyeUpper2).concat(prediction.annotations.leftEyeLower2);
 
@@ -173,7 +173,10 @@ async function renderPrediction() {
         // find eye corners
         eyeCorners = getEyeCorners(prediction, videoHeight, videoWidth)
 
-        document.getElementById("videostats").innerHTML = "Video size: " + videoWidth + " x " + videoHeight + " eyeSize: " + Math.round(rBB[1]-rBB[0]) + " x " + Math.round(rBB[3]-rBB[2]);
+        // Get face geometry
+        faceGeom.update(prediction);
+
+        document.getElementById("videostats").innerHTML = "Video resolution: " + videoWidth + " x " + videoHeight + "\n eye crop resolution: " + Math.round(rBB[1]-rBB[0]) + " x " + Math.round(rBB[3]-rBB[2]);
 //        console.log("fmesh loop took", performance.now()-now)
     }
 
@@ -184,10 +187,9 @@ async function renderPrediction() {
 async function drawCache(continuous){
         // Get eye images from the video stream directly
         ctx.drawImage(video, lBB[0], lBB[2], lBB[4], lBB[5], // Source x,y,w,h
-                        tmpx, tmpy, inx, iny); // Destination x,y,w,h
+                        0, 0, inx, iny); // Destination x,y,w,h
         ctx.drawImage(video, rBB[0], rBB[2], rBB[4], rBB[5],
-                       tmpx + 10 + inx, tmpy, inx, iny);
-        newFrame = true;
+                       10 + inx, 0, inx, iny);
 }
 
 
@@ -213,21 +215,23 @@ async function eyeSelfie(continuous){
 
         curEyes = tf.tidy(() => {
                     return [tf.browser.fromPixels(
-                        ctx.getImageData(tmpx,tmpy, inx, iny)).reverse(1),
+                        ctx.getImageData(0,0, inx, iny)).reverse(1),
                    tf.browser.fromPixels(
-                        ctx.getImageData(tmpx + 10 + inx ,tmpy, inx, iny)),
+                        ctx.getImageData(10 + inx ,0, inx, iny)),
                    tf.tensor(eyeCorners)]})
+
     } else{ // If calling once, push the eyes, corners, and screenVals into a vector AS TENSORS
         // Add x vars
         let left = tf.tidy(() => {return tf.browser.fromPixels(
-                    ctx.getImageData(tmpx,tmpy, inx, iny)).reverse(1)})
+                    ctx.getImageData(0,0, inx, iny)).reverse(1)})
         let right = tf.tidy(() => {return tf.browser.fromPixels(
-                    ctx.getImageData(tmpx + 10 + inx ,tmpy, inx, iny))})
+                    ctx.getImageData(10 + inx ,0, inx, iny))})
         let tmpEyeCorn= tf.tensor(eyeCorners);
 
         leftEyes_x.push(left);
         rightEyes_x.push(right);
         eyeCorners_x.push(tmpEyeCorn);
+        faceGeom_x.push(faceGeom.getGeom());
 
         // Add y vars
         const nowVals = [X/windowWidth, Y/windowHeight];
@@ -241,21 +245,20 @@ async function eyeSelfie(continuous){
     }
 }
 
+const state = {
+        backend: 'webgl',
+        maxFaces: 1, // Only one mouse cursor, after all
+};
+
 async function collectmain() {
     fmesh = await facemesh.load({maxFaces: state.maxFaces});
 
-//    console.log("start of collect main backend:", tf.getBackend())
-//    setTimeout(() => tf.setBackend(state.backend), 300);
-
-
-
-    // Set up camera
+    // Set up front-facing camera
     await setupCamera();
     video.play();
     videoWidth = video.videoWidth;
     videoHeight = video.videoHeight;
-
-    document.getElementById("videostats").innerHTML = videoWidth + " " + videoHeight;
+    document.getElementById("videostats").innerHTML = "camera resolution: " + videoWidth + " x " + videoHeight;
 
     // Set up canvas to draw the eyes of the user (debugging feature)
     canvas = document.getElementById('eyecache');
@@ -263,19 +266,7 @@ async function collectmain() {
     canvas.height = 200;
     ctx = canvas.getContext('2d');
 
-
-        // start in the eval loop
-//    done_with_training = true;
-//    curPred = [0,0];
-//    renderPrediction();
-//    setTimeout(function(){
-//            eyeSelfie(true);
-//        }
-//        , 2000);
-//    setTimeout(runNaturePredsLive, 3000);
-
-
-        // start in training loop
+        // start training loop
     renderPrediction();
 
     console.log("collection color main complete");
