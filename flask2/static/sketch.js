@@ -1,7 +1,7 @@
-var n_calib_rounds = 1;
+var n_calib_rounds = 2;
 
 // equal collection ims at each point
-var num_ims_per_location = 12;
+var num_ims_per_location = 10;
 var locations_traversed = 0;
 
 // Global variables
@@ -10,7 +10,7 @@ var X, Y;
 var nX, nY;
 var delay = 8;
 //var moveDelay = num_ims_per_location*7;
-var moveDelay = 38;
+var moveDelay = 40;
 var calib_counter = 0;
 var calib_rounds = 0;
 var train = true;
