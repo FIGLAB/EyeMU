@@ -120,7 +120,6 @@ function getEyeCorners(eyePred, h, w){
     return [left_leftcorner[0]/w, left_leftcorner[1]/h, left_rightcorner[0]/w, left_rightcorner[1]/h,
             right_rightcorner[0]/w, right_rightcorner[1]/h, right_leftcorner[0]/w, right_leftcorner[1]/h]
 }
-// Live facemesh prediction variables
 
 
 function waitForIt(){
@@ -176,8 +175,7 @@ async function renderPrediction() {
         // Get face geometry
         faceGeom.update(prediction);
 
-        document.getElementById("videostats").innerHTML = "Video resolution: " + videoWidth + " x " + videoHeight + "\n eye crop resolution: " + Math.round(rBB[1]-rBB[0]) + " x " + Math.round(rBB[3]-rBB[2]);
-//        console.log("fmesh loop took", performance.now()-now)
+//        document.getElementById("videostats").innerHTML = "Video resolution: " + videoWidth + " x " + videoHeight + "\n eye crop resolution: " + Math.round(rBB[1]-rBB[0]) + " x " + Math.round(rBB[3]-rBB[2]);)
     }
 
     setTimeout(requestAnimationFrame(renderPrediction), 100); // call self after 100 ms
@@ -258,7 +256,7 @@ async function collectmain() {
     video.play();
     videoWidth = video.videoWidth;
     videoHeight = video.videoHeight;
-    document.getElementById("videostats").innerHTML = "camera resolution: " + videoWidth + " x " + videoHeight;
+//    document.getElementById("videostats").innerHTML = "camera resolution: " + videoWidth + " x " + videoHeight;
 
     // Set up canvas to draw the eyes of the user (debugging feature)
     canvas = document.getElementById('eyecache');

@@ -270,7 +270,7 @@ async function main() {
 //    tf.ENV.set('WEBGL_CONV_IM2COL', false);
 //    tf.ENV.set('WEBGL_CHECK_NUMERICAL_PROBLEMS', true);
 //    tf.ENV.set('WEBGL_PACK_DEPTHWISECONV', true);
-    tf.ENV.set('WEBGL_CPU_FORWARD', false);
+//    tf.ENV.set('WEBGL_CPU_FORWARD', false);
 
     // import custom model
     models = [];
