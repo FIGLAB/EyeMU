@@ -213,7 +213,7 @@ async function main() {
     video.play();
     videoWidth = video.videoWidth;
     videoHeight = video.videoHeight;
-    document.getElementById("videostats").innerHTML = videoWidth + " " + videoHeight;
+//    document.getElementById("videostats").innerHTML = videoWidth + " " + videoHeight;
 
     // Resize the regression/classification toggle to look nice
     document.getElementById('regtoggle').style.width = windowWidth + "px"

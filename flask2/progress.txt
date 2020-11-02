@@ -1,3 +1,16 @@
+November 2
+Decided to just do training over the embeddings. Weird error related to webgl that I cannot fix on my own when we try to train on the base model. So we're feeding in the 8, 4, and 2 vecs from the last dense stack of the net, then the 8 eye corner coordinates, and then the head yaw pitch roll and area within the image. Seems to work pretty ok if given enough iterations and data. 26-vec of data, maybe 100 iterations. Very shallow model follows it.
+Need to write the data collection page in a coherent way, but I guess that comes after we get the thing actually working.
+
+TODO TODAY:
+- Add error calculation (x and y separately) in pixels and cm to the eval loop of the sketch.js. Also add a reset button
+- Try some data collection schemes
+    - head still, one round of 10 im/loc
+    - head rotate, one round of 10 im/loc
+    - head still and rotate, one round each of 10 im/loc
+
+
+
 October 28
 Made video resolution 1280x1280 at most, any larger adds too much overhead without increasing pixel capture density
 
