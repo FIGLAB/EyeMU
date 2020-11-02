@@ -80,12 +80,12 @@ function draw(){
             let pred_Y = curPred[1]*windowHeight;
             ellipse(pred_X, pred_Y, radius/2, radius/2);
 
-            fill(20)
+
             // If regression, track the error and write it to screen
             errorsX.push(Math.abs(X-pred_X))
             errorsY.push(Math.abs(Y-pred_Y))
 
-            const moveAvg = 30
+            const moveAvg = 30 // trim errors if too long
             if (errorsX.length > moveAvg){ errorsX.shift(); }
             if (errorsY.length > moveAvg){ errorsY.shift(); }
 
@@ -93,13 +93,12 @@ function draw(){
             errorX = average(errorsX)/windowWidth;
             errorY = average(errorsY)/windowHeight;
 
-
-
             // cm error calculated assuming iphone X
             let x_cm_error = errorX * 7.1;
             let y_cm_error = errorY * 14.4;
 
-            // Writing error numbers to the canvas
+            // Writing error to the canvas
+            fill(20)
             const spacing = 30;
             textSize(20);
             text("Assuming iPhone X screen size: 7.1 x 14.4 cm", 10, spacing);
