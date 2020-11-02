@@ -1,7 +1,7 @@
-var n_calib_rounds = 2;
+var n_calib_rounds = 1;
 
 // equal collection ims at each point
-var num_ims_per_location = 10;
+var num_ims_per_location = 5;
 var locations_traversed = 0;
 
 // Global variables
@@ -26,6 +26,7 @@ var done_with_training = false;
 // Setup the Processing Canvas
 function setup(){
     createCanvas(windowWidth, windowHeight);
+
     strokeWeight( 1 );
     frameRate( 30 );
     X = width / 2;
@@ -69,8 +70,14 @@ function draw(){
 
         // draw small orange circle for prediction
         fill(204, 102, 0);
-//        console.log("curPred", curPred, curPred[0]*windowWidth, curPred[1]*windowHeight)
-        ellipse(curPred[0]*windowWidth, curPred[1]*windowHeight, radius/2, radius/2);
+        if (regression){
+            ellipse(curPred[0]*windowWidth, curPred[1]*windowHeight, radius/2, radius/2);
+        } else{
+            const leftHalf = curPred[0] < 0.5;
+            const topHalf = curPred[1] < 0.5;
+            rect(leftHalf ? 0 : windowWidth/2, topHalf ? 0 : windowHeight/2, windowWidth/2, windowHeight/2);
+        }
+
 
     } else if (rBB != undefined){  //
         if (calib_rounds < n_calib_rounds){
@@ -118,4 +125,18 @@ function draw(){
             noLoop();
         }
     }
+}
+
+var regression = true;
+function regr_class_toggle() {
+  var x = document.getElementById("regtoggle");
+  if (x.innerHTML === "<h4>Regression</h4>") {
+    x.innerHTML = "<h4>Classification</h4>";
+    x.style.background = "#2196F3";
+    regression = false;
+  } else {
+    x.innerHTML = "<h4>Regression</h4>";
+    x.style.background = "#ccc";
+    regression = true;
+  }
 }

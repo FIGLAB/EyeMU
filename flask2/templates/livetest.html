@@ -27,10 +27,17 @@
 <div id="main">
     <p id="videostats">Stats: </p>
     <p id="prediction"></p>
+
     <br>
 
-    <canvas hidden id="streamcanvas"></canvas>
+
+
     <canvas id="eyecache"></canvas>
+
+    <div >
+        <button id="regtoggle"  onclick="regr_class_toggle()" style="vertical-align: middle; margin-bottom:10px; width:100vw;"><h4>Regression</h4></button>
+</div>
+
 
     <video hidden autoplay muted playsinline id="video"  style="
               -webkit-transform: scaleX(-1);

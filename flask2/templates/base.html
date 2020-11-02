@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>GAZEL</title>
-    {% block headextra %}
-    {% endblock %}
+
 
     <style>
+    // For drawing the predicted output directly onto the HTML page with an icon
     .dot{
         width: 52px;
         height: 52px;
@@ -24,8 +24,10 @@
     }
     </style>
 
+    {% block headextra %}
+    {% endblock %}
 </head>
-<body style="background-color:powderblue;">
+<body style="background-color:lightblue;">
 {% block body %}
 
 
