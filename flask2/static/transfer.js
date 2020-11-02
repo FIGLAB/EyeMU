@@ -279,17 +279,13 @@ async function main() {
     naturemodel = models[0];
     console.log('Successfully loaded model');
 
-//    naturemodel.summary()
     // freeze the first 28/36 layers (up to the final dense ones), 29 leaves first dense also untrained
     for (let i = 0; i <= 36; i++){
         naturemodel.layers[i].trainable = false;
     }
-
     // Copy of original outputting embeddings, 29, 33, 36 are the dense layers
     natureModelEmbeddings = tf.model({inputs: naturemodel.inputs,
                 outputs: [naturemodel.layers[29].output, naturemodel.layers[33].output, naturemodel.layers[36].output]}); // outputs an 8 vec, 4 vec, and 2 vec. Operates at the same speed as only one output.
-
-
 
     for (let i = 0; i <= 36; i++){ // print layers and names for getting embeddings
         console.log(i, naturemodel.layers[i].name)

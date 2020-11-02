@@ -264,7 +264,7 @@ async function collectmain() {
     canvas.height = 200;
     ctx = canvas.getContext('2d');
 
-        // start training loop
+    // start training loop
     renderPrediction();
 
     console.log("collection color main complete");
