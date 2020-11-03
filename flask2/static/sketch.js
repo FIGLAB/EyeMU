@@ -1,7 +1,7 @@
 var n_calib_rounds = 1;
 
 // equal collection ims at each point
-var num_ims_per_location = 5;
+var num_ims_per_location = 10;
 var locations_traversed = 0;
 
 // Global variables
@@ -54,8 +54,9 @@ function draw(){
     fill( 0, 121, 184 );
     stroke(255);
 
-    // If done with training, start evaluation
-    if (done_with_training && curPred != undefined){
+    // If done with training, start live prediction
+//    if (done_with_training && curPred != undefined){
+    if (done_with_training){
         // big blue circle for the user to track
         fill( 0, 121, 184 );
         radius = radius + sin( frameCount / 8);
@@ -106,10 +107,7 @@ function draw(){
             text("X % Error: " + nf(errorX*100,2,1) + "\t\tX cm error: " + nf(x_cm_error,1,2), 10, spacing*2);
             text("Y % Error: " + nf(errorY*100,2,1) + "\t\tY cm error: " + nf(y_cm_error,1,2), 10, spacing*3);
             text("X+Y % Error: " + nf(Math.sqrt(errorX*errorX + errorY*errorY)*100,2,1) +
-                 "\tX+Y cm error: " + nf(Math.sqrt(x_cm_error*x_cm_error, y_cm_error*y_cm_error),1,2), 10, spacing*4);
-
-
-
+                 "\tX+Y cm error: " + nf(Math.sqrt(x_cm_error*x_cm_error + y_cm_error*y_cm_error),1,2), 10, spacing*4);
 
         } else{
             const leftHalf = curPred[0] < 0.5;
@@ -117,7 +115,8 @@ function draw(){
             rect(leftHalf ? 0 : windowWidth/2, topHalf ? 0 : windowHeight/2, windowWidth/2, windowHeight/2);
         }
 
-    } else if (rBB != undefined){  //
+    } else if (rBB != undefined){
+        // if the face has been detected, start the data collection
         if (calib_rounds < n_calib_rounds){
             radius = radius + sin( frameCount / 8 );
 
@@ -147,20 +146,15 @@ function draw(){
             }
         }
 
+        // if all rounds have been exhausted, start the training
         else{
-            train = false;
             textSize(100);
             text('Training.....', width/3, height/2);
-
             console.log('calib done, training')
-//            runPredsLive();
-
-            console.log('backend is', tf.getBackend(), "before training")
-//            trainNatureModel(leftEyes_x, rightEyes_x, eyeCorners_x,screenXYs_y);
-            trainNatureRegHead(leftEyes_x, rightEyes_x, eyeCorners_x,screenXYs_y);
 
             eyeSelfie(true);
             noLoop();
+            trainNatureRegHead(leftEyes_x, rightEyes_x, eyeCorners_x,screenXYs_y);
         }
     }
 }

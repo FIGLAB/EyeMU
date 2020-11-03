@@ -62,7 +62,8 @@ function* y_generator(){
 var expose;
 async function trainNatureRegHead(left_x, right_x, corn_x, screenxy_y){
 
-    numFeatures = natureModelEmbeddings.outputShape[1] + faceGeom.numFeatures + 8; // 8 from eye corners
+    let embeddingFeatures = natureModelEmbeddings.outputShape.reduce((acc, curVal) => acc + curVal[1], 0);
+    numFeatures = embeddingFeatures + faceGeom.numFeatures + 8; // 8 from eye corners
     boostModel = natureModelFineTune(numFeatures);
 
     boostModel.compile({
@@ -75,12 +76,13 @@ async function trainNatureRegHead(left_x, right_x, corn_x, screenxy_y){
     reye_tensor = tf.tidy(() => tf.stack(right_x).div(255).sub(0.5))
     eyeCorners_tensor = tf.tidy(() => tf.stack(corn_x))
     x_vect = await tf.tidy(() => {
-            // Embeddings come out huge, normalize them a little.
-            let embeds = natureModelEmbeddings.predict([leye_tensor, reye_tensor, eyeCorners_tensor]).div(100);
+
+            let embeds = natureModelEmbeddings.predict([leye_tensor, reye_tensor, eyeCorners_tensor]);
+            embeds[0] = embeds[0].div(100); // First layer embeddings come out huge (100-300), normalize them a little.
+            embeds[1] = embeds[1].div(10); // 2nd layer embeddings come out big too (~10-30), normalize them a little.
+            embeds = tf.concat(embeds, 1); // Combine the embeddings horizontally, turn 8,4,2 into 14
             return tf.concat([embeds, eyeCorners_tensor, faceGeom_x],1);
     });
-    expose = x_vect;
-    x_vect.print();
 
     console.log("embeddings extracted, x_vect shape: ", x_vect.shape)
     y_vect = tf.tensor(screenxy_y, [screenxy_y.length, 2])
@@ -108,7 +110,6 @@ async function trainNatureRegHead(left_x, right_x, corn_x, screenxy_y){
                 console.log("val mae", info.history['val_mae']);
                 console.log("finished training the fine tuned google model")
                 document.getElementById("trainingstate").innerHTML = "nature model calibration training done";
-
                 console.log("test on random data after fitting")
                 console.log(boostModel.predict(tf.randomNormal([1,numFeatures])).arraySync())
                 console.log("last layer weights after training: ")
@@ -224,8 +225,6 @@ async function trainNatureModel(left_x, right_x, corn_x, screenxy_y){
     }
 
 async function runNaturePredsLive(){
-//    console.log(tf.memory());
-
     if (curEyes[0] == undefined){
         console.log("curEyes undefined while running prediction, trying again")
         setTimeout(runNaturePredsLive, 500);
@@ -234,7 +233,11 @@ async function runNaturePredsLive(){
 
     now = performance.now();
     pred = tf.tidy(() => {
-        let embed = natureModelEmbeddings.predict([curEyes[0].div(255).sub(0.5).reshape([1, 128, 128, 3]), curEyes[1].div(255).sub(0.5).reshape([1, 128, 128, 3]), curEyes[2].reshape([1, 8])]).div(100);
+        let embed = natureModelEmbeddings.predict([curEyes[0].div(255).sub(0.5).reshape([1, 128, 128, 3]), curEyes[1].div(255).sub(0.5).reshape([1, 128, 128, 3]), curEyes[2].reshape([1, 8])]);
+        embed[0] = embed[0].div(100);
+        embed[1] = embed[1].div(100);
+        embed = tf.concat(embeds, 1);
+
         return boostModel.predict(tf.concat([embed, curEyes[2].reshape([1,8]), [faceGeom.getGeom()]], 1));
         });
 
@@ -243,7 +246,6 @@ async function runNaturePredsLive(){
 //                                curEyes[2].reshape([1, 8])])
 
     pred = pred.clipByValue(0.0, 1.0)
-    pred.print()
 
     predictions[0] = pred[0];
     predictions[1] = pred[1];
@@ -262,9 +264,6 @@ async function main() {
 
     // Need to keep all computation in the GPU/webGL by removing forward CPU computation
     // True at least for iOS Safari
-//    tf.ENV.set('WEBGL_CONV_IM2COL', false);
-//    tf.ENV.set('WEBGL_CHECK_NUMERICAL_PROBLEMS', true);
-//    tf.ENV.set('WEBGL_PACK_DEPTHWISECONV', true);
     tf.ENV.set('WEBGL_CPU_FORWARD', false);
 
     // import custom model
@@ -274,15 +273,13 @@ async function main() {
     naturemodel = models[0];
     console.log('Successfully loaded model');
 
-//    naturemodel.summary()
     // freeze the first 28/36 layers (up to the final dense ones), 29 leaves first dense also untrained
     for (let i = 0; i <= 36; i++){
         naturemodel.layers[i].trainable = false;
     }
-
     // Copy of original outputting embeddings, 29, 33, 36 are the dense layers
-    natureModelEmbeddings = tf.model({inputs: naturemodel.inputs, outputs: naturemodel.layers[29].output});
-
+    natureModelEmbeddings = tf.model({inputs: naturemodel.inputs,
+                outputs: [naturemodel.layers[29].output, naturemodel.layers[33].output, naturemodel.layers[36].output]}); // outputs an 8 vec, 4 vec, and 2 vec. Operates at the same speed as only one output.
 
     for (let i = 0; i <= 36; i++){ // print layers and names for getting embeddings
         console.log(i, naturemodel.layers[i].name)
