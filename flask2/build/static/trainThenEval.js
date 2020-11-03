@@ -1,5 +1,9 @@
-// Eval.js runs the 9 locations on the screen and logs the error numbers. Any model can be used here.
+// trainThenEval.js trains a model then runs the eval loop on it.
 var n_calib_rounds = 1;
+
+// equal collection ims at each point
+var num_ims_per_location = 20;
+var locations_traversed = 0;
 
 // Global variables
 var radius = 50.0;
@@ -9,9 +13,13 @@ var delay = 16;
 
 var moveDelay = 80;
 var calib_counter = 0;
+var calib_rounds = 0;
 
 var nx_arr = [];
 var ny_arr = [];
+
+// state variables
+var done_with_training = false;
 
 // Live eval variables
 var errorY = 0;
@@ -31,19 +39,15 @@ function setup(){
 
     strokeWeight( 1 );
     frameRate(60);
-
-    // Define the points on the screen to travel to
-    let w_op = [width/10, width/2, 9*width/10];
-    let h_op = [height/10, height/2, 9*height/10];
-    nx_arr = [w_op[1], w_op[2], w_op[0], w_op[2], w_op[1], w_op[0], w_op[1], w_op[0], w_op[2]]
-    ny_arr = [h_op[0], h_op[2], h_op[1], h_op[0], h_op[1], h_op[2], h_op[2], h_op[0], h_op[1]];
-
-
-    // Starting location of the dot
     X = width / 2;
     Y = height / 2;
-    nX = nx_arr[0];
-    nY = ny_arr[0];
+    nX = X;
+    nY = Y;
+
+    let w_op = [width/10, width/2, 9*width/10];
+    let h_op = [height/10, height/2, 9*height/10];
+    nx_arr = [w_op[1], w_op[2], w_op[0], w_op[2], w_op[1], w_op[0], w_op[1], w_op[0], w_op[2], w_op[2]]
+    ny_arr = [h_op[0], h_op[2], h_op[1], h_op[0], h_op[1], h_op[2], h_op[2], h_op[0], h_op[1], h_op[1]];
 }
 
 // Main draw loop
@@ -53,7 +57,9 @@ function draw(){
     fill( 0, 121, 184 );
     stroke(255);
 
-    if (rBB != undefined){
+    // If done with training, start live prediction
+//    if (done_with_training && curPred != undefined){
+    if (done_with_training){
         // big blue circle for the user to track
         fill( 0, 121, 184 );
         radius = radius + sin( frameCount / 8);
@@ -117,22 +123,69 @@ function draw(){
             errorsY.push(Math.abs(Y-pred_Y))
         }
 
+    } else if (rBB != undefined){
+        // if the face has been detected, start the data collection
+        if (calib_rounds < n_calib_rounds){
+            radius = radius + sin( frameCount / 8 );
+
+            // Track circle to new destination
+            X+=(nX-X)/delay;
+            Y+=(nY-Y)/delay;
+
+            // Draw circle
+            ellipse( X, Y, radius, radius );
+
+            // Take a certain # of photos at each location if close enough
+            if (((Math.abs(nX-X) + Math.abs(nY-Y)) < 50) &&
+                 (leftEyes_x.length < (calib_counter + 8*calib_rounds)*num_ims_per_location)){
+                eyeSelfie(false);
+                console.log(leftEyes_x.length);
+            }
+
+
+            if(frameCount%moveDelay==0){
+              nX = nx_arr[calib_counter];
+              nY = ny_arr[calib_counter];
+              calib_counter = calib_counter + 1;
+              if (calib_counter > 9){
+                calib_counter = 0;
+                calib_rounds = calib_rounds + 1;
+              }
+            }
+        }
+
+        // if all rounds have been exhausted, start the training
+        else{
+            textSize(100);
+            text('Training.....', width/3, height/2);
+            console.log('calib done, training')
+
+//            eyeSelfie(true); // called at the end of trianing as well
+            calib_counter = 0
+            noLoop();
+            trainNatureRegHead(leftEyes_x, rightEyes_x, eyeCorners_x,screenXYs_y);
+        }
     }
 }
 
-function getAvgError(arr){
-
-}
-
-// Start over the evaluation round if clicked
+// Reset errro tracking on-click
 function mouseClicked() {
-    console.log("starting eval round again")
-    X = width / 2;
-    Y = height / 2;
-    nX = nx_arr[0];
-    nY = ny_arr[0];
-    calib_counter = 0;
-
-    loop();
+  errorxY = [0,0,0,0,0,0,0];
+  errorxX = [0,0,0,0,0,0,0];
 }
 
+
+// Draw regression button
+var regression = true;
+function regr_class_toggle() {
+    var x = document.getElementById("regtoggle");
+    if (x.innerHTML === "<h4>Regression</h4>") {
+        x.innerHTML = "<h4>Classification</h4>";
+        x.style.background = "#2196F3";
+        regression = false;
+    } else {
+        x.innerHTML = "<h4>Regression</h4>";
+        x.style.background = "#ccc";
+        regression = true;
+    }
+}

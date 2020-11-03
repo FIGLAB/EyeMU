@@ -1,3 +1,6 @@
+// Sketch.js trains a model then runs it live.
+
+
 var n_calib_rounds = 1;
 
 // equal collection ims at each point
@@ -42,9 +45,6 @@ function setup(){
     let h_op = [height/10, height/2, 9*height/10];
     nx_arr = [w_op[1], w_op[2], w_op[0], w_op[2], w_op[1], w_op[0], w_op[1], w_op[0], w_op[2], w_op[2]]
     ny_arr = [h_op[0], h_op[2], h_op[1], h_op[0], h_op[1], h_op[2], h_op[2], h_op[0], h_op[1], h_op[1]];
-
-    //    ny_arr = [height/10, 9*height/10, height/2,height/10,height/2,9*height/10,9*height/10,height/10,height/2, height/2];
-//    nx_arr = [width/2, 9*width/10, width/10,9*width/10,width/2,width/10,width/2,width/10,9*width/10, 9*width/10];
 }
 
 // Main draw loop
