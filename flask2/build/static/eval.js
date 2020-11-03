@@ -1,3 +1,4 @@
+// Eval.js runs the 9 locations on the screen and logs the error numbers. Any model can be used here.
 var n_calib_rounds = 1;
 
 // Global variables
@@ -64,7 +65,7 @@ function draw(){
         // Draw target circle
         ellipse(X, Y, radius, radius);
 
-        if(frameCount % (delay+moveDelay)==0){
+        if((frameCount % (delay+moveDelay) == 0) && (errorsX.length != 0)){
             // When moving to a new location, save a copy of the error array
             let errorsX_copy = Array.from(errorsX);
             let errorsY_copy = Array.from(errorsY);
@@ -78,9 +79,10 @@ function draw(){
             calib_counter = calib_counter + 1;
             nX = nx_arr[calib_counter];
             nY = ny_arr[calib_counter];
+            // After one iteration through the on-screen positions, log the errors and stop looping
             if (calib_counter >= nx_arr.length){
                 console.log("error totals length", errorTotals.length)
-                let errorTotalsString = "";
+                let errorTotalsString = "Errors in predicted gaze location, normalized x and y:\n";
 
                 // Iterate through totals and print off error
                 // Order of the nx_arr is [2, 9, 4, 3, 5, 7, 8, 1, 6]
@@ -122,8 +124,15 @@ function getAvgError(arr){
 
 }
 
-// Start over the evaluation round
+// Start over the evaluation round if clicked
 function mouseClicked() {
+    console.log("starting eval round again")
+    X = width / 2;
+    Y = height / 2;
+    nX = nx_arr[0];
+    nY = ny_arr[0];
+    calib_counter = 0;
+
     loop();
 }
 

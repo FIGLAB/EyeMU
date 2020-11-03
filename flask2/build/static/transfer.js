@@ -59,11 +59,14 @@ function* y_generator(){
     }
 }
 
+
+// Training the regression head that goes onto the output embeddings of the nature model.
 var expose;
 async function trainNatureRegHead(left_x, right_x, corn_x, screenxy_y){
 
     let embeddingFeatures = natureModelEmbeddings.outputShape.reduce((acc, curVal) => acc + curVal[1], 0);
-    numFeatures = embeddingFeatures + faceGeom.numFeatures + 8; // 8 from eye corners
+//    numFeatures = embeddingFeatures + faceGeom.numFeatures + 8; // 8 from eye corners
+    numFeatures = embeddingFeatures + faceGeom.numFeatures; // REMOVE EYE CORNERS
     boostModel = natureModelFineTune(numFeatures);
 
     boostModel.compile({
@@ -81,7 +84,8 @@ async function trainNatureRegHead(left_x, right_x, corn_x, screenxy_y){
             embeds[0] = embeds[0].div(100); // First layer embeddings come out huge (100-300), normalize them a little.
             embeds[1] = embeds[1].div(10); // 2nd layer embeddings come out big too (~10-30), normalize them a little.
             embeds = tf.concat(embeds, 1); // Combine the embeddings horizontally, turn 8,4,2 into 14
-            return tf.concat([embeds, eyeCorners_tensor, faceGeom_x],1);
+//            return tf.concat([embeds, eyeCorners_tensor, faceGeom_x],1);
+            return tf.concat([embeds, faceGeom_x],1); // REMOVE EYE CORNERS
     });
 
     console.log("embeddings extracted, x_vect shape: ", x_vect.shape)
@@ -236,9 +240,10 @@ async function runNaturePredsLive(){
         let embed = natureModelEmbeddings.predict([curEyes[0].div(255).sub(0.5).reshape([1, 128, 128, 3]), curEyes[1].div(255).sub(0.5).reshape([1, 128, 128, 3]), curEyes[2].reshape([1, 8])]);
         embed[0] = embed[0].div(100);
         embed[1] = embed[1].div(100);
-        embed = tf.concat(embeds, 1);
+        embed = tf.concat(embed, 1);
 
-        return boostModel.predict(tf.concat([embed, curEyes[2].reshape([1,8]), [faceGeom.getGeom()]], 1));
+//        return boostModel.predict(tf.concat([embed, curEyes[2].reshape([1,8]), [faceGeom.getGeom()]], 1));
+        return boostModel.predict(tf.concat([embed, [faceGeom.getGeom()]], 1)); // REMOVE EYE CORNERS
         });
 
 //        return naturemodel.predict([curEyes[0].div(255).sub(0.5).reshape([1, 128, 128, 3]),
