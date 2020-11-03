@@ -183,7 +183,7 @@ async function runNaturePredsLive(){
                                 curEyes[2].reshape([1, 8])])
     })
     pred = pred.clipByValue(0.0, 1.0)
-    pred.print()
+//    pred.print()
 
     predictions[0] = pred[0];
     predictions[1] = pred[1];

@@ -23,14 +23,6 @@ def tfimporttest():
     # response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
-@app.route('/datacollectioncolor/')
-def datacollectioncolor():
-    return render_template("datacollectioncolor.html")
-
-@app.route('/training/')
-def training():
-    return render_template("training.html")
-
 @app.route('/transfer/')
 def transfer():
     return render_template("transfer.html")
@@ -39,9 +31,9 @@ def transfer():
 def test():
     return render_template("livetest.html")
 
-# @app.route('/pewpew/')
-# def pewpew():
-#     return render_template('shootingrange.html')
+@app.route('/eval/')
+def eval():
+    return render_template("eval.html")
 
 @app.after_request
 def add_header(response):

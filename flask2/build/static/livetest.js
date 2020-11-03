@@ -183,7 +183,7 @@ async function runNaturePredsLive(){
                                 curEyes[2].reshape([1, 8])])
     })
     pred = pred.clipByValue(0.0, 1.0)
-    pred.print()
+//    pred.print()
 
     predictions[0] = pred[0];
     predictions[1] = pred[1];
@@ -213,8 +213,10 @@ async function main() {
     video.play();
     videoWidth = video.videoWidth;
     videoHeight = video.videoHeight;
+//    document.getElementById("videostats").innerHTML = videoWidth + " " + videoHeight;
 
-    document.getElementById("videostats").innerHTML = videoWidth + " " + videoHeight;
+    // Resize the regression/classification toggle to look nice
+    document.getElementById('regtoggle').style.width = windowWidth + "px"
 
     // Set up canvas to draw the eyes of the user (debugging feature)
     canvas = document.getElementById('eyecache');

@@ -1,52 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>GAZEL</title>
+{% extends "base.html" %}
 
-
-    <style>
-    // For drawing the predicted output directly onto the HTML page with an icon
-    .dot{
-        width: 52px;
-        height: 52px;
-        background-color: #f00;
-        border-radius: 50%;
-        position: fixed;
-    }
-    
-    .predicdot{
-        width: 30px;
-        height: 30px;
-        background-color: #ffab56;
-        border-radius: 50%;
-        position:fixed;
-    }
-    </style>
-
-    
+{% block headextra %}
 <!-- Tensorflow core, model, and backend-->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
 
 <!-- Javascript specific to this page -->
-<script src="/static/ML.js"></script>
-<script src="/static/fileIO.js"></script>
-<script src="/static/livetest.js"></script>
-<script src="/static/collectioncolor.js"></script>
+<script src="{{url_for('static', filename='ML.js')}}"></script>
+<script src="{{url_for('static', filename='fileIO.js')}}"></script>
+<script src="{{url_for('static', filename='livetest.js')}}"></script>
+<script src="{{url_for('static', filename='collectioncolor.js')}}"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/p5.js"></script>
-<script src="/static/sketch.js"></script>
+<script src="{{url_for('static', filename='eval.js')}}"></script>
 
 
 <script>
     main();
 </script>
 
+{% endblock %}
 
-</head>
-<body style="background-color:lightblue;">
 
+{% block body %}
 
 <div id="main">
 
@@ -69,6 +45,4 @@
 </div>
 
 
-
-</body>
-</html>
+{% endblock %}

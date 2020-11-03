@@ -225,8 +225,6 @@ async function trainNatureModel(left_x, right_x, corn_x, screenxy_y){
     }
 
 async function runNaturePredsLive(){
-//    console.log(tf.memory());
-
     if (curEyes[0] == undefined){
         console.log("curEyes undefined while running prediction, trying again")
         setTimeout(runNaturePredsLive, 500);
@@ -248,7 +246,6 @@ async function runNaturePredsLive(){
 //                                curEyes[2].reshape([1, 8])])
 
     pred = pred.clipByValue(0.0, 1.0)
-    pred.print()
 
     predictions[0] = pred[0];
     predictions[1] = pred[1];
@@ -267,10 +264,7 @@ async function main() {
 
     // Need to keep all computation in the GPU/webGL by removing forward CPU computation
     // True at least for iOS Safari
-//    tf.ENV.set('WEBGL_CONV_IM2COL', false);
-//    tf.ENV.set('WEBGL_CHECK_NUMERICAL_PROBLEMS', true);
-//    tf.ENV.set('WEBGL_PACK_DEPTHWISECONV', true);
-//    tf.ENV.set('WEBGL_CPU_FORWARD', false);
+    tf.ENV.set('WEBGL_CPU_FORWARD', false);
 
     // import custom model
     models = [];
