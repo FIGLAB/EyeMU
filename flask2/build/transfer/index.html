@@ -58,12 +58,11 @@
 <!--    <button type="button" onclick="trainModel()">Train Model</button>-->
 <!--    <button type="button" onclick="trainNatureModel()">Train Model</button>-->
     <button type="button" onclick="saveModel(boostModel)">Save Fine-tuned Model</button>
-<!--    <input type="file" accept="application/json" id="eyeData" multiple onchange='openFile(event)'></input>-->
-<!--    <button type="button" onclick="testModel()">test Model</button>-->
+    <button id="eyeDataFile">Download user data</button>
+
+    <input type="file" accept="application/json" id="eyeData" multiple onchange='openFile(event)'></input>
 
     <br>
-
-    <button type="button" onclick="colorEyeData2tensor()">Convert colored eyes</button>
 
     <p id="trainingstate"></p>
     <p id="videostats">Stats: </p>
