@@ -1,7 +1,10 @@
 {% extends "base.html" %}
 
 {% block headextra %}
-<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>-->
+<!--Other ML library-->
+<script src="http://mlweb.loria.fr/ml.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
 <!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>-->
 <!-- Adds the WASM backend to the global backend registry -->
 <!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/tf-backend-wasm.js"></script>-->
@@ -9,9 +12,12 @@
 <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/regression/2.0.1/regression.js"></script>-->
 <!--<script src="https://rawgit.com/chen0040/js-regression/master/build/jsregression.min.js"></script>-->
 
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>-->
 <script src="{{url_for('static', filename='ML.js')}}"></script>
 <script src="{{url_for('static', filename='transfer.js')}}"></script>
+<script src="{{url_for('static', filename='fileIO.js')}}"></script>
+<script src="{{url_for('static', filename='mainTesting.js')}}"></script>
+
 
 
 <script>
@@ -22,11 +28,9 @@
 
 
 {% block body %}
-yaga
 
-<div >
-        <button id="regtoggle"  onclick="regr_class_toggle()" style="padding-bottom:20px"><h4>Regression</h4></button>
-</div>
+<input type="file" accept="application/json" id="eyeData" multiple onchange='openFile(event)'></input>
+yaga
 
 
 <div id="main">
@@ -44,8 +48,9 @@ yaga
       </div>
       <div id="scatter-gl-container"></div>
         <button type="button" onclick="saveEyes()">Save Eyes</button>
+        <button type="button" onclick="trainOnCurrentData()">Train Regression Model</button>
+        <button type="button" onclick="testOnCurrentData()">Test Model</button>
 
-        eyecache
         <br><br>
         <canvas id="eyecache"></canvas>
 

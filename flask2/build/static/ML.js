@@ -37,12 +37,12 @@ function boostedModel(){
 function natureModelFineTune(inElems){
     const model = tf.sequential({
         layers: [
-            tf.layers.dense({inputShape:[inElems], units:8, activation:'relu'}),
-            tf.layers.batchNormalization(),
-            tf.layers.dense({units:2}),
-//            tf.layers.dense({inputShape:[inElems], units:2}),
-
+//            tf.layers.dense({inputShape:[inElems], units:4, activation:'relu'}),
+//            tf.layers.batchNormalization(),
+//            tf.layers.dense({units:4, activation:'relu'}),
+//            tf.layers.batchNormalization(),
 //            tf.layers.dense({units:2}),
+            tf.layers.dense({inputShape:[inElems], units:2}),
         ]
     })
 

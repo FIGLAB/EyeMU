@@ -65,27 +65,29 @@ var expose;
 async function trainNatureRegHead(left_x, right_x, corn_x, screenxy_y){
 
     let embeddingFeatures = natureModelEmbeddings.outputShape.reduce((acc, curVal) => acc + curVal[1], 0);
-//    numFeatures = embeddingFeatures + faceGeom.numFeatures + 8; // 8 from eye corners
-    numFeatures = embeddingFeatures + faceGeom.numFeatures; // REMOVE EYE CORNERS
+    numFeatures = embeddingFeatures + faceGeom.numFeatures + 8; // 8 from eye corners
+//    numFeatures = embeddingFeatures + faceGeom.numFeatures; // REMOVE EYE CORNERS
     boostModel = natureModelFineTune(numFeatures);
 
     boostModel.compile({
-      optimizer: tf.train.adam(0.0003),
+      optimizer: tf.train.adam(0.0005),
       loss: 'meanSquaredError',
       metrics: ['mae', 'mse']
     });
+
+    //Randomize order of the data before assembling it all
+    shuffle(left_x, right_x, corn_x, faceGeom_x, screenxy_y)
 
     leye_tensor = tf.tidy(() => tf.stack(left_x).div(255).sub(0.5))
     reye_tensor = tf.tidy(() => tf.stack(right_x).div(255).sub(0.5))
     eyeCorners_tensor = tf.tidy(() => tf.stack(corn_x))
     x_vect = await tf.tidy(() => {
-
             let embeds = natureModelEmbeddings.predict([leye_tensor, reye_tensor, eyeCorners_tensor]);
             embeds[0] = embeds[0].div(100); // First layer embeddings come out huge (100-300), normalize them a little.
             embeds[1] = embeds[1].div(10); // 2nd layer embeddings come out big too (~10-30), normalize them a little.
             embeds = tf.concat(embeds, 1); // Combine the embeddings horizontally, turn 8,4,2 into 14
-//            return tf.concat([embeds, eyeCorners_tensor, faceGeom_x],1);
-            return tf.concat([embeds, faceGeom_x],1); // REMOVE EYE CORNERS
+            return tf.concat([embeds, eyeCorners_tensor, faceGeom_x],1);
+//            return tf.concat([embeds, faceGeom_x],1); // REMOVE EYE CORNERS
     });
 
     console.log("embeddings extracted, x_vect shape: ", x_vect.shape)
@@ -97,8 +99,10 @@ async function trainNatureRegHead(left_x, right_x, corn_x, screenxy_y){
 
     let epochCount = 0;
     await boostModel.fit(x_vect, y_vect, {
-               epochs: 100,
-               batchSize: 20,
+//               epochs: 100,
+               epochs: 128,
+//               batchSize: 20,
+//               batchSize: 15,
                validationSplit: 0.1,
                callbacks: {
           onEpochEnd: async (batch, logs) => {
@@ -242,8 +246,8 @@ async function runNaturePredsLive(){
         embed[1] = embed[1].div(100);
         embed = tf.concat(embed, 1);
 
-//        return boostModel.predict(tf.concat([embed, curEyes[2].reshape([1,8]), [faceGeom.getGeom()]], 1));
-        return boostModel.predict(tf.concat([embed, [faceGeom.getGeom()]], 1)); // REMOVE EYE CORNERS
+        return boostModel.predict(tf.concat([embed, curEyes[2].reshape([1,8]), [faceGeom.getGeom()]], 1));
+//        return boostModel.predict(tf.concat([embed, [faceGeom.getGeom()]], 1)); // REMOVE EYE CORNERS
         });
 
 //        return naturemodel.predict([curEyes[0].div(255).sub(0.5).reshape([1, 128, 128, 3]),
@@ -279,7 +283,7 @@ async function main() {
     console.log('Successfully loaded model');
 
     // freeze the first 28/36 layers (up to the final dense ones), 29 leaves first dense also untrained
-    for (let i = 0; i <= 36; i++){
+    for (let i = 0; i <= 29; i++){
         naturemodel.layers[i].trainable = false;
     }
     // Copy of original outputting embeddings, 29, 33, 36 are the dense layers

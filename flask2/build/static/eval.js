@@ -101,6 +101,12 @@ function draw(){
                                                + y_total/9
 
                 console.log(errorTotalsString);
+//                try{
+//                    document.getElementById("trainingstate").innerHTML = errorTotalsString;
+//                } catch (Exception e) {
+//                    console.log("trainingstate <p> not found");
+//                }
+
                 noLoop();
             }
         }
@@ -111,7 +117,7 @@ function draw(){
         let pred_Y = curPred[1]*windowHeight;
         ellipse(pred_X, pred_Y, radius/2, radius/2);
 
-        // If the circle is close to its next location, add up the error
+        // If the circle is close to its next location, start adding up the error
         if ((Math.abs(nX-X) + Math.abs(nY-Y)) < 50){
             errorsX.push(Math.abs(X-pred_X))
             errorsY.push(Math.abs(Y-pred_Y))
@@ -120,9 +126,6 @@ function draw(){
     }
 }
 
-function getAvgError(arr){
-
-}
 
 // Start over the evaluation round if clicked
 function mouseClicked() {

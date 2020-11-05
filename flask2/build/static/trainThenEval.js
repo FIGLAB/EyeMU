@@ -2,7 +2,7 @@
 var n_calib_rounds = 1;
 
 // equal collection ims at each point
-var num_ims_per_location = 20;
+var num_ims_per_location = 15;
 var locations_traversed = 0;
 
 // Global variables
@@ -163,6 +163,9 @@ function draw(){
 //            eyeSelfie(true); // called at the end of trianing as well
             calib_counter = 0
             noLoop();
+//            setTimeout(() => {
+//                trainNatureRegHead(leftEyes_x, rightEyes_x, eyeCorners_x,screenXYs_y)
+//            }, 5000);
             trainNatureRegHead(leftEyes_x, rightEyes_x, eyeCorners_x,screenXYs_y);
         }
     }
