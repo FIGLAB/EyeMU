@@ -17,6 +17,83 @@ var mins_x;
 // Regression head
 var boostModel;
 
+// SVR variables
+var svr_x;
+var svr_y;
+
+var x_mat;
+var ground_x;
+var ground_y;
+
+function exportWEBML(){
+    svr_x_str = JSON.stringify(getObjectWithoutFunc(svr_x));
+    svr_y_str = JSON.stringify(getObjectWithoutFunc(svr_y));
+
+    localStorage.setItem("svm_x", svr_x_str);
+    localStorage.setItem("svm_y", svr_y_str);
+
+//    svm_x_str = localStorage.getItem("svm_x");
+//    svm_x = renewObject(JSON.parse(svm_x_str));
+//
+//    svm_y_str = localStorage.getItem("svm_y");
+//    svm_y = renewObject(JSON.parse(svm_y_str));
+
+
+}
+
+
+function assembleMatrices(){
+    tmp = assembleTensors(leftEyes_x, rightEyes_x, eyeCorners_x,faceGeom_x, screenXYs_y);
+
+    x_vect = tmp[0];
+    y_vect = tmp[1];
+
+    x_mat = array2mat(x_vect.arraySync())
+
+    tmp = y_vect.split(2, 1)
+    ground_x = tmp[0]
+    ground_y = tmp[1]
+
+    ground_x = array2mat(ground_x.arraySync())
+    ground_y = array2mat(ground_y.arraySync())
+//    return [x_mat, ground_x, ground_y]
+}
+
+function trainSVRs(){
+    console.log("beginning SVR training")
+
+    // Data wrangling
+    assembleMatrices();
+//    tmp = assembleMatrices();
+//    x_mat = tmp[0];
+//    ground_x = tmp[1];
+//    ground_y = tmp[2];
+
+
+    // Model init               // Epsilon dictates how tightly fitting the SVR is
+    eps = 0.2
+    svr_x = new Regression(SVR, {kernel: "rbf", epsilon: eps});
+    svr_x.train(x_mat, ground_x)
+
+    svr_y = new Regression(SVR, {kernel: "rbf", epsilon: eps});
+    svr_y.train(x_mat, ground_y)
+
+    // Model testing
+    testSVRs();
+}
+
+function testSVRs(){
+    console.log("beginning SVR testing")
+    assembleMatrices();
+
+    x_err = svr_x.test(x_mat, ground_x)
+    y_err = svr_y.test(x_mat, ground_y)
+    console.log("SVR x error, cm and %:", x_err*6.3, x_err)
+    console.log("SVR y error, cm and %:", y_err*13.3, y_err)
+    console.log("combined SVR error on current dataset:", Math.sqrt(Math.pow(y_err*13.3,2) + Math.pow(x_err*6.3,2)))
+    console.log()
+}
+
 
 // Assuming these are the x and y vectors, shuffle them by row to eliminate ordering effects
 function shuffleTensorsTogether(x,y){
@@ -44,8 +121,7 @@ function shuffleTensorsTogether(x,y){
 
 function assembleTensors(left, rights, eyeCorns, faceAngles, xys){
     natureModelEmbeddings = tf.model({inputs: naturemodel.inputs,
-//            outputs: [naturemodel.layers[29].output, naturemodel.layers[33].output, naturemodel.layers[36].output]});
-            outputs: [naturemodel.layers[29].output, naturemodel.layers[33].output]});
+            outputs: [naturemodel.layers[29].output, naturemodel.layers[33].output, naturemodel.layers[36].output]});
 
     return tf.tidy(() => {
         leye_tensor = tf.tidy(() => tf.stack(left).div(255).sub(0.5))
@@ -53,15 +129,16 @@ function assembleTensors(left, rights, eyeCorns, faceAngles, xys){
         eyeCorners_tensor = tf.tidy(() => tf.stack(eyeCorns))
 
         let embeddingFeatures = natureModelEmbeddings.outputShape.reduce((acc, curVal) => acc + curVal[1], 0);
-             numFeatures = embeddingFeatures + 4 + 8; // 8 from eye corners
+        numFeatures = embeddingFeatures + 4 + 8; // 8 from eye corners
 
         x_vect = tf.tidy(() => {
                 let embeds = natureModelEmbeddings.predict([leye_tensor, reye_tensor, eyeCorners_tensor]);
                 embeds[0] = embeds[0].div(100);
                 embeds[1] = embeds[1].div(10);
-    //            embeds[0] = embeds[0].div(10);
-                embeds = tf.concat(embeds, 1); // Combine the embeddings horizontally, turn 8,4,2 into 14
+                embeds = tf.concat(embeds, 1);
+                // Combine the embeddings horizontally, turn 8,4,2 into 14
                 return tf.concat([embeds, eyeCorners_tensor, faceAngles],1);
+
         });
         y_vect = tf.tensor(screenXYs_y, [screenXYs_y.length, 2])
 
