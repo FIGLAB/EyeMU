@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GAZEL</title>
+
+
+    <style>
+    // For drawing the predicted output directly onto the HTML page with an icon
+    .dot{
+        width: 52px;
+        height: 52px;
+        background-color: #f00;
+        border-radius: 50%;
+        position: fixed;
+    }
+    
+    .predicdot{
+        width: 30px;
+        height: 30px;
+        background-color: #ffab56;
+        border-radius: 50%;
+        position:fixed;
+    }
+    </style>
+
+    
+<!-- Tensorflow core, model, and backend-->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
+
+<!-- Javascript specific to this page -->
+<script src="/static/facemeshdemo.js"></script>
+
+<script>
+    main();
+</script>
+
+
+</head>
+<body style="background-color:lightblue;">
+
+
+<div id="main">
+    <p id="RPY"></p>
+    <canvas id="eyecache"></canvas>
+
+    <video hidden autoplay muted playsinline id="video"  style="
+              -webkit-transform: scaleX(-1);
+              transform: scaleX(-1);
+              visibility: hidden;
+              width: auto;
+              height: auto;
+              ">
+            </video>
+
+</div>
+
+
+
+</body>
+</html>

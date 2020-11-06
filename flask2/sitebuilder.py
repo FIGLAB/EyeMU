@@ -31,9 +31,17 @@ def transfer():
 def test():
     return render_template("livetest.html")
 
+@app.route('/svrtest/')
+def svrtest():
+    return render_template("svr.html")
+
 @app.route('/eval/')
 def eval():
     return render_template("eval.html")
+
+@app.route('/facemeshdemo/')
+def facemeshdemo():
+    return render_template("facemeshdemo.html")
 
 @app.after_request
 def add_header(response):

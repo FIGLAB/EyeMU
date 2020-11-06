@@ -4,7 +4,10 @@
 <!--Other ML library-->
 <script src="http://mlweb.loria.fr/ml.js"></script>
 
+
+            <!--Tensorflow javascript import-->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+
 <!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>-->
 <!-- Adds the WASM backend to the global backend registry -->
 <!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/tf-backend-wasm.js"></script>-->
@@ -50,6 +53,11 @@ yaga
         <button type="button" onclick="saveEyes()">Save Eyes</button>
         <button type="button" onclick="trainOnCurrentData()">Train Regression Model</button>
         <button type="button" onclick="testOnCurrentData()">Test Model</button>
+
+        <br>
+        <button type="button" onclick="trainSVRs()">Train SVRs</button>
+        <button type="button" onclick="testSVRs()">Test SVRs</button>
+
 
         <br><br>
         <canvas id="eyecache"></canvas>
