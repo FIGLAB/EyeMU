@@ -243,7 +243,7 @@ async function runNaturePredsLive(){
     pred = tf.tidy(() => {
         let embed = natureModelEmbeddings.predict([curEyes[0].div(255).sub(0.5).reshape([1, 128, 128, 3]), curEyes[1].div(255).sub(0.5).reshape([1, 128, 128, 3]), curEyes[2].reshape([1, 8])]);
         embed[0] = embed[0].div(100);
-        embed[1] = embed[1].div(100);
+        embed[1] = embed[1].div(10);
         embed = tf.concat(embed, 1);
 
         return boostModel.predict(tf.concat([embed, curEyes[2].reshape([1,8]), [faceGeom.getGeom()]], 1));
@@ -278,7 +278,7 @@ async function main() {
     // import custom model
     models = [];
     console.log("loading model");
-    await loadTFJSModel("/static/models/tfjsmodel");
+    await loadTFJSModel("/static/models/tfjsmodel2");
     naturemodel = models[0];
     console.log('Successfully loaded model');
 

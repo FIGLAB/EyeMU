@@ -11,6 +11,10 @@ var output;
 var curHeadSize;
 var curHeadTilt;
 
+//SVR vars
+var svm_x;
+var svm_y;
+
 function waitForIt(){
     if (document.body){
         main();
@@ -146,27 +150,6 @@ async function renderPrediction() {
 };
 
 
-
-function predictEyeLocation(){
-        output = tf.tidy(() => {
-            lefttmp = models[0].predict(leftEye).arraySync()[0];
-            righttmp = models[1].predict(rightEye).arraySync()[0]
-
-            dataVec = [].concat(lefttmp,
-                                  righttmp,
-                                  curHeadTilt,
-                                  curHeadSize)
-            dataTensor = tf.tensor(dataVec, [1,7])
-            return models[2].predict(dataTensor).arraySync()[0];
-        });
-
-
-        drawPrediction()
-
-        dataTensor.dispose()
-}
-
-
 async function runNaturePredsLive(){
 //    console.log(tf.memory());
 
@@ -232,6 +215,7 @@ async function main() {
     setTimeout(function(){
             eyeSelfie(true);
         }, 2000);
+
     setTimeout(runNaturePredsLive, 3000);
 }
 

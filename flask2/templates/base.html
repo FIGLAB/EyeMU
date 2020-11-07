@@ -4,17 +4,25 @@
     <meta charset="UTF-8">
     <title>GAZEL</title>
 
-
+<!-- For drawing the predicted output directly onto the HTML page with an icon-->
+<!-- CSS comments are not //, and if you put them in the <style> header they break it -->
     <style>
-    // For drawing the predicted output directly onto the HTML page with an icon
-    .dot{
-        width: 52px;
-        height: 52px;
-        background-color: #f00;
+    .placeholderdot{
+        width: 30px;
+        height: 30px;
+        background-color: #ffab56;
         border-radius: 50%;
-        position: fixed;
+        position:fixed;
     }
-    
+
+    .targetdot{
+        width: 60px;
+        height: 60px;
+        background-color: #0e5cab;
+        border-radius: 50%;
+        position:fixed;
+    }
+
     .predicdot{
         width: 30px;
         height: 30px;
@@ -22,6 +30,7 @@
         border-radius: 50%;
         position:fixed;
     }
+
     </style>
 
     {% block headextra %}

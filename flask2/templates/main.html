@@ -2,7 +2,8 @@
 
 {% block headextra %}
 <!--Other ML library-->
-<script src="http://mlweb.loria.fr/ml.js"></script>
+<!--<script src="http://mlweb.loria.fr/ml.js"></script>-->
+<script src="{{url_for('static', filename='mlweb.js')}}"></script>
 
 
             <!--Tensorflow javascript import-->
@@ -57,6 +58,8 @@ yaga
         <br>
         <button type="button" onclick="trainSVRs()">Train SVRs</button>
         <button type="button" onclick="testSVRs()">Test SVRs</button>
+        <button type="button" onclick="exportWEBML()">Save SVRs</button>
+        <p id="svrstatus"></p>
 
 
         <br><br>
