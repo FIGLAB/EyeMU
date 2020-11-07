@@ -147,6 +147,7 @@ async function setupCamera() {
 
   return new Promise((resolve) => {
     video.onloadedmetadata = () => {
+//    video.onloadeddata = () => {
       resolve(video);
     };
   });
@@ -174,8 +175,6 @@ async function renderPrediction() {
 
         // Get face geometry
         faceGeom.update(prediction);
-
-//        document.getElementById("videostats").innerHTML = "Video resolution: " + videoWidth + " x " + videoHeight + "\n eye crop resolution: " + Math.round(rBB[1]-rBB[0]) + " x " + Math.round(rBB[3]-rBB[2]);)
     }
 
     setTimeout(requestAnimationFrame(renderPrediction), 100); // call self after 100 ms
@@ -256,7 +255,6 @@ async function collectmain() {
     video.play();
     videoWidth = video.videoWidth;
     videoHeight = video.videoHeight;
-//    document.getElementById("videostats").innerHTML = "camera resolution: " + videoWidth + " x " + videoHeight;
 
     // Set up canvas to draw the eyes of the user (debugging feature)
     canvas = document.getElementById('eyecache');
@@ -265,6 +263,7 @@ async function collectmain() {
     ctx = canvas.getContext('2d');
 
     // start training loop
+//    setTimeout(renderPrediction, 2000);
     renderPrediction();
 
     console.log("collection color main complete");

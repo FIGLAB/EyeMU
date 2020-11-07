@@ -66,6 +66,11 @@ function openFile(event) {
             expose = loadEyeData
             console.log(loadEyeData)
 
+            // // need to do data cleanup before we wipe the old variables
+//            if (leftEyes_x != undefined){
+//
+//            }
+
             leftEyes_x = tf.unstack(loadEyeData[0])
             rightEyes_x = tf.unstack(loadEyeData[1])
             eyeCorners_x = tf.unstack(loadEyeData[2])
