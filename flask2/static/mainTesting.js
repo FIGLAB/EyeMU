@@ -73,7 +73,6 @@ function trainSVRs(){
     assembleMatrices();
 
     // Model init               // Epsilon dictates how tightly fitting the SVR is
-    eps = 0.35
     svr_x = newModel();
     svr_x.train(x_mat, ground_x)
 

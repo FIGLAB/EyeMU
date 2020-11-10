@@ -184,7 +184,7 @@ async function main() {
     // import custom model
     models = [];
     console.log("loading model");
-    await loadTFJSModel("/static/models/tfjsmodel");
+    await loadTFJSModel("/static/models/tfjsmodel2");
     naturemodel = models[0];
     console.log('Successfully loaded model');
 

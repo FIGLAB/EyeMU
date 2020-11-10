@@ -6,12 +6,13 @@
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
 
 <!-- special javascript for the SVM/SVR for the model personalization -->
-<script src="https://cdn.jsdelivr.net/npm/machinelearn/machinelearn.min.js"></script>
+<!--<script src="https://cdn.jsdelivr.net/npm/machinelearn/machinelearn.min.js"></script>-->
 
 
 <!-- Javascript specific to this page -->
 <script src="{{url_for('static', filename='ML.js')}}"></script>
 <script src="{{url_for('static', filename='fileIO.js')}}"></script>
+<script src="{{url_for('static', filename='mainTesting.js')}}"></script>
 <script src="{{url_for('static', filename='collectioncolor.js')}}"></script>
 <script src="{{url_for('static', filename='transfer.js')}}"></script>
 
@@ -20,6 +21,8 @@
 <script src="https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/p5.js"></script>
 <script src="{{url_for('static', filename='trainThenEval.js')}}"></script>
 <!--<script src="{{url_for('static', filename='sketch.js')}}"></script>-->
+
+<script src="{{url_for('static', filename='mlweb.js')}}"></script>
 
 <script>
     main();
@@ -41,6 +44,7 @@
     <br>
 
     <p id="trainingstate"></p>
+    <p id="svrstatus"></p>
     <p id="videostats">Stats: </p>
 
 

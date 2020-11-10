@@ -20,17 +20,6 @@ var svr_y;
 var windowWidth = window.innerWidth;
 var windowHeight = window.innerHeight;
 
-//function waitForIt(){
-//    if (document.body){
-//        main();
-//    } else {
-//        document.addEventListener("DOMContentLoaded", function(event) {
-//           console.log("DOM fully loaded and parsed");
-//           main();
-//        });
-//    }
-//}
-
 //Draw the prediction as an orange dot on the screen.
 async function drawPrediction(predictedXY) {
     // Remove all existing predicdots
@@ -161,7 +150,7 @@ async function main() {
     // import custom model
     models = [];
     console.log("loading model");
-    await loadTFJSModel("/static/models/tfjsmodel");
+    await loadTFJSModel("/static/models/tfjsmodel2");
     naturemodel = models[0];
     console.log('Successfully loaded model');
     // Set up embeddings output

@@ -39,12 +39,13 @@
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
 
 <!-- special javascript for the SVM/SVR for the model personalization -->
-<script src="https://cdn.jsdelivr.net/npm/machinelearn/machinelearn.min.js"></script>
+<!--<script src="https://cdn.jsdelivr.net/npm/machinelearn/machinelearn.min.js"></script>-->
 
 
 <!-- Javascript specific to this page -->
 <script src="/static/ML.js"></script>
 <script src="/static/fileIO.js"></script>
+<script src="/static/mainTesting.js"></script>
 <script src="/static/collectioncolor.js"></script>
 <script src="/static/transfer.js"></script>
 
@@ -53,6 +54,8 @@
 <script src="https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/p5.js"></script>
 <script src="/static/trainThenEval.js"></script>
 <!--<script src="/static/sketch.js"></script>-->
+
+<script src="/static/mlweb.js"></script>
 
 <script>
     main();
@@ -74,6 +77,7 @@
     <br>
 
     <p id="trainingstate"></p>
+    <p id="svrstatus"></p>
     <p id="videostats">Stats: </p>
 
 

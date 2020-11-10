@@ -17,6 +17,10 @@ freezer = Freezer(app)
 def index():
     return render_template("main.html")
 
+@app.route('/datacollection/')
+def datacollect():
+    return render_template("datacollection.html")
+
 @app.route('/tfimporttest/')
 def tfimporttest():
     response = render_template("tfimporttest.html")
