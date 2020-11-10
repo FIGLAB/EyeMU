@@ -1,8 +1,10 @@
+new p5();
+
 // trainThenEval.js trains a model then runs the eval loop on it.
-var n_calib_rounds = 1;
+var n_calib_rounds = 3;
 
 // equal collection ims at each point
-var num_ims_per_location = 15;
+var num_ims_per_location = 5;
 var locations_traversed = 0;
 
 // Global variables
@@ -126,6 +128,10 @@ function draw(){
     } else if (rBB != undefined){
         // if the face has been detected, start the data collection
         if (calib_rounds < n_calib_rounds){
+            textAlign(CENTER, CENTER);
+            textSize(50);
+            text("Round: " + (calib_rounds+1) + "/" + n_calib_rounds, width/2, height/2)
+
             radius = radius + sin( frameCount / 8 );
 
             // Track circle to new destination
@@ -160,23 +166,14 @@ function draw(){
             text('Training.....', width/3, height/2);
             console.log('calib done, training')
 
-//            eyeSelfie(true); // called at the end of trianing as well
+//            eyeSelfie(true); // called at the end of training as well
             calib_counter = 0
             noLoop();
-//            setTimeout(() => {
-//                trainNatureRegHead(leftEyes_x, rightEyes_x, eyeCorners_x,screenXYs_y)
-//            }, 5000);
+
             trainNatureRegHead(leftEyes_x, rightEyes_x, eyeCorners_x,screenXYs_y);
         }
     }
 }
-
-// Reset errro tracking on-click
-function mouseClicked() {
-  errorxY = [0,0,0,0,0,0,0];
-  errorxX = [0,0,0,0,0,0,0];
-}
-
 
 // Draw regression button
 var regression = true;

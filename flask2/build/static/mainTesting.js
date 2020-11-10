@@ -71,10 +71,8 @@ function trainSVRs(){
 
     // Data wrangling
     assembleMatrices();
-//    tf.disposeVariables(); // clear other memory
 
     // Model init               // Epsilon dictates how tightly fitting the SVR is
-    eps = 0.35
     svr_x = newModel();
     svr_x.train(x_mat, ground_x)
 
@@ -144,7 +142,7 @@ function assembleTensors(left, rights, eyeCorns, faceAngles, xys){
                 embeds[1] = embeds[1].div(10);
                 embeds = tf.concat(embeds, 1);
                 // Combine the embeddings horizontally, turn 8,4,2 into 14
-                return tf.concat([embeds, eyeCorners_tensor, faceAngles],1);
+                return tf.concat([embeds, eyeCorners_tensor, tf.tensor(faceAngles)],1);
 
         });
         y_vect = tf.tensor(screenXYs_y, [screenXYs_y.length, 2])
@@ -265,6 +263,10 @@ function testOnCurrentData(){
 function getBaseline(){
     tmp = assembleTensors(leftEyes_x, rightEyes_x, eyeCorners_x,faceGeom_x, screenXYs_y);
     tf.tidy(() => {
+        leye_tensor = tf.tidy(() => tf.stack(leftEyes_x).div(255).sub(0.5))
+        reye_tensor = tf.tidy(() => tf.stack(rightEyes_x).div(255).sub(0.5))
+        eyeCorners_tensor = tf.tidy(() => tf.stack(eyeCorners_x))
+
         a = naturemodel.predict([leye_tensor, reye_tensor, eyeCorners_tensor])
         b = a.sub(y_vect)
         c = tf.split(b,2,1)

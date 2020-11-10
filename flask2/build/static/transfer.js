@@ -60,29 +60,20 @@ function* y_generator(){
 }
 
 
-// Training the regression head that goes onto the output embeddings of the nature model.
-var expose;
+// Training the mlweb regression head that takes in the embeddings, eye corners, and face geometry
 async function trainNatureRegHead(left_x, right_x, corn_x, screenxy_y){
-
-    let embeddingFeatures = natureModelEmbeddings.outputShape.reduce((acc, curVal) => acc + curVal[1], 0);
-    numFeatures = embeddingFeatures + faceGeom.numFeatures + 8; // 8 from eye corners
-//    numFeatures = embeddingFeatures + faceGeom.numFeatures; // REMOVE EYE CORNERS
-    boostModel = natureModelFineTune(numFeatures);
-
-    boostModel.compile({
-      optimizer: tf.train.adam(0.0005),
-      loss: 'meanSquaredError',
-      metrics: ['mae', 'mse']
-    });
-
-    //Randomize order of the data before assembling it all
-    shuffle(left_x, right_x, corn_x, faceGeom_x, screenxy_y)
+    stopFacemesh = true;
 
     leye_tensor = tf.tidy(() => tf.stack(left_x).div(255).sub(0.5))
     reye_tensor = tf.tidy(() => tf.stack(right_x).div(255).sub(0.5))
     eyeCorners_tensor = tf.tidy(() => tf.stack(corn_x))
+
+    console.log("eye and corner tensors stacked")
+
     x_vect = await tf.tidy(() => {
             let embeds = natureModelEmbeddings.predict([leye_tensor, reye_tensor, eyeCorners_tensor]);
+            console.log("embeddings predicted, time to arrange them")
+
             embeds[0] = embeds[0].div(100); // First layer embeddings come out huge (100-300), normalize them a little.
             embeds[1] = embeds[1].div(10); // 2nd layer embeddings come out big too (~10-30), normalize them a little.
             embeds = tf.concat(embeds, 1); // Combine the embeddings horizontally, turn 8,4,2 into 14
@@ -93,63 +84,33 @@ async function trainNatureRegHead(left_x, right_x, corn_x, screenxy_y){
     console.log("embeddings extracted, x_vect shape: ", x_vect.shape)
     y_vect = tf.tensor(screenxy_y, [screenxy_y.length, 2])
 
-//    faceGeom_x and eyeCorners
-//    x_vect.print();
-//    y_vect.print();
+    // Assemble the data into mlweb's format
+    x_mat = array2mat(x_vect.arraySync())
+    console.log("x_vect assembled")
 
-    let epochCount = 0;
-    await boostModel.fit(x_vect, y_vect, {
-//               epochs: 100,
-               epochs: 128,
-//               batchSize: 20,
-//               batchSize: 15,
-               validationSplit: 0.1,
-               callbacks: {
-          onEpochEnd: async (batch, logs) => {
-                  console.log(boostModel.predict(tf.randomNormal([1,numFeatures])).arraySync())
-                  console.log(epochCount++, 'Loss: ' + logs.loss.toFixed(5));
-                  document.getElementById("trainingstate").innerHTML = "Epoch: " + epochCount + " Loss: " + logs.loss.toFixed(5);
-          }
-        }
-        }).then(info => {
-                // Give us the details of the training, and show the user
-                console.log('Final accuracy', info.history);
-                console.log( info.history['mae']);
-                console.log("val mae", info.history['val_mae']);
-                console.log("finished training the fine tuned google model")
-                document.getElementById("trainingstate").innerHTML = "nature model calibration training done";
-                console.log("test on random data after fitting")
-                console.log(boostModel.predict(tf.randomNormal([1,numFeatures])).arraySync())
-                console.log("last layer weights after training: ")
+    tmp = y_vect.split(2, 1)
+    ground_x = tmp[0]
+    ground_y = tmp[1]
 
-               //  clean up memory
-                console.log(tf.memory())
-                leye_tensor.dispose()
-                reye_tensor.dispose()
-                eyeCorners_tensor.dispose()
-                y_vect.dispose()
+    ground_x = array2mat(ground_x.arraySync())
+    ground_y = array2mat(ground_y.arraySync())
+    console.log("y_vects assembled")
 
-                left_x.forEach((item, index, arr) =>{
-                    left_x[index].dispose();
-                    right_x[index].dispose();
-                    corn_x[index].dispose();
-                })
-                console.log(tf.memory())
+    // Model init and training
+    svr_x = newModel();
+    svr_x.train(x_mat, ground_x);
 
-                tf.ENV.set('WEBGL_CPU_FORWARD', true);
+    svr_y = newModel();
+    svr_y.train(x_mat, ground_y);
+    console.log("x and y regression are trained")
 
-                // Start the live testing loop
-                done_with_training = true;
-                curPred = [0.5, 0.5];
-                eyeSelfie(true);
-                setTimeout(runNaturePredsLive, 100);
-                setTimeout(loop, 500);
-        });
+    // Save model into localstorage
+    exportWEBML()
+    console.log("x and y regression are exported")
+
+    // Restart the p5js canvas just to show that the training is done.
+    loop();
 }
-
-
-
-
 
 async function trainNatureModel(left_x, right_x, corn_x, screenxy_y){
 //function trainNatureModel(left_x, right_x, corn_x, screenxy_y){
@@ -271,14 +232,14 @@ async function main() {
     tf.setBackend('webgl');
     await tf.ready();
 
-    // Need to keep all computation in the GPU/webGL by removing forward CPU computation
-    // True at least for iOS Safari
-    tf.ENV.set('WEBGL_CPU_FORWARD', false);
+//    // Need to keep all computation in the GPU/webGL by removing forward CPU computation if you want to retrain the main DL model
+//    // True at least for iOS Safari
+//    tf.ENV.set('WEBGL_CPU_FORWARD', false);
 
     // import custom model
     models = [];
     console.log("loading model");
-    await loadTFJSModel("/static/models/tfjsmodel");
+    await loadTFJSModel("/static/models/tfjsmodel2");
     naturemodel = models[0];
     console.log('Successfully loaded model');
 

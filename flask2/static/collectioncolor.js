@@ -9,8 +9,10 @@ var screenXYs_y = [];
 
 // real-time testing variable
 var curEyes = []
-
 var prediction;
+
+// Stopping facemesh for training
+var stopFacemesh = false;
 
 // Resize eyeballs to this size
 var inx = 128;
@@ -23,6 +25,8 @@ var canvas;
 // eye bounding boxes
 var rBB;
 var lBB;
+
+
 
 //Yaw is the angle in the x-z plane with the vertical axis at the origin
 //Return is in radians. Turning the head left is a positive angle, right is a negative angle, 0 is head on.
@@ -154,6 +158,8 @@ async function setupCamera() {
 }
 
 var now;
+
+
 // Calls face mesh on the video and outputs the eyes and face bounding boxes to global vars
 async function renderPrediction() {
     const facepred = await fmesh.estimateFaces(video);
@@ -177,7 +183,10 @@ async function renderPrediction() {
         faceGeom.update(prediction);
     }
 
-    setTimeout(requestAnimationFrame(renderPrediction), 100); // call self after 100 ms
+    if (!stopFacemesh){
+        setTimeout(requestAnimationFrame(renderPrediction), 100); // call self after 100 ms
+    }
+
 };
 
 // Draws the current eyes onto the canvas, directly from video streams
