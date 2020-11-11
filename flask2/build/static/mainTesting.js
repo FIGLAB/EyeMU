@@ -34,7 +34,6 @@ function exportWEBML(){
     localStorage.setItem("svr_y", svr_y_str);
     document.getElementById('svrstatus').innerHTML = "SVRs exported"
 }
-
 function importWEBML(){
     svr_x_str = localStorage.getItem("svr_x");
     svr_x = renewObject(JSON.parse(svr_x_str));
@@ -125,8 +124,13 @@ function shuffleTensorsTogether(x,y){
 
 
 function assembleTensors(left, rights, eyeCorns, faceAngles, xys){
-    natureModelEmbeddings = tf.model({inputs: naturemodel.inputs,
-            outputs: [naturemodel.layers[29].output, naturemodel.layers[33].output, naturemodel.layers[36].output]});
+    natureModelEmbeddings = tf.model({
+        inputs: naturemodel.inputs,
+        outputs: [naturemodel.layers[39].output, naturemodel.layers[43].output, naturemodel.layers[46].output]
+    });
+//    natureModelEmbeddings = tf.model({inputs: naturemodel.inputs,
+//                outputs: [naturemodel.layers[29].output, naturemodel.layers[33].output, naturemodel.layers[36].output]})
+
 
     return tf.tidy(() => {
         leye_tensor = tf.tidy(() => tf.stack(left).div(255).sub(0.5))
@@ -137,7 +141,8 @@ function assembleTensors(left, rights, eyeCorns, faceAngles, xys){
         numFeatures = embeddingFeatures + 4 + 8; // 8 from eye corners
 
         x_vect = tf.tidy(() => {
-                let embeds = natureModelEmbeddings.predict([leye_tensor, reye_tensor, eyeCorners_tensor]);
+                let embeds = natureModelEmbeddings.predict([leye_tensor, reye_tensor, eyeCorners_tensor, tf.stack(faceAngles)]);
+//                let embeds = natureModelEmbeddings.predict([leye_tensor, reye_tensor, eyeCorners_tensor]);
                 embeds[0] = embeds[0].div(100);
                 embeds[1] = embeds[1].div(10);
                 embeds = tf.concat(embeds, 1);
@@ -146,14 +151,6 @@ function assembleTensors(left, rights, eyeCorns, faceAngles, xys){
 
         });
         y_vect = tf.tensor(screenXYs_y, [screenXYs_y.length, 2])
-
-        // Shuffle before sending them out.
-        tmp = shuffleTensorsTogether(x_vect, y_vect);
-        x_vect.dispose();
-        y_vect.dispose();
-
-        x_vect = tmp[0];
-        y_vect = tmp[1];
 
         return [x_vect, y_vect, numFeatures];
     })
@@ -261,15 +258,25 @@ function testOnCurrentData(){
 }
 
 function getBaseline(){
-    tmp = assembleTensors(leftEyes_x, rightEyes_x, eyeCorners_x,faceGeom_x, screenXYs_y);
+    tmp = assembleTensors(leftEyes_x, rightEyes_x, eyeCorners_x, faceGeom_x, screenXYs_y);
     tf.tidy(() => {
         leye_tensor = tf.tidy(() => tf.stack(leftEyes_x).div(255).sub(0.5))
         reye_tensor = tf.tidy(() => tf.stack(rightEyes_x).div(255).sub(0.5))
         eyeCorners_tensor = tf.tidy(() => tf.stack(eyeCorners_x))
+        faceGeom_tensor = tf.tidy(() => tf.stack(faceGeom_x))
 
-        a = naturemodel.predict([leye_tensor, reye_tensor, eyeCorners_tensor])
+//        a = naturemodel.predict([leye_tensor, reye_tensor, eyeCorners_tensor, faceGeom_tensor])
+        a = naturemodel.predictOnBatch([leye_tensor, reye_tensor, eyeCorners_tensor, faceGeom_tensor])
+//        a = naturemodel.predict([leye_tensor, reye_tensor, eyeCorners_tensor])
         b = a.sub(y_vect)
         c = tf.split(b,2,1)
+
+        x_err = tf.sqrt(c[0].mul(6.4).pow(2)).mean();
+        y_err = tf.sqrt(c[1].mul(13.3).pow(2)).mean();
+        console.log("baseline x error in cm: ")
+        x_err.print()
+        console.log("baseline y error in cm: ")
+        y_err.print()
 
         d = tf.sqrt(c[0].mul(6.4).pow(2).add(c[1].mul(13.3).pow(2)))
         console.log("baseline cm error on this data: ")

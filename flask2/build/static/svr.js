@@ -84,12 +84,13 @@ async function runSVRlive(){
 
     now = performance.now();
     pred = tf.tidy(() => {
-                let embed = natureModelEmbeddings.predict([curEyes[0].div(255).sub(0.5).reshape([1, 128, 128, 3]), curEyes[1].div(255).sub(0.5).reshape([1, 128, 128, 3]), curEyes[2].reshape([1, 8])]);
+                let curGeom = tf.tensor(faceGeom.getGeom()).reshape([1,4]);
+                let embed = natureModelEmbeddings.predict([curEyes[0].div(255).sub(0.5).reshape([1, 128, 128, 3]), curEyes[1].div(255).sub(0.5).reshape([1, 128, 128, 3]), curEyes[2].reshape([1, 8]), curGeom]);
                 embed[0] = embed[0].div(100);
                 embed[1] = embed[1].div(10);
                 embed = tf.concat(embed, 1);
 
-                allFeatures = tf.concat([embed, curEyes[2].reshape([1,8]), [faceGeom.getGeom()]], 1);
+                allFeatures = tf.concat([embed, curEyes[2].reshape([1,8]), curGeom], 1);
                 allFeatures_mat = array2mat(allFeatures.arraySync());
                 return [svr_x.predict(allFeatures_mat), svr_y.predict(allFeatures_mat)]
             })
@@ -150,12 +151,17 @@ async function main() {
     // import custom model
     models = [];
     console.log("loading model");
-    await loadTFJSModel("/static/models/tfjsmodel2");
+//    await loadTFJSModel("/static/models/tfjsmodel2");
+    await loadTFJSModel("/static/models/tfjsmodel3");
     naturemodel = models[0];
     console.log('Successfully loaded model');
     // Set up embeddings output
-    natureModelEmbeddings = tf.model({inputs: naturemodel.inputs,
-            outputs: [naturemodel.layers[29].output, naturemodel.layers[33].output, naturemodel.layers[36].output]});
+//    natureModelEmbeddings = tf.model({inputs: naturemodel.inputs,
+//            outputs: [naturemodel.layers[29].output, naturemodel.layers[33].output, naturemodel.layers[36].output]});
+    natureModelEmbeddings = tf.model({
+        inputs: naturemodel.inputs,
+        outputs: [naturemodel.layers[39].output, naturemodel.layers[43].output, naturemodel.layers[46].output]
+    });
 
     // Load in SVR
     svr_x_str = localStorage.getItem("svr_x");

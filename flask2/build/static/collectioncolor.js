@@ -186,7 +186,6 @@ async function renderPrediction() {
     if (!stopFacemesh){
         setTimeout(requestAnimationFrame(renderPrediction), 100); // call self after 100 ms
     }
-
 };
 
 // Draws the current eyes onto the canvas, directly from video streams
