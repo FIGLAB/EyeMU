@@ -63,6 +63,8 @@ function draw(){
     if (done_with_training){
         textSize(30);
         text("\nTraining completed", width/2, height/2);
+
+         setTimeout(() => window.location.href = "../svrtest", 1000);
         return
     }
 

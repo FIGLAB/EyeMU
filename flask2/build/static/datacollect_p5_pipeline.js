@@ -1,32 +1,26 @@
+//face mesh vars
+var stopFacemesh = false;
+    // eye image drawing zone
+var ctx;
+var canvas;
+    // eye bounding boxes
+var rBB;
+var lBB;
+
+// regression head training vars
+var inx = 128;
+var iny = 128;
+var natureModelEmbeddings;
+
 // x and y vects for collecting data for training
-var leftEyes_x = [];
-var rightEyes_x = [];
+var embeddings_x = [];
 var eyeCorners_x = [];
 var faceGeom;
 var faceGeom_x = [];
 
 var screenXYs_y = [];
 
-// real-time testing variable
-var curEyes = []
-var prediction;
-
-// Stopping facemesh for training
-var stopFacemesh = false;
-
-// Resize eyeballs to this size
-var inx = 128;
-var iny = 128;
-
-// eye image drawing zone
-var ctx;
-var canvas;
-
-// eye bounding boxes
-var rBB;
-var lBB;
-
-
+///////////////////////////////////////////////////////////////////////// Face Geometry functions
 
 //Yaw is the angle in the x-z plane with the vertical axis at the origin
 //Return is in radians. Turning the head left is a positive angle, right is a negative angle, 0 is head on.
@@ -99,20 +93,6 @@ function maxminofXY(array){
     return tmp; // returns: [left, right, top, bottom, width, height]
 }
 
-
-// using [left, right, top, bottom] for the bounding box,
-// returns [left_leftcorner, left_rightcorner], [right_rightcorner, right_leftcorner]
-// The order is flipped because the data was aggregated and fed into the NN in that order
-
-// x coordinates by size should be 1 2 4 3
-function boundingBoxToEyeCorners(right_bb, left_bb, h, w){
-    const leftY = (left_bb[2] + left_bb[3])/2/h
-    const rightY = (right_bb[2] + right_bb[3])/2/h
-
-    return [[[left_bb[1]/w, leftY], [left_bb[0]/w, leftY]],
-                [[right_bb[0]/w, rightY], [right_bb[1]/w, rightY]]]
-}
-
 // pull true eye corner coordinates straight from the scaled-up face mesh
 function getEyeCorners(eyePred, h, w){
     let mesh = eyePred.scaledMesh;
@@ -126,17 +106,7 @@ function getEyeCorners(eyePred, h, w){
 }
 
 
-function waitForIt(){
-    if (document.body){
-        collectmain();
-    } else {
-        document.addEventListener("DOMContentLoaded", function(event) {
-           console.log("DOM fully loaded and parsed");
-           collectmain();
-        });
-    }
-}
-
+///////////////////////////////////////////////////////////////////////// face mesh functions
 async function setupCamera() {
   video = document.getElementById('video');
   const stream = await navigator.mediaDevices.getUserMedia({
@@ -151,14 +121,10 @@ async function setupCamera() {
 
   return new Promise((resolve) => {
     video.onloadedmetadata = () => {
-//    video.onloadeddata = () => {
       resolve(video);
     };
   });
 }
-
-var now;
-
 
 // Calls face mesh on the video and outputs the eyes and face bounding boxes to global vars
 async function renderPrediction() {
@@ -188,15 +154,6 @@ async function renderPrediction() {
     }
 };
 
-// Draws the current eyes onto the canvas, directly from video streams
-async function drawCache(continuous){
-        // Get eye images from the video stream directly
-        ctx.drawImage(video, lBB[0], lBB[2], lBB[4], lBB[5], // Source x,y,w,h
-                        0, 0, inx, iny); // Destination x,y,w,h
-        ctx.drawImage(video, rBB[0], rBB[2], rBB[4], rBB[5],
-                       10 + inx, 0, inx, iny);
-}
-
 
 // extracts current eyes to a tensor, as well as the eye corners
 async function eyeSelfie(continuous){
@@ -208,55 +165,120 @@ async function eyeSelfie(continuous){
     }
 
     // Draw from video onto canvas BEFORE you try to clip it out of the canvas
-    drawCache(continuous);
+    ctx.drawImage(video, lBB[0], lBB[2], lBB[4], lBB[5], // Source x,y,w,h
+                        0, 0, inx, iny); // Destination x,y,w,h
+    ctx.drawImage(video, rBB[0], rBB[2], rBB[4], rBB[5],
+                       10 + inx, 0, inx, iny);
 
-    // If running continuously, update the curEyes and curCorners vec AS TENSORS, BUT THROW AWAY OLD VALS
-    if (continuous){
-        if (curEyes.length == 3){
-            curEyes[0].dispose();
-            curEyes[1].dispose();
-            curEyes[2].dispose();
-        }
+    // Calculate X vect variables (embeddings, corners, face geom)
+    let curGeom = faceGeom.getGeom();
+    let curCorners = tf.tensor(eyeCorners);
 
-        curEyes = tf.tidy(() => {
-                    return [tf.browser.fromPixels(
-                        ctx.getImageData(0,0, inx, iny)).reverse(1),
-                   tf.browser.fromPixels(
-                        ctx.getImageData(10 + inx ,0, inx, iny)),
-                   tf.tensor(eyeCorners)]})
+    let tmpEmbeddings = tf.tidy(() => {
+        const tmpleft = tf.browser.fromPixels(
+                ctx.getImageData(0,0, inx, iny)).reverse(1)
+        const tmpright = tf.browser.fromPixels(
+                ctx.getImageData(10 + inx ,0, inx, iny))
 
-    } else{ // If calling once, push the eyes, corners, and screenVals into a vector AS TENSORS
-        // Add x vars
-        let left = tf.tidy(() => {return tf.browser.fromPixels(
-                    ctx.getImageData(0,0, inx, iny)).reverse(1)})
-        let right = tf.tidy(() => {return tf.browser.fromPixels(
-                    ctx.getImageData(10 + inx ,0, inx, iny))})
-        let tmpEyeCorn= tf.tensor(eyeCorners);
+        return natureModelEmbeddings.predict([tmpleft.div(255).sub(0.5).reshape([1, inx, iny, 3]),
+                                              tmpright.div(255).sub(0.5).reshape([1, inx, iny, 3]),
+                                              curCorners.reshape([1,8]),
+                                              tf.tensor(curGeom).reshape([1,4])])
+    });
 
-        leftEyes_x.push(left);
-        rightEyes_x.push(right);
-        eyeCorners_x.push(tmpEyeCorn);
-        faceGeom_x.push(faceGeom.getGeom());
+    // Add X vars to the accumulation arrays
+    embeddings_x.push(tmpEmbeddings)
+    eyeCorners_x.push(curCorners);
+    faceGeom_x.push(curGeom);
 
-        // Add y vars
-        const nowVals = [X/windowWidth, Y/windowHeight];
-        screenXYs_y.push(nowVals);
-        // const nowPos = calib_counter-1; // This var is for classification. -1 To start at zero
-    }
-
-
-    if (continuous){
-        requestAnimationFrame(() => {eyeSelfie(continuous)});
-    }
+    // Calculate and accumulate y vars
+    const nowVals = [X/windowWidth, Y/windowHeight];
+    screenXYs_y.push(nowVals);
 }
 
-const state = {
-        backend: 'webgl',
-        maxFaces: 1, // Only one mouse cursor, after all
-};
 
-async function collectmain() {
-    fmesh = await facemesh.load({maxFaces: state.maxFaces});
+///////////////////////////////////////////////////////////////////////// regression head training function
+
+// Training the mlweb regression head that takes in the embeddings, eye corners, and face geometry
+async function trainNatureRegHead(){
+    stopFacemesh = true;
+
+    x_vect = await tf.tidy(() => {
+            // TODO: Check if new model's embeddings need to be regularized at all
+            // First embeds, range up to 300
+            // 2nd embeds, range up to 50~
+            embeds0 = tf.concat(embeddings_x.map(x => x[0])).div(100)
+            embeds1 = tf.concat(embeddings_x.map(x => x[1])).div(10)
+            embeds2 = tf.concat(embeddings_x.map(x => x[2]))
+
+            // Combine the embeddings horizontally, turn 8,4,2 into 14
+            embeds = tf.concat([embeds0, embeds1, embeds2], 1);
+            return tf.concat([embeds, tf.stack(eyeCorners_x), tf.stack(faceGeom_x)],1);
+    });
+
+    console.log("embeddings extracted, x_vect shape: ", x_vect.shape)
+    y_vect = tf.tensor(screenXYs_y, [screenXYs_y.length, 2])
+
+    // Assemble the data into mlweb's format
+    x_mat = array2mat(x_vect.arraySync())
+    console.log("x_vect assembled")
+
+    tmp = y_vect.split(2, 1)
+    ground_x = tmp[0]
+    ground_y = tmp[1]
+
+    ground_x = array2mat(ground_x.arraySync())
+    ground_y = array2mat(ground_y.arraySync())
+    console.log("y_vects assembled")
+
+    // Model init and training
+    svr_x = newModel();
+    svr_x.train(x_mat, ground_x);
+
+    svr_y = newModel();
+    svr_y.train(x_mat, ground_y);
+    console.log("x and y regression are trained")
+
+    // Save model into localstorage
+    exportWEBML()
+    console.log("x and y regression are exported")
+
+    // Restart the p5js canvas just to show that the training is done.
+    loop();
+}
+
+
+async function main(){
+    // Set up tensorflow backend
+    tf.setBackend('webgl');
+    await tf.ready();
+
+    // Load in nature model
+    models = [];
+    console.log("loading model");
+    await loadTFJSModel("/static/models/tfjsmodel3");
+    naturemodel = models[0];
+    console.log('Successfully loaded model');
+
+    numLayers = naturemodel.layers.length-1
+    for (let i = 0; i <= numLayers; i++){ // print layers and names for getting embeddings
+        console.log(i, naturemodel.layers[i].name)
+    }
+
+    // Freeze the model's layers
+    for (let i = 0; i <= numLayers; i++){
+        naturemodel.layers[i].trainable = false;
+    }
+
+    // Create copy of model that outputs embeddings from the last three dense layers
+    natureModelEmbeddings = tf.model({
+        inputs: naturemodel.inputs,
+        outputs: [naturemodel.layers[39].output, naturemodel.layers[43].output, naturemodel.layers[46].output]
+    }); // outputs an 8 vec, 4 vec, and 2 vec. Operates at the same speed as only one output.
+
+
+    // Load in facemesh model
+    fmesh = await facemesh.load({maxFaces: 1});
 
     // Set up front-facing camera
     await setupCamera();
@@ -270,11 +292,8 @@ async function collectmain() {
     canvas.height = 200;
     ctx = canvas.getContext('2d');
 
-    // start training loop
-//    setTimeout(renderPrediction, 2000);
+    // Start the facemesh real-time looping
     renderPrediction();
 
-    console.log("collection color main complete");
+    console.log("data collection pipeline set up");
 }
-
-
