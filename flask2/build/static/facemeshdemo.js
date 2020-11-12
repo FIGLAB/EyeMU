@@ -2,6 +2,29 @@
 var rBB;
 var lBB;
 
+var inx = 128;
+var iny = 128;
+
+
+async function setupCamera() {
+  video = document.getElementById('video');
+  const stream = await navigator.mediaDevices.getUserMedia({
+    'audio': false,
+    'video': {
+      facingMode: 'user',
+      width: { ideal: 1280 },
+      height: { ideal: 1280 }
+    },
+  });
+  video.srcObject = stream;
+
+  return new Promise((resolve) => {
+    video.onloadedmetadata = () => {
+      resolve(video);
+    };
+  });
+}
+
 //Yaw is the angle in the x-z plane with the vertical axis at the origin
 //Return is in radians. Turning the head left is a positive angle, right is a negative angle, 0 is head on.
 function getFaceYaw(mesh){
@@ -66,8 +89,8 @@ function maxminofXY(array){
         xs.push(array[i][0]);
         ys.push(array[i][1]);
     }
-    const adj = 3;
-    tmp = [Math.min(...xs)-adj*3, Math.max(...xs)+adj*3,Math.min(...ys)-adj, Math.max(...ys)+adj];
+    const adj = 0;
+    tmp = [Math.min(...xs)+adj, Math.max(...xs)+adj,Math.min(...ys)-adj, Math.max(...ys)+adj];
     tmp.push(tmp[1]-tmp[0]); // Add width
     tmp.push(tmp[3]-tmp[2]); // Add height
     return tmp; // returns: [left, right, top, bottom, width, height]
@@ -97,26 +120,28 @@ function getEyeCorners(eyePred, h, w){
 
     return [left_leftcorner[0]/w, left_leftcorner[1]/h, left_rightcorner[0]/w, left_rightcorner[1]/h,
             right_rightcorner[0]/w, right_rightcorner[1]/h, right_leftcorner[0]/w, right_leftcorner[1]/h]
+//    return [left_leftcorner[0], left_leftcorner[1], left_rightcorner[0], left_rightcorner[1],
+//            right_rightcorner[0], right_rightcorner[1], right_leftcorner[0], right_leftcorner[1]]
 }
 
-async function setupCamera() {
-  video = document.getElementById('video');
-  const stream = await navigator.mediaDevices.getUserMedia({
-    'audio': false,
-    'video': {
-      facingMode: 'user',
-      width: { ideal: 1280 },
-      height: { ideal: 1280 }
-    },
-  });
-  video.srcObject = stream;
 
-  return new Promise((resolve) => {
-    video.onloadedmetadata = () => {
-      resolve(video);
-    };
-  });
+
+
+// Assume leftcorner, rightcorner : (x,y) (x,y) for the corner format
+function eyeBoundsFromCorners(leftCorner, rightCorner){
+    eyeLen = leftCorner[0] - rightCorner[0]
+    xshift = eyeLen / 5
+    eyeLen += 2 * xshift;
+    yshift = eyeLen / 2
+    yref = (leftCorner[1] + rightCorner[1]) / 2
+
+    tmp = [rightCorner[0] - xshift, leftCorner[0] + xshift, yref - yshift, yref + yshift]
+    tmp.push(tmp[1]-tmp[0]); // Add width
+    tmp.push(tmp[3]-tmp[2]); // Add height
+    return tmp
+//    return [left, right, top, bottom, width, height]
 }
+
 
 var now;
 // Calls face mesh on the video and outputs the eyes and face bounding boxes to global vars
@@ -128,25 +153,31 @@ async function renderPrediction() {
         prediction = facepred[0];
 
         // Find the eyeboxes (you could index directly but it wouldn't be that much faster)
-        right_eyebox = (prediction.annotations.rightEyeUpper2).concat(prediction.annotations.rightEyeLower2);
-        left_eyebox = (prediction.annotations.leftEyeUpper2).concat(prediction.annotations.leftEyeLower2);
+        right_eyebox = (prediction.annotations.rightEyeUpper1).concat(prediction.annotations.rightEyeLower1);
+        left_eyebox = (prediction.annotations.leftEyeUpper1).concat(prediction.annotations.leftEyeLower1);
+//        right_eyebox = (prediction.annotations.rightEyeUpper2).concat(prediction.annotations.rightEyeLower2);
+//        left_eyebox = (prediction.annotations.leftEyeUpper2).concat(prediction.annotations.leftEyeLower2);
 
-        // find bounding boxes [left, right, top, bottom]
-        rBB = maxminofXY(right_eyebox);
-        lBB = maxminofXY(left_eyebox);
+        // find eye corners, returns in (leftleft, leftright, rightright, rightleft
+        eyeCorners = getEyeCorners(prediction, videoHeight, videoWidth)
 
-        // find eye corners
-//        eyeCorners = getEyeCorners(prediction, videoHeight, videoWidth)
+        h = videoHeight
+        w = videoWidth
+        lBB = eyeBoundsFromCorners([eyeCorners[0]*w, eyeCorners[1]*h], [eyeCorners[2]*w, eyeCorners[3]*h]);
+        rBB = eyeBoundsFromCorners([eyeCorners[6]*w, eyeCorners[7]*h], [eyeCorners[4]*w, eyeCorners[5]*h]);
+
+        console.log(eyeCorners[4]*w, rBB[0])
 
         // Get face geometry
         faceGeom.update(prediction);
         document.getElementById('RPY').innerHTML = "Roll: " + faceGeom.curRoll
                                                       + "<br>Pitch: " + faceGeom.curPitch
                                                       + "<br>Yaw: " + faceGeom.curYaw;
-
     }
+    drawCache()
 
     setTimeout(requestAnimationFrame(renderPrediction), 100); // call self after 100 ms
+//    requestAnimationFrame(renderPrediction)
 };
 
 // Draws the current eyes onto the canvas, directly from video streams
@@ -156,9 +187,17 @@ async function drawCache(){
                         0, 0, inx, iny); // Destination x,y,w,h
         ctx.drawImage(video, rBB[0], rBB[2], rBB[4], rBB[5],
                        10 + inx, 0, inx, iny);
-    ctx.drawImage(video, 10, 10, canvas.width, canvas.height)
 
-    requestAnimationFrame(drawCache);
+
+//    ctx.drawImage(video, 10, 10, canvas.width, canvas.height)
+    ctx.drawImage(video, 10, 150,  video.videoWidth,  video.videoHeight)
+
+    ctx.fillStyle = 'red';
+    ctx.beginPath();
+    ctx.ellipse(eyeCorners[0]*w + 10, eyeCorners[1]*h + 150,5,5, 0, 0, 2*Math.PI)
+    ctx.fill();
+
+//    requestAnimationFrame(drawCache);
 }
 
 function saveCurrentCanvas(){
@@ -184,15 +223,16 @@ async function main() {
 
     // Set up canvas to draw the eyes of the user (debugging feature)
     canvas = document.getElementById('eyecache');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-//    canvas.width = videoWidth;
-//    canvas.height = videoHeight;
+//    canvas.width = window.innerWidth;
+//    canvas.height = window.innerHeight;
+    canvas.width = videoWidth;
+    canvas.height = videoHeight;
     ctx = canvas.getContext('2d');
 
     // start training loop
     renderPrediction();
-    drawCache()
+//    drawCache()
+    console.log("setup done")
 }
 
 
