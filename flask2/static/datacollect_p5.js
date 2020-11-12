@@ -14,9 +14,9 @@ var numSteps = 40;
 var stepsTaken = 0;
 
 // equal collection ims along each line
-var num_ims_along_line = 3;
+var num_ims_along_line = 10;
 var steps_per_line_im = Math.trunc(numSteps/num_ims_along_line);
-var num_ims_still = 5;
+var num_ims_still = 10;
 var stillsTaken = 0;
 
 // Step size in pixels
@@ -64,8 +64,9 @@ function draw(){
         textSize(30);
         text("\nTraining completed", width/2, height/2);
 
-         setTimeout(() => window.location.href = "../svrtest", 1000);
-        return
+        setTimeout(() => window.location.href = "../svrtest", 1000);
+        noLoop();
+        return;
     }
 
     // Give textual indicator to user of the round
@@ -117,7 +118,7 @@ function draw(){
             }
         } else if (stopped){
             if (stillsTaken < num_ims_still){
-                if (frameCount % 10 == 0){ // take screenshot every N frames
+                if (frameCount % 5 == 0){ // take screenshot every N frames
                     eyeSelfie(false);
                     console.log("eyeSelfie at corner");
                     stillsTaken += 1;
@@ -125,10 +126,8 @@ function draw(){
                 textSize(20)
                 text(stillsTaken, X, Y)
 
-
-
             } else if (stillsTaken >= num_ims_still){
-                fill( 0, 121, 20 );
+                fill( 0, 121, 20 ); // Green circle if all images taken
                 ellipse( X, Y, radius, radius );
             }
         } else{
@@ -159,18 +158,3 @@ function touchStarted(){
     }
 }
 
-
-// // Draw regression button
-// var regression = true;
-// function regr_class_toggle() {
-//     var x = document.getElementById("regtoggle");
-//     if (x.innerHTML === "<h4>Regression</h4>") {
-//         x.innerHTML = "<h4>Classification</h4>";
-//         x.style.background = "#2196F3";
-//         regression = false;
-//     } else {
-//         x.innerHTML = "<h4>Regression</h4>";
-//         x.style.background = "#ccc";
-//         regression = true;
-//     }
-// }

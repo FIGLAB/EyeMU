@@ -157,8 +157,20 @@ async function setupCamera() {
   });
 }
 
-var now;
+// Assume leftcorner, rightcorner : (x,y) (x,y) for the corner format
+function eyeBoundsFromCorners(leftCorner, rightCorner){
+    eyeLen = leftCorner[0] - rightCorner[0]
+    xshift = eyeLen / 5
+    eyeLen += 2 * xshift;
+    yshift = eyeLen / 2
+    yref = (leftCorner[1] + rightCorner[1]) / 2
 
+    tmp = [rightCorner[0] - xshift, leftCorner[0] + xshift, yref - yshift, yref + yshift]
+    tmp.push(tmp[1]-tmp[0]); // Add width
+    tmp.push(tmp[3]-tmp[2]); // Add height
+    return tmp
+//    return [left, right, top, bottom, width, height]
+}
 
 // Calls face mesh on the video and outputs the eyes and face bounding boxes to global vars
 async function renderPrediction() {
@@ -169,15 +181,17 @@ async function renderPrediction() {
         prediction = facepred[0];
 
         // Find the eyeboxes (you could index directly but it wouldn't be that much faster)
-        right_eyebox = (prediction.annotations.rightEyeUpper2).concat(prediction.annotations.rightEyeLower2);
-        left_eyebox = (prediction.annotations.leftEyeUpper2).concat(prediction.annotations.leftEyeLower2);
-
-        // find bounding boxes [left, right, top, bottom]
-        rBB = maxminofXY(right_eyebox);
-        lBB = maxminofXY(left_eyebox);
+        right_eyebox = (prediction.annotations.rightEyeUpper1).concat(prediction.annotations.rightEyeLower1);
+        left_eyebox = (prediction.annotations.leftEyeUpper1).concat(prediction.annotations.leftEyeLower1);
 
         // find eye corners
         eyeCorners = getEyeCorners(prediction, videoHeight, videoWidth)
+
+        // Get eye bounding boxes from eye corners
+        h = videoHeight
+        w = videoWidth
+        lBB = eyeBoundsFromCorners([eyeCorners[0]*w, eyeCorners[1]*h], [eyeCorners[2]*w, eyeCorners[3]*h]);
+        rBB = eyeBoundsFromCorners([eyeCorners[6]*w, eyeCorners[7]*h], [eyeCorners[4]*w, eyeCorners[5]*h]);
 
         // Get face geometry
         faceGeom.update(prediction);
