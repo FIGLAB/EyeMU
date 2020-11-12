@@ -239,8 +239,9 @@ async function main() {
     // import custom model
     models = [];
     console.log("loading model");
-//    await loadTFJSModel("/static/models/tfjsmodel2");
     await loadTFJSModel("/static/models/tfjsmodel3");
+//    await loadTFJSModel("/static/models/tfjsmodel2");
+//    await loadTFJSModel("/static/models/tfjsmodel1");
     naturemodel = models[0];
     console.log('Successfully loaded model');
 
@@ -249,12 +250,12 @@ async function main() {
         naturemodel.layers[i].trainable = false;
     }
     // Copy of original outputting embeddings, 29, 33, 36 are the dense layers
-//    natureModelEmbeddings = tf.model({inputs: naturemodel.inputs,
-//                outputs: [naturemodel.layers[29].output, naturemodel.layers[33].output, naturemodel.layers[36].output]}); // outputs an 8 vec, 4 vec, and 2 vec. Operates at the same speed as only one output.
-    natureModelEmbeddings = tf.model({
-        inputs: naturemodel.inputs,
-        outputs: [naturemodel.layers[39].output, naturemodel.layers[43].output, naturemodel.layers[46].output]
-    });
+    natureModelEmbeddings = tf.model({inputs: naturemodel.inputs,
+                outputs: [naturemodel.layers[29].output, naturemodel.layers[33].output, naturemodel.layers[36].output]}); // outputs an 8 vec, 4 vec, and 2 vec. Operates at the same speed as only one output.
+//    natureModelEmbeddings = tf.model({
+//        inputs: naturemodel.inputs,
+//        outputs: [naturemodel.layers[39].output, naturemodel.layers[43].output, naturemodel.layers[46].output]
+//    });
 
     for (let i = 0; i < naturemodel.layers.length; i++){ // print layers and names for getting embeddings
         console.log(i, naturemodel.layers[i].name)

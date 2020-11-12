@@ -28,6 +28,12 @@ async function drawPrediction(predictedXY) {
         predicdots[0].parentNode.removeChild(predicdots[0]);
     };
 
+    // and regions
+    const regions = document.getElementsByClassName('onscreenregion');
+    if (regions.length > 0){
+        regions[0].parentNode.removeChild(regions[0]);
+    };
+
     //Generate prediction dot
     predX = Math.floor(predictedXY[0]*100);
     predY = Math.floor(predictedXY[1]*100);
@@ -35,26 +41,44 @@ async function drawPrediction(predictedXY) {
     predX = Math.min(Math.max(predX, 0), 100);
     predY = Math.min(Math.max(predY, 0), 100);
 
-    elem=document.createElement("div");
+    elem = document.createElement("div");
     elem.setAttribute("class", "predicdot");
 
     // Regression
     if (regression){
         elem.setAttribute("style", "left:"+ predX +"%;top:"+ predY +"%;");
     } else{
+        // Dividing regions, by percentage
+        let x_bounds = [25, 75];
+        let y_bounds = [25, 75];
+
          // Classification, 3x3
-         col_left = predX <= 33;
-         col_right = predX >= 67;
+         col_left = predX <= x_bounds[0];
+         col_right = predX >= x_bounds[1];
          whichCol_Xcoord = col_left ? 5 : (col_right ? 95 : 50)
 
-         row_top = predY <= 33;
-         row_bot = predY >= 67;
+         row_top = predY <= y_bounds[0];
+         row_bot = predY >= y_bounds[1];
          whichRow_Ycoord = row_top ? 5 : (row_bot ? 95 : 50);
 
+        // Set dot and highlighted region lightup
         elem.setAttribute("style", "left:"+ whichCol_Xcoord +"%;top:"+ whichRow_Ycoord +"%;");
+
+//        console.log("creating region")
+        reg = document.createElement("div");
+        reg.setAttribute("class", "onscreenregion");
+        reg.setAttribute("style", "left:" + (col_left ? 0 : (col_right ? x_bounds[1] : x_bounds[0])) + "%;"
+                               + " right:" + (col_left ? x_bounds[1] : (col_right ? 0 : x_bounds[0])) + "%;"
+
+                               + " top:" + (row_top ? 0 : (row_bot ? y_bounds[1] : y_bounds[0])) + "%;"
+                               + " bottom:" + (row_top ? y_bounds[1] : (row_bot ? 0 : y_bounds[0])) + "%;");
+//        reg.setAttribute("style", "left: 25%; right:75%; top:25%; bottom:75%;")
+//        reg.setAttribute("style", "left: 10%; right:40%; top: 10%; bottom: 40%;")
+        document.body.appendChild(reg);
     }
 
     document.body.appendChild(elem);
+
 };
 
 async function setupCamera() {

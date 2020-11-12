@@ -152,10 +152,10 @@ async function renderPrediction() {
 // Draws the current eyes onto the canvas, directly from video streams
 async function drawCache(){
         // Get eye images from the video stream directly
-//        ctx.drawImage(video, lBB[0], lBB[2], lBB[4], lBB[5], // Source x,y,w,h
-//                        0, 0, inx, iny); // Destination x,y,w,h
-//        ctx.drawImage(video, rBB[0], rBB[2], rBB[4], rBB[5],
-//                       10 + inx, 0, inx, iny);
+        ctx.drawImage(video, lBB[0], lBB[2], lBB[4], lBB[5], // Source x,y,w,h
+                        0, 0, inx, iny); // Destination x,y,w,h
+        ctx.drawImage(video, rBB[0], rBB[2], rBB[4], rBB[5],
+                       10 + inx, 0, inx, iny);
     ctx.drawImage(video, 10, 10, canvas.width, canvas.height)
 
     requestAnimationFrame(drawCache);
@@ -184,8 +184,10 @@ async function main() {
 
     // Set up canvas to draw the eyes of the user (debugging feature)
     canvas = document.getElementById('eyecache');
-    canvas.width = videoWidth;
-    canvas.height = videoHeight;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+//    canvas.width = videoWidth;
+//    canvas.height = videoHeight;
     ctx = canvas.getContext('2d');
 
     // start training loop

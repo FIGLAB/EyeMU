@@ -169,8 +169,10 @@ async function renderPrediction() {
         prediction = facepred[0];
 
         // Find the eyeboxes (you could index directly but it wouldn't be that much faster)
-        right_eyebox = (prediction.annotations.rightEyeUpper2).concat(prediction.annotations.rightEyeLower2);
-        left_eyebox = (prediction.annotations.leftEyeUpper2).concat(prediction.annotations.leftEyeLower2);
+        right_eyebox = (prediction.annotations.rightEyeUpper1).concat(prediction.annotations.rightEyeLower1);
+        left_eyebox = (prediction.annotations.leftEyeUpper1).concat(prediction.annotations.leftEyeLower1);
+//        right_eyebox = (prediction.annotations.rightEyeUpper2).concat(prediction.annotations.rightEyeLower2);
+//        left_eyebox = (prediction.annotations.leftEyeUpper2).concat(prediction.annotations.leftEyeLower2);
 
         // find bounding boxes [left, right, top, bottom]
         rBB = maxminofXY(right_eyebox);
