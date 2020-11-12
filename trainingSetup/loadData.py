@@ -211,13 +211,13 @@ def dataGenerator(filepath, batchSize = 5):
         # print(im.shape)
         # print(eyeCorners)
         # print([dot_X, dot_Y])
-        #
-        # cv2.imshow("im", l_eye)
-        # cv2.waitKey(0)
+
+        cv2.imshow("im", l_eye)
+        cv2.waitKey(0)
         # cv2.destroyAllWindows()
-        #
-        # cv2.imshow("im", r_eye)
-        # cv2.waitKey(0)
+
+        cv2.imshow("im", r_eye)
+        cv2.waitKey(0)
         # cv2.destroyAllWindows()
 
         batchHolder.append([x_out, [dot_X, dot_Y]])

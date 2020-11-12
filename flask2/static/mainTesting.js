@@ -124,12 +124,12 @@ function shuffleTensorsTogether(x,y){
 
 
 function assembleTensors(left, rights, eyeCorns, faceAngles, xys){
-    natureModelEmbeddings = tf.model({
-        inputs: naturemodel.inputs,
-        outputs: [naturemodel.layers[39].output, naturemodel.layers[43].output, naturemodel.layers[46].output]
-    });
-//    natureModelEmbeddings = tf.model({inputs: naturemodel.inputs,
-//                outputs: [naturemodel.layers[29].output, naturemodel.layers[33].output, naturemodel.layers[36].output]})
+//    natureModelEmbeddings = tf.model({
+//        inputs: naturemodel.inputs,
+//        outputs: [naturemodel.layers[39].output, naturemodel.layers[43].output, naturemodel.layers[46].output]
+//    });
+    natureModelEmbeddings = tf.model({inputs: naturemodel.inputs,
+                outputs: [naturemodel.layers[29].output, naturemodel.layers[33].output, naturemodel.layers[36].output]})
 
 
     return tf.tidy(() => {
@@ -265,8 +265,7 @@ function getBaseline(){
         eyeCorners_tensor = tf.tidy(() => tf.stack(eyeCorners_x))
         faceGeom_tensor = tf.tidy(() => tf.stack(faceGeom_x))
 
-//        a = naturemodel.predict([leye_tensor, reye_tensor, eyeCorners_tensor, faceGeom_tensor])
-        a = naturemodel.predictOnBatch([leye_tensor, reye_tensor, eyeCorners_tensor, faceGeom_tensor])
+        a = naturemodel.predict([leye_tensor, reye_tensor, eyeCorners_tensor, faceGeom_tensor])
 //        a = naturemodel.predict([leye_tensor, reye_tensor, eyeCorners_tensor])
         b = a.sub(y_vect)
         c = tf.split(b,2,1)
