@@ -41,9 +41,9 @@ function setup(){
 
     let w_op = [width/10, width/2, width*9/10];
     let h_op = [height/20, height/2, height*19/20];
-
-    nx_arr = [w_op[1], w_op[2], w_op[2], w_op[0], w_op[0], w_op[2], w_op[2]]
-    ny_arr = [h_op[1], h_op[1], h_op[0], h_op[0], h_op[2], h_op[2], h_op[1]];
+            // center,mid-right,topright,topleft, midleft, botleft, botright, mid-right again
+    nx_arr = [w_op[1], w_op[2], w_op[2], w_op[0], w_op[0], w_op[0], w_op[2], w_op[2]]
+    ny_arr = [h_op[1], h_op[1], h_op[0], h_op[0], h_op[1], h_op[2], h_op[2], h_op[1]];
 
     X = nx_arr[calib_counter];
     Y = ny_arr[calib_counter];
