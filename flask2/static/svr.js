@@ -20,6 +20,9 @@ var svr_y;
 var windowWidth = window.innerWidth;
 var windowHeight = window.innerHeight;
 
+// Show HTML prediction dot or p5js
+var showPredictDot = true;
+
 //Draw the prediction as an orange dot on the screen.
 async function drawPrediction(predictedXY) {
     // Remove all existing predicdots
@@ -118,14 +121,19 @@ async function runSVRlive(){
                 allFeatures_mat = array2mat(allFeatures.arraySync());
                 return [svr_x.predict(allFeatures_mat), svr_y.predict(allFeatures_mat)]
             })
-//    console.log(pred)
 
-    predictions[0] = pred[0];
-    predictions[1] = pred[1];
-    curPred = pred;
+//    curPred = pred;
+    let a = 0.4;
+    curPred[0] = curPred[0]*(1-a) + pred[0]*a;
+    curPred[1] = curPred[1]*(1-a) + pred[1]*a;
 
-    drawPrediction(curPred)
-//    console.log(curPred)
+    curPred[0] = Math.max(0.0, Math.min(1.0, curPred[0]))
+    curPred[1] = Math.max(0.0, Math.min(1.0, curPred[1]))
+
+    if (showPredictDot){
+        drawPrediction(curPred)
+    }
+
 
     setTimeout(runSVRlive, 100);
 }
@@ -144,6 +152,7 @@ async function drawTargetDot(){
 
     // Call self again after delay
     targetNum = nextTargetNum;
+
     setTimeout(drawTargetDot, 5000);
 }
 
@@ -195,7 +204,7 @@ async function main() {
     svr_y = renewObject(JSON.parse(svr_y_str));
 
     // Load in face mesh model
-    fmesh = await facemesh.load({maxFaces: state.maxFaces});
+    fmesh = await facemesh.load({maxFaces: 1});
 
     // Set up camera
     await setupCamera();
@@ -215,12 +224,16 @@ async function main() {
 
         // start in the eval loop
     done_with_training = true;
-    curPred = [0,0];
+    curPred = [-1, -1];
     renderPrediction();
     setTimeout(function(){
             eyeSelfie(true);
         }, 2000);
 
     setTimeout(runSVRlive, 3000);
-    drawTargetDot()
+    if (showPredictDot){
+        drawTargetDot()
+    }
+
+    console.log("regression loading done");
 }

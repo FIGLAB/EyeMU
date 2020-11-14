@@ -1,3 +1,6 @@
+November 13
+Model + calibration working acceptably. Pretty consistently 3x3 is accurate. I'm speccing just how accurate it is, but eval is throwing the "please wait for loadeddata" event in video. I forgot how I fixed this a while back, I think it was messing with the order of the includes but I don't remember exactly. GOT IT! Basically, put svr.js import before the collectioncolor.js. I think cause they both have a setup camera function. Unsure, because they're the same one. Whatever. Works now.
+
 November 2
 Decided to just do training over the embeddings. Weird error related to webgl that I cannot fix on my own when we try to train on the base model. So we're feeding in the 8, 4, and 2 vecs from the last dense stack of the net, then the 8 eye corner coordinates, and then the head yaw pitch roll and area within the image. Seems to work pretty ok if given enough iterations and data. 26-vec of data, maybe 100 iterations. Very shallow model follows it.
 Need to write the data collection page in a coherent way, but I guess that comes after we get the thing actually working.
