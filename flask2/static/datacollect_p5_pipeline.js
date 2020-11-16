@@ -244,7 +244,7 @@ function saveTensors(x_vector, y_vector){
     var link = document.createElement('a');
     link.href = makeTextFile(combined);
     link.target = '_blank';
-    link.download = "gazelData.json";
+    link.download = "gazelEmbedsData.json";
     link.click();
 }
 
