@@ -282,6 +282,9 @@ function getBaseline(){
     });
 }
 
+
+
+// Return a version of X where each column is between -0.5 and 0.5
 function normX(x_vector){
     return tf.tidy(() => {
         let numExamples = x_vector.shape[0];
@@ -294,7 +297,7 @@ function normX(x_vector){
         mins_x = tf.stack(Array(numExamples).fill(mins_x)).neg()//.transpose()
 
         zeroToOne_x = x_vector.add(mins_x).div(ranges)
-        return zeroToOne_x
+        return zeroToOne_x.sub(0.5)
     });
 }
 
