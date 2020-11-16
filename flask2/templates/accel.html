@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block headextra %}
+<script src="{{url_for('static', filename='accel.js')}}"></script>
+{% endblock %}
+
+
+{% block body %}
+<div id="main">
+    <button id="accelPermsButton" onclick="getAccel()">Get Accel</button>
+    <h1><button onclick="zeroAccel()">Zero/Tare</button></h1>
+    <br>
+    <p id="accelPerms"></p>
+
+    <h2 id="curOrientation"></h2>
+    <h2 id="dotLocation"></h2>
+
+    <div class="predicdot" style="left:-10%; top:-10%;"></div>
+</div>
+{% endblock %}

@@ -51,6 +51,10 @@ function setup(){
     nY = ny_arr[(calib_counter+1) % 5];
 
     moveAmountPerFrame = [(nX-X)/numSteps , (nY-Y)/numSteps];
+
+    // Start it in a stopped state
+    stillsTaken = num_ims_still
+    stopped = true;
 }
 
 // Main draw loop
@@ -144,7 +148,7 @@ function draw(){
 //            eyeSelfie(true); // called at the end of training as well
             calib_counter = 0
             noLoop();
-
+            
             trainNatureRegHead(leftEyes_x, rightEyes_x, eyeCorners_x,screenXYs_y);
             done_with_training = true;
         }
