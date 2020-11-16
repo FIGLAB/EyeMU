@@ -17,35 +17,48 @@ freezer = Freezer(app)
 def index():
     return render_template("main.html")
 
+# Records the training data and trains the regression models from embeddings
 @app.route('/datacollection/')
 def datacollect():
     return render_template("datacollection.html")
 
+# Testing if I could import a tf-lite model into tfjs
 @app.route('/tfimporttest/')
 def tfimporttest():
     response = render_template("tfimporttest.html")
     # response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
+# Fine-tuning original model, doesn't work on mobile due to RAM restrictions (?)
 @app.route('/transfer/')
 def transfer():
     return render_template("transfer.html")
 
+# Tests the original model in real-time
 @app.route('/test/')
 def test():
     return render_template("livetest.html")
 
+# Tests the original model, boosted with the regression model in real-time
 @app.route('/svrtest/')
 def svrtest():
     return render_template("svr.html")
 
+# Evaluates performance of the regression model, then prints output.
 @app.route('/eval/')
 def eval():
     return render_template("eval.html")
 
+# Just shows facemesh and yaw/pitch/roll calculations
 @app.route('/facemeshdemo/')
 def facemeshdemo():
     return render_template("facemeshdemo.html")
+
+# Requests acceleration, then displays a dot indicating tilt degrees.
+@app.route('/acceldemo/')
+def acceldemo():
+    return render_template("accel.html")
+
 
 @app.after_request
 def add_header(response):

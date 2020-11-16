@@ -127,8 +127,8 @@ async function runSVRlive(){
     curPred[0] = curPred[0]*(1-a) + pred[0]*a;
     curPred[1] = curPred[1]*(1-a) + pred[1]*a;
 
-    curPred[0] = Math.max(0.0, Math.min(1.0, curPred[0]))
-    curPred[1] = Math.max(0.0, Math.min(1.0, curPred[1]))
+    curPred[0] = Math.max(0.05, Math.min(.95, curPred[0]))
+    curPred[1] = Math.max(0.05, Math.min(.95, curPred[1]))
 
     if (showPredictDot){
         drawPrediction(curPred)
