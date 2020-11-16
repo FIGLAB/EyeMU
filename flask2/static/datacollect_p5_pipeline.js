@@ -219,6 +219,35 @@ async function eyeSelfie(continuous){
 }
 
 
+///////////////////////////////////////////////////////////////////////// Saving data vectors
+
+var textFile = null;
+// Create a text file out of text
+function makeTextFile(text) {
+        var data = new Blob([text], {type: 'application/json'});
+
+        // If we are replacing a previously generated file we need to
+        // manually revoke the object URL to avoid memory leaks.
+        if (textFile !== null) { window.URL.revokeObjectURL(textFile);}
+
+        textFile = window.URL.createObjectURL(data);
+
+        // returns a URL you can use as a href
+        return textFile;
+};
+
+function saveTensors(x_vector, y_vector){
+    x_vect_as_array = x_vector.arraySync();
+    y_vect_as_array = y_vector.arraySync();
+    combined = JSON.stringify([x_vect_as_array, y_vect_as_array])
+
+    var link = document.createElement('a');
+    link.href = makeTextFile(combined);
+    link.target = '_blank';
+    link.download = "gazelData.json";
+    link.click();
+}
+
 ///////////////////////////////////////////////////////////////////////// regression head training function
 
 // Training the mlweb regression head that takes in the embeddings, eye corners, and face geometry
@@ -241,8 +270,10 @@ async function trainNatureRegHead(){
     console.log("embeddings extracted, x_vect shape: ", x_vect.shape)
     y_vect = tf.tensor(screenXYs_y, [screenXYs_y.length, 2])
 
+    saveTensors(x_vect, y_vect);
+
     // Assemble the data into mlweb's format
-    x_mat = array2mat(x_vect.arraySync())
+    x_mat = array2mat(x_vect_as_array)
     console.log("x_vect assembled")
 
     tmp = y_vect.split(2, 1)
