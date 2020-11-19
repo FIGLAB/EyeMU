@@ -301,7 +301,7 @@ function gammaBoostDataset(){
 //    leftEyes_x, rightEyes_x, eyeCorners_x, faceGeom_x, screenXYs_y
     var startLen = leftEyes_x.length;
 
-    gam1 = 2.5;
+    gam1 = 2.0;
     for (let i=0; i < startLen; i++){
         leftEyes_x.push(tf.tidy(() => leftEyes_x[i].div(255).pow(1/gam1).mul(255)));
         rightEyes_x.push(tf.tidy(() => rightEyes_x[i].div(255).pow(1/gam1).mul(255)));

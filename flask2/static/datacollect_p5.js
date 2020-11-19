@@ -16,7 +16,7 @@ var stepsTaken = 0;
 // equal collection ims along each line
 var num_ims_along_line = 10;
 var steps_per_line_im = Math.trunc(numSteps/num_ims_along_line);
-var num_ims_still = 5;
+var num_ims_still = 10;
 var stillsTaken = 0;
 
 // Step size in pixels
@@ -41,9 +41,14 @@ function setup(){
 
     let w_op = [width/10, width/2, width*9/10];
     let h_op = [height/20, height/2, height*19/20];
-            // center,mid-right,topright,topleft, midleft, botleft, botright, mid-right again
-    nx_arr = [w_op[1], w_op[2], w_op[2], w_op[0], w_op[0], w_op[0], w_op[2], w_op[2]]
-    ny_arr = [h_op[1], h_op[1], h_op[0], h_op[0], h_op[1], h_op[2], h_op[2], h_op[1]];
+//            // center,mid-right,topright,topleft, midleft, botleft, botright, mid-right again
+//    nx_arr = [w_op[1], w_op[2], w_op[2], w_op[0], w_op[0], w_op[0], w_op[2], w_op[2]]
+//    ny_arr = [h_op[1], h_op[1], h_op[0], h_op[0], h_op[1], h_op[2], h_op[2], h_op[1]];
+
+            //center   botmid, botleft, mid left, topleft, topright, midright, botright
+    nx_arr = [w_op[1], w_op[1], w_op[0], w_op[0], w_op[0],  w_op[2], w_op[2], w_op[2]]
+    ny_arr = [h_op[1], h_op[2], h_op[2], h_op[1], h_op[0], h_op[0], h_op[1], h_op[2]]
+
 
     X = nx_arr[calib_counter];
     Y = ny_arr[calib_counter];
@@ -122,7 +127,7 @@ function draw(){
             }
         } else if (stopped){
             if (stillsTaken < num_ims_still){
-                if (frameCount % 3 == 0){ // take screenshot every N frames
+                if (frameCount % 2 == 0){ // take screenshot every N frames
                     eyeSelfie(false);
                     console.log("eyeSelfie at corner");
                     stillsTaken += 1;
@@ -159,6 +164,8 @@ function touchStarted(){
     if (stopped){
         stopped = false;
         stepsTaken = 0;
+    } else if (done_with_training){
+        window.location.href = "../svrtest";
     }
 }
 
