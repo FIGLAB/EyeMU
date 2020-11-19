@@ -222,74 +222,30 @@ async function eyeSelfie(continuous){
     let curGeom = faceGeom.getGeom();
     let curCorners = tf.tensor(eyeCorners);
 
-//    let tmpEmbeddings = tf.tidy(() => {
-//        let tmpleft = tf.browser.fromPixels(
-//                ctx.getImageData(0,0, inx, iny)).reverse(1)
-//        let tmpright = tf.browser.fromPixels(
-//                ctx.getImageData(10 + inx ,0, inx, iny))
-//
-//        // EXPERIMENT: trying greyscale embeddings to see if they'll make  it more robust to lighting.
-////        tmpleft = greyscaleImage(tmpleft)
-////        tmpright = greyscaleImage(tmpright)
-//
-//        return natureModelEmbeddings.predict([tmpleft.div(255).sub(0.5).reshape([1, inx, iny, 3]),
-//                                              tmpright.div(255).sub(0.5).reshape([1, inx, iny, 3]),
-//                                              curCorners.reshape([1,8]),
-//                                              tf.tensor(curGeom).reshape([1,4])])
-//    });
+    let tmpEmbeddings = tf.tidy(() => {
+        let tmpleft = tf.browser.fromPixels(
+                ctx.getImageData(0,0, inx, iny)).reverse(1)
+        let tmpright = tf.browser.fromPixels(
+                ctx.getImageData(10 + inx ,0, inx, iny))
 
-    let tmpleft = tf.browser.fromPixels(
-            ctx.getImageData(0,0, inx, iny)).reverse(1)
-    let tmpright = tf.browser.fromPixels(
-            ctx.getImageData(10 + inx ,0, inx, iny))
+        // EXPERIMENT: trying greyscale embeddings to see if they'll make  it more robust to lighting.
+//        tmpleft = greyscaleImage(tmpleft)
+//        tmpright = greyscaleImage(tmpright)
 
-    l_eye_ims = [tmpleft, gammaChangeIm(tmpleft, 2.0), gammaChangeIm(tmpleft, 0.5)]
-    r_eye_ims = [tmpright, gammaChangeIm(tmpright, 2.0), gammaChangeIm(tmpright, 0.5)]
-
-
-//        return natureModelEmbeddings.predict([tmpleft.div(255).sub(0.5).reshape([1, inx, iny, 3]),
-//                                              tmpright.div(255).sub(0.5).reshape([1, inx, iny, 3]),
-//                                              curCorners.reshape([1,8]),
-//                                              tf.tensor(curGeom).reshape([1,4])])
-
-    tmp_embeddings = [];
-    for (let i = 0; i < 2; i++){
-//        for (let j = 0; j < r_eye_ims.length; j++){
-            const tmp = tf.tidy(() => natureModelEmbeddings.predict(
-                                             [l_eye_ims[Math.trunc(Math.random()*3)].div(255).sub(0.5).reshape([1, inx, iny, 3]),
-                                              r_eye_ims[Math.trunc(Math.random()*3)].div(255).sub(0.5).reshape([1, inx, iny, 3]),
+        return natureModelEmbeddings.predict([tmpleft.div(255).sub(0.5).reshape([1, inx, iny, 3]),
+                                              tmpright.div(255).sub(0.5).reshape([1, inx, iny, 3]),
                                               curCorners.reshape([1,8]),
-                                              tf.tensor(curGeom).reshape([1,4])]));
-            tmp_embeddings.push(tmp);
-//        }
-    }
-
-    console.log(tmp_embeddings.length)
+                                              tf.tensor(curGeom).reshape([1,4])])
+    });
 
     // Add X vars to the accumulation arrays
+    embeddings_x.push(tmpEmbeddings)
+    eyeCorners_x.push(curCorners);
+    faceGeom_x.push(curGeom);
+
+    // Calculate and accumulate y vars
     const nowVals = [X/windowWidth, Y/windowHeight];
-    for (let i = 0; i< tmp_embeddings.length; i++){
-        embeddings_x.push(tmp_embeddings[i]);
-        eyeCorners_x.push(curCorners);
-        faceGeom_x.push(curGeom);
-        screenXYs_y.push(nowVals);
-    }
-
-
-    // clean up
-    for (let i = 0; i< l_eye_ims.length; i++){
-        l_eye_ims[i].dispose();
-        r_eye_ims[i].dispose();
-    }
-
-//    // Add X vars to the accumulation arrays
-//    embeddings_x.push(tmpEmbeddings)
-//    eyeCorners_x.push(curCorners);
-//    faceGeom_x.push(curGeom);
-//
-//    // Calculate and accumulate y vars
-//    const nowVals = [X/windowWidth, Y/windowHeight];
-//    screenXYs_y.push(nowVals);
+    screenXYs_y.push(nowVals);
 }
 
 
