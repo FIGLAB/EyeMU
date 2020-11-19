@@ -24,6 +24,8 @@ var num_ims_along_line = 10;
 var steps_per_line_im = Math.trunc(numSteps/num_ims_along_line);
 var num_ims_still = 5;
 var stillsTaken = 0;
+var delayFrames = 20;
+var delay_frames_taken = 0;
 
 // Step size in pixels
 var moveAmountPerFrame = [];
@@ -63,6 +65,12 @@ function setup(){
     nY = ny_arr[(calib_counter+1) % 5];
 
     moveAmountPerFrame = [(nX-X)/numSteps , (nY-Y)/numSteps];
+
+
+    // Start it in a stopped state
+    stillsTaken = num_ims_still
+    stopped = true;
+    errorsAdded = true;
 }
 
 // Main draw loop
@@ -138,7 +146,9 @@ function draw(){
                 stillsTaken = 0;
             }
         } else if (stopped){
-            if (stillsTaken < num_ims_still){
+            if (delay_frames_taken < delayFrames){
+                delay_frames_taken += 1;
+            } else if (stillsTaken < num_ims_still){
                 if (frameCount % 5 == 0){ // take screenshot every N frames
 //                    eyeSelfie(false);
                     console.log("eyeSelfie at corner");
@@ -175,6 +185,7 @@ function touchStarted(){
     if (stopped){
         stopped = false;
         stepsTaken = 0;
+        delay_frames_taken = 0;
     }
 }
 

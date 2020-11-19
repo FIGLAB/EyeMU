@@ -1,7 +1,7 @@
 new p5();
 
 // datacollect_p5.js moves a circle around the screen, once per round for ~5 rounds, then does regression training on them.
-var n_calib_rounds = 3;
+var n_calib_rounds = 4;
 
 // Global variables
 var radius = 50.0;
@@ -16,7 +16,7 @@ var stepsTaken = 0;
 // equal collection ims along each line
 var num_ims_along_line = 10;
 var steps_per_line_im = Math.trunc(numSteps/num_ims_along_line);
-var num_ims_still = 10;
+var num_ims_still = 5;
 var stillsTaken = 0;
 
 // Step size in pixels
@@ -51,6 +51,10 @@ function setup(){
     nY = ny_arr[(calib_counter+1) % 5];
 
     moveAmountPerFrame = [(nX-X)/numSteps , (nY-Y)/numSteps];
+
+    // Start it in a stopped state
+    stillsTaken = num_ims_still
+    stopped = true;
 }
 
 // Main draw loop
@@ -64,7 +68,7 @@ function draw(){
         textSize(30);
         text("\nTraining completed", width/2, height/2);
 
-        setTimeout(() => window.location.href = "../svrtest", 1000);
+//        setTimeout(() => window.location.href = "../svrtest", 1000);
         noLoop();
         return;
     }
@@ -118,7 +122,7 @@ function draw(){
             }
         } else if (stopped){
             if (stillsTaken < num_ims_still){
-                if (frameCount % 5 == 0){ // take screenshot every N frames
+                if (frameCount % 3 == 0){ // take screenshot every N frames
                     eyeSelfie(false);
                     console.log("eyeSelfie at corner");
                     stillsTaken += 1;
@@ -144,7 +148,7 @@ function draw(){
 //            eyeSelfie(true); // called at the end of training as well
             calib_counter = 0
             noLoop();
-
+            
             trainNatureRegHead(leftEyes_x, rightEyes_x, eyeCorners_x,screenXYs_y);
             done_with_training = true;
         }
