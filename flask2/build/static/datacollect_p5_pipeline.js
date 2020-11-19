@@ -339,7 +339,7 @@ async function main(){
     // Load in nature model
     models = [];
     console.log("loading model");
-    await loadTFJSModel("/static/models/tfjsmodel3");
+    await loadTFJSModel("/static/models/tfjsmodel4");
     naturemodel = models[0];
     console.log('Successfully loaded model');
 

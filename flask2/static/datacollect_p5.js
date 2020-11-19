@@ -1,7 +1,7 @@
 new p5();
 
 // datacollect_p5.js moves a circle around the screen, once per round for ~5 rounds, then does regression training on them.
-var n_calib_rounds = 4;
+var n_calib_rounds = 5;
 
 // Global variables
 var radius = 50.0;
@@ -127,7 +127,7 @@ function draw(){
             }
         } else if (stopped){
             if (stillsTaken < num_ims_still){
-                if (frameCount % 2 == 0){ // take screenshot every N frames
+                if (frameCount % 1 == 0){ // take screenshot every N frames
                     eyeSelfie(false);
                     console.log("eyeSelfie at corner");
                     stillsTaken += 1;

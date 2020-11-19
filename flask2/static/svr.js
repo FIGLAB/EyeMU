@@ -123,7 +123,7 @@ async function runSVRlive(){
 //                leye = greyscaleImage(curEyes[0])
 //                reye = greyscaleImage(curEyes[1])
 //                let embed = natureModelEmbeddings.predict([leye.div(255).sub(0.5).reshape([1, 128, 128, 3]), reye.div(255).sub(0.5).reshape([1, 128, 128, 3]), curEyes[2].reshape([1, 8]), curGeom]);
-                let embed = natureModelEmbeddings.predict([curEyes[0].div(255).sub(0.5).reshape([1, 128, 128, 3]), curEyes[1].div(255).sub(0.5).reshape([1, 128, 128, 3]), curEyes[2].reshape([1, 8]), curGeom]);
+                let embed = natureModelEmbeddings.predict([curEyes[0].div(256).sub(0.5).reshape([1, 128, 128, 3]), curEyes[1].div(256).sub(0.5).reshape([1, 128, 128, 3]), curEyes[2].reshape([1, 8]), curGeom]);
                 embed[0] = embed[0].div(100);
                 embed[1] = embed[1].div(10);
                 embed = tf.concat(embed, 1);
@@ -134,7 +134,7 @@ async function runSVRlive(){
             })
 
 //    curPred = pred;
-    let a = 0.3;
+    let a = 0.5;
     curPred[0] = curPred[0]*(1-a) + pred[0]*a;
     curPred[1] = curPred[1]*(1-a) + pred[1]*a;
 
@@ -196,7 +196,7 @@ async function main() {
     models = [];
     console.log("loading model");
 //    await loadTFJSModel("/static/models/tfjsmodel2");
-    await loadTFJSModel("/static/models/tfjsmodel3");
+    await loadTFJSModel("/static/models/tfjsmodel4");
     naturemodel = models[0];
     console.log('Successfully loaded model');
     // Set up embeddings output

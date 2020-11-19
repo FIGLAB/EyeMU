@@ -34,8 +34,6 @@ DeviceMotionEvent.requestPermission()
     .catch(console.error)
 }
 
-
-
 function* x_generator(){
     let lefts = leftEyes_x;
     let rights = rightEyes_x;
@@ -58,7 +56,6 @@ function* y_generator(){
         yield [tf.tensor(xys.slice(i*genBatchSize, (i+1)*genBatchSize))];
     }
 }
-
 
 // Training the mlweb regression head that takes in the embeddings, eye corners, and face geometry
 async function trainNatureRegHead(left_x, right_x, corn_x, screenxy_y){
