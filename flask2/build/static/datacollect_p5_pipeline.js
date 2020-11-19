@@ -176,6 +176,29 @@ async function renderPrediction() {
     }
 };
 
+function greyscaleImage(imTensor){
+    return tf.tidy(() => {
+        return imTensor.mean(2).reshape([inx, iny, 1]).tile([1,1,3]);
+    });
+}
+
+//function greyscaleEyes(){
+//    leftEyes_x.forEach((elem, ind) => {
+//        tmp = elem.mean(2).reshape([inx, iny, 1]).tile([1,1,3]);
+//        leftEyes_x[ind] = tmp
+//    });
+//
+//    rightEyes_x.forEach((elem, ind) => {
+//        tmp = elem.mean(2).reshape([inx, iny, 1]).tile([1,1,3]);
+//        rightEyes_x[ind] = tmp
+//    });
+//    console.log("grescaling complete");
+//
+
+function gammaChangeIm(im, gamma){
+    return tf.tidy(() => im.div(255).pow(1/gamma).mul(255));
+}
+
 
 // extracts current eyes to a tensor, as well as the eye corners
 async function eyeSelfie(continuous){
@@ -192,32 +215,112 @@ async function eyeSelfie(continuous){
     ctx.drawImage(video, rBB[0], rBB[2], rBB[4], rBB[5],
                        10 + inx, 0, inx, iny);
 
+
+    // Experiment: add 3 sets of data: leftEyes_x.push(tf.tidy(() => leftEyes_x[i].div(255).pow(1.2).mul(255)));
+
     // Calculate X vect variables (embeddings, corners, face geom)
     let curGeom = faceGeom.getGeom();
     let curCorners = tf.tensor(eyeCorners);
 
-    let tmpEmbeddings = tf.tidy(() => {
-        const tmpleft = tf.browser.fromPixels(
-                ctx.getImageData(0,0, inx, iny)).reverse(1)
-        const tmpright = tf.browser.fromPixels(
-                ctx.getImageData(10 + inx ,0, inx, iny))
+//    let tmpEmbeddings = tf.tidy(() => {
+//        let tmpleft = tf.browser.fromPixels(
+//                ctx.getImageData(0,0, inx, iny)).reverse(1)
+//        let tmpright = tf.browser.fromPixels(
+//                ctx.getImageData(10 + inx ,0, inx, iny))
+//
+//        // EXPERIMENT: trying greyscale embeddings to see if they'll make  it more robust to lighting.
+////        tmpleft = greyscaleImage(tmpleft)
+////        tmpright = greyscaleImage(tmpright)
+//
+//        return natureModelEmbeddings.predict([tmpleft.div(255).sub(0.5).reshape([1, inx, iny, 3]),
+//                                              tmpright.div(255).sub(0.5).reshape([1, inx, iny, 3]),
+//                                              curCorners.reshape([1,8]),
+//                                              tf.tensor(curGeom).reshape([1,4])])
+//    });
 
-        return natureModelEmbeddings.predict([tmpleft.div(255).sub(0.5).reshape([1, inx, iny, 3]),
-                                              tmpright.div(255).sub(0.5).reshape([1, inx, iny, 3]),
+    let tmpleft = tf.browser.fromPixels(
+            ctx.getImageData(0,0, inx, iny)).reverse(1)
+    let tmpright = tf.browser.fromPixels(
+            ctx.getImageData(10 + inx ,0, inx, iny))
+
+    l_eye_ims = [tmpleft, gammaChangeIm(tmpleft, 2.0), gammaChangeIm(tmpleft, 0.5)]
+    r_eye_ims = [tmpright, gammaChangeIm(tmpright, 2.0), gammaChangeIm(tmpright, 0.5)]
+
+
+//        return natureModelEmbeddings.predict([tmpleft.div(255).sub(0.5).reshape([1, inx, iny, 3]),
+//                                              tmpright.div(255).sub(0.5).reshape([1, inx, iny, 3]),
+//                                              curCorners.reshape([1,8]),
+//                                              tf.tensor(curGeom).reshape([1,4])])
+
+    tmp_embeddings = [];
+    for (let i = 0; i < 2; i++){
+//        for (let j = 0; j < r_eye_ims.length; j++){
+            const tmp = tf.tidy(() => natureModelEmbeddings.predict(
+                                             [l_eye_ims[Math.trunc(Math.random()*3)].div(255).sub(0.5).reshape([1, inx, iny, 3]),
+                                              r_eye_ims[Math.trunc(Math.random()*3)].div(255).sub(0.5).reshape([1, inx, iny, 3]),
                                               curCorners.reshape([1,8]),
-                                              tf.tensor(curGeom).reshape([1,4])])
-    });
+                                              tf.tensor(curGeom).reshape([1,4])]));
+            tmp_embeddings.push(tmp);
+//        }
+    }
+
+    console.log(tmp_embeddings.length)
 
     // Add X vars to the accumulation arrays
-    embeddings_x.push(tmpEmbeddings)
-    eyeCorners_x.push(curCorners);
-    faceGeom_x.push(curGeom);
-
-    // Calculate and accumulate y vars
     const nowVals = [X/windowWidth, Y/windowHeight];
-    screenXYs_y.push(nowVals);
+    for (let i = 0; i< tmp_embeddings.length; i++){
+        embeddings_x.push(tmp_embeddings[i]);
+        eyeCorners_x.push(curCorners);
+        faceGeom_x.push(curGeom);
+        screenXYs_y.push(nowVals);
+    }
+
+
+    // clean up
+    for (let i = 0; i< l_eye_ims.length; i++){
+        l_eye_ims[i].dispose();
+        r_eye_ims[i].dispose();
+    }
+
+//    // Add X vars to the accumulation arrays
+//    embeddings_x.push(tmpEmbeddings)
+//    eyeCorners_x.push(curCorners);
+//    faceGeom_x.push(curGeom);
+//
+//    // Calculate and accumulate y vars
+//    const nowVals = [X/windowWidth, Y/windowHeight];
+//    screenXYs_y.push(nowVals);
 }
 
+
+///////////////////////////////////////////////////////////////////////// Saving data vectors
+
+var textFile = null;
+// Create a text file out of text
+function makeTextFile(text) {
+        var data = new Blob([text], {type: 'application/json'});
+
+        // If we are replacing a previously generated file we need to
+        // manually revoke the object URL to avoid memory leaks.
+        if (textFile !== null) { window.URL.revokeObjectURL(textFile);}
+
+        textFile = window.URL.createObjectURL(data);
+
+        // returns a URL you can use as a href
+        return textFile;
+};
+
+function saveTensors(x_vector, y_vector){
+    x_vect_as_array = x_vector.arraySync();
+    y_vect_as_array = y_vector.arraySync();
+    combined = JSON.stringify([x_vect_as_array, y_vect_as_array])
+
+    var link = document.createElement('a');
+    link.href = makeTextFile(combined);
+    link.target = '_blank';
+    link.download = "gazelEmbedsData.json";
+    link.click();
+}
 
 ///////////////////////////////////////////////////////////////////////// regression head training function
 
@@ -241,8 +344,10 @@ async function trainNatureRegHead(){
     console.log("embeddings extracted, x_vect shape: ", x_vect.shape)
     y_vect = tf.tensor(screenXYs_y, [screenXYs_y.length, 2])
 
+    saveTensors(x_vect, y_vect);
+
     // Assemble the data into mlweb's format
-    x_mat = array2mat(x_vect.arraySync())
+    x_mat = array2mat(x_vect_as_array)
     console.log("x_vect assembled")
 
     tmp = y_vect.split(2, 1)

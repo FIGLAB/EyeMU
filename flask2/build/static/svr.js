@@ -101,6 +101,12 @@ async function setupCamera() {
   });
 }
 
+// For greying out images
+function greyscaleImage(imTensor){
+    return tf.tidy(() => {
+        return imTensor.mean(2).reshape([inx, iny, 1]).tile([1,1,3]);
+    });
+}
 
 async function runSVRlive(){
     if (curEyes[0] == undefined){
@@ -112,7 +118,12 @@ async function runSVRlive(){
     now = performance.now();
     pred = tf.tidy(() => {
                 let curGeom = tf.tensor(faceGeom.getGeom()).reshape([1,4]);
-                let embed = natureModelEmbeddings.predict([curEyes[0].div(255).sub(0.5).reshape([1, 128, 128, 3]), curEyes[1].div(255).sub(0.5).reshape([1, 128, 128, 3]), curEyes[2].reshape([1, 8]), curGeom]);
+
+                // EXPERIMENT: Trying to greyscale images to increase accuracy
+                leye = greyscaleImage(curEyes[0])
+                reye = greyscaleImage(curEyes[1])
+                let embed = natureModelEmbeddings.predict([leye.div(255).sub(0.5).reshape([1, 128, 128, 3]), reye.div(255).sub(0.5).reshape([1, 128, 128, 3]), curEyes[2].reshape([1, 8]), curGeom]);
+//                let embed = natureModelEmbeddings.predict([curEyes[0].div(255).sub(0.5).reshape([1, 128, 128, 3]), curEyes[1].div(255).sub(0.5).reshape([1, 128, 128, 3]), curEyes[2].reshape([1, 8]), curGeom]);
                 embed[0] = embed[0].div(100);
                 embed[1] = embed[1].div(10);
                 embed = tf.concat(embed, 1);

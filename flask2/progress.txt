@@ -1,3 +1,9 @@
+November 18
+Two unintuitive results from today
+    - Normalizing of images was done originally by dividing by 255 and subtracting 0.5. I changed it to divide by the max of the training images, and the error got worse! the audacity! 2.72 -> 2.83 cm on calib dataset, and 1.817 -> 2.0 cm on the val dataset. Intuitively, I thought this would remove some error from the bounds being off, but it seems I was wrong. Weird.
+    - Also, apparently greyscaling the images improves performance. The dataset is only a few hundred images of eyes, but that's SO WEIRD! Maybe the model just learned a bunch of noise from the gamma boosting. hmm. Gonna try to gamma boost the testing for the regression model.
+
+
 November 13
 Model + calibration working acceptably. Pretty consistently 3x3 is accurate. I'm speccing just how accurate it is, but eval is throwing the "please wait for loadeddata" event in video. I forgot how I fixed this a while back, I think it was messing with the order of the includes but I don't remember exactly. GOT IT! Basically, put svr.js import before the collectioncolor.js. I think cause they both have a setup camera function. Unsure, because they're the same one. Whatever. Works now.
 

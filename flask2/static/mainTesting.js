@@ -259,6 +259,8 @@ function testOnCurrentData(){
 function getBaseline(){
     tmp = assembleTensors(leftEyes_x, rightEyes_x, eyeCorners_x, faceGeom_x, screenXYs_y);
     tf.tidy(() => {
+//        leye_tensor = tf.tidy(() => tf.stack(leftEyes_x).div(tf.stack(leftEyes_x).max()).sub(0.5))
+//        reye_tensor = tf.tidy(() => tf.stack(rightEyes_x).div(tf.stack(rightEyes_x).max()).sub(0.5))
         leye_tensor = tf.tidy(() => tf.stack(leftEyes_x).div(255).sub(0.5))
         reye_tensor = tf.tidy(() => tf.stack(rightEyes_x).div(255).sub(0.5))
         eyeCorners_tensor = tf.tidy(() => tf.stack(eyeCorners_x))
@@ -282,7 +284,43 @@ function getBaseline(){
     });
 }
 
+function greyscaleEyes(){
+    leftEyes_x.forEach((elem, ind) => {
+        tmp = elem.mean(2).reshape([inx, iny, 1]).tile([1,1,3]);
+        leftEyes_x[ind] = tmp
+    });
 
+    rightEyes_x.forEach((elem, ind) => {
+        tmp = elem.mean(2).reshape([inx, iny, 1]).tile([1,1,3]);
+        rightEyes_x[ind] = tmp
+    });
+    console.log("grescaling complete");
+}
+
+function gammaBoostDataset(){
+//    leftEyes_x, rightEyes_x, eyeCorners_x, faceGeom_x, screenXYs_y
+    var startLen = leftEyes_x.length;
+
+    gam1 = 2.5;
+    for (let i=0; i < startLen; i++){
+        leftEyes_x.push(tf.tidy(() => leftEyes_x[i].div(255).pow(1/gam1).mul(255)));
+        rightEyes_x.push(tf.tidy(() => rightEyes_x[i].div(255).pow(1/gam1).mul(255)));
+        eyeCorners_x.push(eyeCorners_x[i].clone())
+        faceGeom_x.push(faceGeom_x[i])
+        screenXYs_y.push(screenXYs_y[i])
+    }
+
+    gam2 = .6;
+    for (let i=0; i < startLen; i++){
+        leftEyes_x.push(tf.tidy(() => leftEyes_x[i].div(255).pow(1/gam2).mul(255)));
+        rightEyes_x.push(tf.tidy(() => rightEyes_x[i].div(255).pow(1/gam2).mul(255)));
+        eyeCorners_x.push(eyeCorners_x[i].clone())
+        faceGeom_x.push(faceGeom_x[i])
+        screenXYs_y.push(screenXYs_y[i])
+    }
+
+    console.log("gamma boost done");
+}
 
 // Return a version of X where each column is between -0.5 and 0.5
 function normX(x_vector){

@@ -67,7 +67,6 @@ function openFile(event) {
             // If we're using embeddings directly, we have [xvect, yvect]
             if (parsedData.length == 2){
                 embeddings_data[fileName] = parsedData;
-                console.log(fileName, " parsed");
             } else {
                 // Assume [leftEyes_x, rightEyes_x, eyeCorners_x, faceGeom_x, screenXYs_y]
                 leftEyes_x = tf.unstack(parsedData[0])
@@ -76,6 +75,7 @@ function openFile(event) {
                 faceGeom_x = parsedData[3]
                 screenXYs_y = parsedData[4]
             }
+            console.log(fileName, " parsed");
         });
     });
 }

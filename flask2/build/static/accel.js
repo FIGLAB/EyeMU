@@ -80,7 +80,7 @@ function getAccel(){
 
                 // Move ball around according to the fb and lr delta.
 //                ind_dot = document.getElementById("curOrientation")
-                ind_dot = document.getElementsByClassName("predicdot")[0]
+
 //                ind_dot.setAttribute('style', "left:" + (50 + lr_delta) + "%;" +
 //                                              "top:" + (50 + fb_delta) + "%;"
 //                                    );
@@ -104,6 +104,7 @@ function getAccel(){
                     vy = 0;
                 }
 
+                ind_dot = document.getElementsByClassName("predicdot")[0]
                 ind_dot.setAttribute('style', "left:" + (px) + "%;" +
                                               "top:" + (py) + "%;"
                                     );

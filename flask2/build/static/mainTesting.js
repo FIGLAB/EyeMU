@@ -98,7 +98,6 @@ function testSVRs(){
     return [Math.sqrt(Math.pow(y_err*13.3,2) + Math.pow(x_err*6.3,2))]
 }
 
-
 // Assuming these are the x and y vectors, shuffle them by row to eliminate ordering effects
 function shuffleTensorsTogether(x,y){
     return tf.tidy(() => {
@@ -124,12 +123,12 @@ function shuffleTensorsTogether(x,y){
 
 
 function assembleTensors(left, rights, eyeCorns, faceAngles, xys){
-//    natureModelEmbeddings = tf.model({
-//        inputs: naturemodel.inputs,
-//        outputs: [naturemodel.layers[39].output, naturemodel.layers[43].output, naturemodel.layers[46].output]
-//    });
-    natureModelEmbeddings = tf.model({inputs: naturemodel.inputs,
-                outputs: [naturemodel.layers[29].output, naturemodel.layers[33].output, naturemodel.layers[36].output]})
+    natureModelEmbeddings = tf.model({
+        inputs: naturemodel.inputs,
+        outputs: [naturemodel.layers[39].output, naturemodel.layers[43].output, naturemodel.layers[46].output]
+    });
+//    natureModelEmbeddings = tf.model({inputs: naturemodel.inputs,
+//                outputs: [naturemodel.layers[29].output, naturemodel.layers[33].output, naturemodel.layers[36].output]})
 
 
     return tf.tidy(() => {
@@ -260,6 +259,8 @@ function testOnCurrentData(){
 function getBaseline(){
     tmp = assembleTensors(leftEyes_x, rightEyes_x, eyeCorners_x, faceGeom_x, screenXYs_y);
     tf.tidy(() => {
+//        leye_tensor = tf.tidy(() => tf.stack(leftEyes_x).div(tf.stack(leftEyes_x).max()).sub(0.5))
+//        reye_tensor = tf.tidy(() => tf.stack(rightEyes_x).div(tf.stack(rightEyes_x).max()).sub(0.5))
         leye_tensor = tf.tidy(() => tf.stack(leftEyes_x).div(255).sub(0.5))
         reye_tensor = tf.tidy(() => tf.stack(rightEyes_x).div(255).sub(0.5))
         eyeCorners_tensor = tf.tidy(() => tf.stack(eyeCorners_x))
@@ -281,4 +282,100 @@ function getBaseline(){
         console.log("baseline cm error on this data: ")
         d.mean().print()
     });
+}
+
+function greyscaleEyes(){
+    leftEyes_x.forEach((elem, ind) => {
+        tmp = elem.mean(2).reshape([inx, iny, 1]).tile([1,1,3]);
+        leftEyes_x[ind] = tmp
+    });
+
+    rightEyes_x.forEach((elem, ind) => {
+        tmp = elem.mean(2).reshape([inx, iny, 1]).tile([1,1,3]);
+        rightEyes_x[ind] = tmp
+    });
+    console.log("grescaling complete");
+}
+
+function gammaBoostDataset(){
+//    leftEyes_x, rightEyes_x, eyeCorners_x, faceGeom_x, screenXYs_y
+    var startLen = leftEyes_x.length;
+
+    gam1 = 2.5;
+    for (let i=0; i < startLen; i++){
+        leftEyes_x.push(tf.tidy(() => leftEyes_x[i].div(255).pow(1/gam1).mul(255)));
+        rightEyes_x.push(tf.tidy(() => rightEyes_x[i].div(255).pow(1/gam1).mul(255)));
+        eyeCorners_x.push(eyeCorners_x[i].clone())
+        faceGeom_x.push(faceGeom_x[i])
+        screenXYs_y.push(screenXYs_y[i])
+    }
+
+    gam2 = .6;
+    for (let i=0; i < startLen; i++){
+        leftEyes_x.push(tf.tidy(() => leftEyes_x[i].div(255).pow(1/gam2).mul(255)));
+        rightEyes_x.push(tf.tidy(() => rightEyes_x[i].div(255).pow(1/gam2).mul(255)));
+        eyeCorners_x.push(eyeCorners_x[i].clone())
+        faceGeom_x.push(faceGeom_x[i])
+        screenXYs_y.push(screenXYs_y[i])
+    }
+
+    console.log("gamma boost done");
+}
+
+// Return a version of X where each column is between -0.5 and 0.5
+function normX(x_vector){
+    return tf.tidy(() => {
+        let numExamples = x_vector.shape[0];
+        ranges = tf.tidy(() => {
+            tmp1 = x_vector.max(0).sub(x_vector.min(0));
+            return tf.stack(Array(numExamples).fill(tmp1))//.transpose()
+        });
+
+        mins_x = x_vector.min(0)
+        mins_x = tf.stack(Array(numExamples).fill(mins_x)).neg()//.transpose()
+
+        zeroToOne_x = x_vector.add(mins_x).div(ranges)
+        return zeroToOne_x.sub(0.5)
+    });
+}
+
+
+function tmp_testNormedAndNormalX(){
+    // Set up data
+    tmp = assembleTensors(leftEyes_x, rightEyes_x, eyeCorners_x, faceGeom_x, screenXYs_y);
+
+    // Create two X matrices
+    train_X = tmp[0];
+    normed_train_X = normX(tmp[0]);
+
+    train_X_mat = array2mat(train_X.arraySync())
+    normed_train_X_mat = array2mat(normed_train_X.arraySync())
+
+    // Create two Y vecs, one for x and y coordinate
+    train_Y = tmp[1];
+    ytmp = train_Y.split(2, 1)
+    ground_x = ytmp[0]
+    ground_y = ytmp[1]
+
+    ground_x = array2mat(ground_x.arraySync())
+    ground_y = array2mat(ground_y.arraySync())
+
+
+    // test un-normed X
+    svr_x = newModel();
+    svr_x.train(train_X_mat, ground_x)
+
+    svr_y = newModel();
+    svr_y.train(train_X_mat, ground_y)
+
+    err = testSVRs();
+
+    // test normed X
+    svr_x = newModel();
+    svr_x.train(normed_train_X_mat, ground_x)
+
+    svr_y = newModel();
+    svr_y.train(normed_train_X_mat, ground_y)
+
+    err = testSVRs();
 }
