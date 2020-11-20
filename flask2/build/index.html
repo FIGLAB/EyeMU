@@ -26,7 +26,15 @@
     .predicdot{
         width: 30px;
         height: 30px;
-        background-color: #ffab56;
+        background-color: #ffab56bb;
+        border-radius: 50%;
+        position:fixed;
+    }
+
+    .predicdot2{
+        width: 30px;
+        height: 30px;
+        background-color: #e84338bb;
         border-radius: 50%;
         position:fixed;
     }
@@ -73,6 +81,7 @@
 
 <!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>-->
 <script src="/static/ML.js"></script>
+<script src="/static/hist.js"></script>
 <script src="/static/transfer.js"></script>
 <script src="/static/fileIO.js"></script>
 <script src="/static/mainTesting.js"></script>
@@ -111,7 +120,8 @@ yaga
         </video>
       </div>
       <div id="scatter-gl-container"></div>
-
+        <button type="button" onclick="saveRegressionModels()">Save current regression models</button>
+        <br>
         <button type="button" onclick="greyscaleEyes()">Greyscale images</button>
         <button type="button" onclick="getBaseline()">Test Baseline Model</button>
         <br>
@@ -129,6 +139,7 @@ yaga
 
         <br><br>
         <canvas id="eyecache"></canvas>
+        <canvas id="eyecache2"></canvas>
 
 
     </div>

@@ -18,6 +18,7 @@
 
 <!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>-->
 <script src="{{url_for('static', filename='ML.js')}}"></script>
+<script src="{{url_for('static', filename='hist.js')}}"></script>
 <script src="{{url_for('static', filename='transfer.js')}}"></script>
 <script src="{{url_for('static', filename='fileIO.js')}}"></script>
 <script src="{{url_for('static', filename='mainTesting.js')}}"></script>
@@ -56,7 +57,8 @@ yaga
         </video>
       </div>
       <div id="scatter-gl-container"></div>
-
+        <button type="button" onclick="saveRegressionModels()">Save current regression models</button>
+        <br>
         <button type="button" onclick="greyscaleEyes()">Greyscale images</button>
         <button type="button" onclick="getBaseline()">Test Baseline Model</button>
         <br>
@@ -74,6 +76,7 @@ yaga
 
         <br><br>
         <canvas id="eyecache"></canvas>
+        <canvas id="eyecache2"></canvas>
 
 
     </div>

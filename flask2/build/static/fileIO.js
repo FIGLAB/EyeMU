@@ -81,38 +81,81 @@ function openFile(event) {
 }
 
 
-var isArray = Array.isArray || function(value) {
-  return {}.toString.call(value) !== "[object Array]"
+//var isArray = Array.isArray || function(value) {
+//  return {}.toString.call(value) !== "[object Array]"
+//};
+//
+//function shuffle() {
+//  var arrLength = 0;
+//  var argsLength = arguments.length;
+//  var rnd, tmp;
+//
+//  for (var index = 0; index < argsLength; index += 1) {
+//    if (!isArray(arguments[index])) {
+//      throw new TypeError("Argument is not an array.");
+//    }
+//
+//    if (index === 0) {
+//      arrLength = arguments[0].length;
+//    }
+//
+//    if (arrLength !== arguments[index].length) {
+//      throw new RangeError("Array lengths do not match.");
+//    }
+//  }
+//
+//  while (arrLength) {
+//    rnd = Math.floor(Math.random() * arrLength);
+//    arrLength -= 1;
+//    for (argsIndex = 0; argsIndex < argsLength; argsIndex += 1) {
+//      tmp = arguments[argsIndex][arrLength];
+//      arguments[argsIndex][arrLength] = arguments[argsIndex][rnd];
+//      arguments[argsIndex][rnd] = tmp;
+//    }
+//  }
+//}
+
+
+
+///////////////////////////////////////////////////////////////////////// Saving data vectors
+
+var textFile = null;
+// Create a text file out of text
+function makeTextFile(text) {
+        var data = new Blob([text], {type: 'application/json'});
+
+        // If we are replacing a previously generated file we need to
+        // manually revoke the object URL to avoid memory leaks.
+        if (textFile !== null) { window.URL.revokeObjectURL(textFile);}
+
+        textFile = window.URL.createObjectURL(data);
+
+        // returns a URL you can use as a href
+        return textFile;
 };
 
-function shuffle() {
-  var arrLength = 0;
-  var argsLength = arguments.length;
-  var rnd, tmp;
+function saveTensors(x_vector, y_vector){
+    x_vect_as_array = x_vector.arraySync();
+    y_vect_as_array = y_vector.arraySync();
+    combined = JSON.stringify([x_vect_as_array, y_vect_as_array])
 
-  for (var index = 0; index < argsLength; index += 1) {
-    if (!isArray(arguments[index])) {
-      throw new TypeError("Argument is not an array.");
-    }
-
-    if (index === 0) {
-      arrLength = arguments[0].length;
-    }
-
-    if (arrLength !== arguments[index].length) {
-      throw new RangeError("Array lengths do not match.");
-    }
-  }
-
-  while (arrLength) {
-    rnd = Math.floor(Math.random() * arrLength);
-    arrLength -= 1;
-    for (argsIndex = 0; argsIndex < argsLength; argsIndex += 1) {
-      tmp = arguments[argsIndex][arrLength];
-      arguments[argsIndex][arrLength] = arguments[argsIndex][rnd];
-      arguments[argsIndex][rnd] = tmp;
-    }
-  }
+    var link = document.createElement('a');
+    link.href = makeTextFile(combined);
+    link.target = '_blank';
+    link.download = "gazelEmbedsData.json";
+    link.click();
 }
 
 
+// // Saving regression models from localstorage
+function saveRegressionModels(){
+    svr_x_str = localStorage.getItem("svr_x");
+    svr_y_str = localStorage.getItem("svr_y");
+    combined = JSON.stringify([svr_x_str, svr_y_str])
+
+    var link = document.createElement('a');
+    link.href = makeTextFile(combined);
+    link.target = '_blank';
+    link.download = "regressionmodels.json";
+    link.click();
+}

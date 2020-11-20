@@ -1,3 +1,6 @@
+November 19
+Tried histogram equalizing today. Had to write the whole thing, and then it turned out to be not useful. At least we learned something.  Error went from 2.85 cm baseline to 4.11 cm with histo equalizing.
+
 November 18
 Two unintuitive results from today
     - Normalizing of images was done originally by dividing by 255 and subtracting 0.5. I changed it to divide by the max of the training images, and the error got worse! the audacity! 2.72 -> 2.83 cm on calib dataset, and 1.817 -> 2.0 cm on the val dataset. Intuitively, I thought this would remove some error from the bounds being off, but it seems I was wrong. Weird.
