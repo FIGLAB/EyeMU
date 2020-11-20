@@ -195,6 +195,11 @@ async function renderPrediction() {
 
         // Get face geometry
         faceGeom.update(prediction);
+
+        elem = document.getElementById("videostats")
+        if (elem != undefined){
+            elem.innerHTML = ("eyebox size: " + Math.round(lBB[4]) + " x " + Math.round(lBB[5]));
+        }
     }
 
     if (!stopFacemesh){
