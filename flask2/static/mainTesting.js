@@ -34,6 +34,8 @@ function exportWEBML(){
     localStorage.setItem("svr_y", svr_y_str);
     document.getElementById('svrstatus').innerHTML = "SVRs exported"
 }
+
+
 function importWEBML(){
     svr_x_str = localStorage.getItem("svr_x");
     svr_x = renewObject(JSON.parse(svr_x_str));
@@ -379,3 +381,9 @@ function tmp_testNormedAndNormalX(){
 
     err = testSVRs();
 }
+
+// // Draw tensor with this function:
+//tf.browser.toPixels(a.div(255), canvas)
+
+
+

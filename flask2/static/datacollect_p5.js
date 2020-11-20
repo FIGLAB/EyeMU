@@ -14,8 +14,8 @@ var numSteps = 40;
 var stepsTaken = 0;
 
 // equal collection ims along each line
-var num_ims_along_line = 10;
-var steps_per_line_im = Math.trunc(numSteps/num_ims_along_line);
+var num_ims_along_line = 15;
+var steps_per_line_im = Math.round(numSteps/num_ims_along_line);
 var num_ims_still = 10;
 var stillsTaken = 0;
 
@@ -80,17 +80,24 @@ function draw(){
 
     // Give textual indicator to user of the round
     textAlign(CENTER, CENTER);
-    textSize(35);
+    textSize(45);
+    fill( 0, 101, 150 );
     if (calib_rounds < n_calib_rounds){
         text("Round: " + (calib_rounds+1) + "/" + n_calib_rounds +
-                "\nLocation: " + (calib_counter+1) + "/" + nx_arr.length + "\nTap to advance", width/2, height/2)
+                "\nLocation: " + ((calib_counter+1) % nx_arr.length) + "/" + nx_arr.length + "\nTap to advance", width/2, 4*height/5)
+
+        textSize(40);
+
+        text("Instructions: Track the blue ball with your eyes. \nWhen it turns green, you're safe to blink." +
+            "\nEach round, turn your head towards a different \n corner of your phone, or the center", width/2, height/5)
     } else {
         text("\n\n\nTap to start training", width/2, height/2);
     }
 
+    fill( 0, 121, 184 );
 
+    // Draw circle, with gradually oscillating radius
     radius = radius + sin( frameCount / 8 );
-    // Draw circle
     ellipse( X, Y, radius, radius );
 
     if (rBB != undefined){ // if the face has been detected, start the data collection
@@ -160,7 +167,7 @@ function draw(){
     }
 }
 
-function touchStarted(){
+function touchEnded(){
     if (stopped){
         stopped = false;
         stepsTaken = 0;
