@@ -64,19 +64,33 @@
     </style>
 
     
+
+<!-- Tensorflow core, model, and backend-->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>-->
-<!-- Adds the WASM backend to the global backend registry -->
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/tf-backend-wasm.js"></script>
-<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>-->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
 
-
-
-<script src="/static/ML.js"></script>
-<script src="/static/tfimporttest.js"></script>
-
+<!-- Javascript specific to this page -->
+<script src="/static/collectioncolor.js"></script>
 
 <script>
+    collectmain();
+
+    function updateDotWithHeadAngles(){
+        tmp = faceGeom.getGeom();
+        // tmp is in this format: [this.curYaw, this.curPitch, this.curRoll, this.curFaceSize];
+
+        elem = document.getElementsByClassName("predicdot")[0];
+        elem.style.setProperty("left", 50 - tmp[0]*100 + "%", "important")
+        elem.style.setProperty("top", 50 - tmp[1]*100 + "%", "important")
+
+        radius = 50 + (tmp[3]-0.3)*200
+        elem.style.setProperty("width", radius + "px", "important")
+        elem.style.setProperty("height", radius + "px", "important")
+
+        requestAnimationFrame(updateDotWithHeadAngles);
+    }
+    setTimeout(updateDotWithHeadAngles, 1000);
+
 
 
 </script>
@@ -86,15 +100,8 @@
 <body style="background-color:lightblue;">
 
 
-
-<div id="main">
-    <div class="container">
-        <input type="file" accept="application/json" id="eyeData" multiple onchange='openFile(event)'></input>
-
-
-      <div class="canvas-wrapper">
-        <canvas id="output"></canvas>
-        <video id="video" playsinline style="
+<canvas hidden id="eyecache"></canvas>
+<video hidden autoplay muted playsinline id="video"  style="
           -webkit-transform: scaleX(-1);
           transform: scaleX(-1);
           visibility: hidden;
@@ -102,18 +109,8 @@
           height: auto;
           ">
         </video>
-      </div>
-      <div id="scatter-gl-container"></div>
-        <button type="button" onclick="saveEyes()">Save Eyes</button>
 
-
-        <br><br>
-        <canvas id="eyecache"></canvas>
-
-
-    </div>
-  </div>
-
+<div class="predicdot" style="left:50%; top:50%;"></div>
 
 
 </body>
