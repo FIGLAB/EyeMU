@@ -59,6 +59,11 @@ def facemeshdemo():
 def acceldemo():
     return render_template("accel.html")
 
+# shows where the face's angle is on-screen
+@app.route('/faceangle/')
+def faceangle():
+    return render_template("faceangle.html")
+
 
 @app.after_request
 def add_header(response):
