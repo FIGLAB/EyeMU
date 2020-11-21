@@ -283,7 +283,7 @@ async function collectmain() {
     videoWidth = video.videoWidth;
     videoHeight = video.videoHeight;
 
-    // Set up canvas to draw the eyes of the user (debugging feature)
+    // Set up canvas to draw the eyes of the user
     canvas = document.getElementById('eyecache');
     canvas.width = 300;
     canvas.height = 200;
@@ -295,5 +295,7 @@ async function collectmain() {
 
     console.log("collection color main complete");
 }
+
+
 
 
