@@ -100,8 +100,23 @@ function draw(){
     radius = radius + sin( frameCount / 8 );
     ellipse( X, Y, radius, radius );
 
-    if (rBB != undefined){ // if the face has been detected, start the data collection
-        if ((calib_rounds < n_calib_rounds) && !stopped){
+    if (rBB != undefined ){ // if the face has been detected, start the data collection
+
+        // Unless eyes are too far off screen
+        eyeExtremesX = lBB.slice(0,2).concat(rBB.slice(0,2))
+        eyeExtremesY = lBB.slice(2,4).concat(rBB.slice(2,4))
+
+        eyeExtremesX = eyeExtremesX.map(elem => elem/videoWidth)
+        eyeExtremesY = eyeExtremesY.map(elem => elem/videoHeight)
+        const margin = 0.025
+
+        // If the eyes are off-screen, notify the user and pause the collection
+        if (Math.min(...eyeExtremesX) < margin*2 || Math.max(...eyeExtremesX) > (1.0 - margin*2) ||
+            Math.min(...eyeExtremesY) < margin || Math.max(...eyeExtremesY) > (1.0-margin) ||
+            (typeof(prediction) != 'undefined' && prediction.faceInViewConfidence < 0.9)){
+            fill(255, 20, 20);
+            text("Eyes are off-camera! \nData collection paused.", width/2, height/2);
+        } else if ((calib_rounds < n_calib_rounds) && !stopped){
 
 
             // Track circle to new destination
@@ -153,7 +168,7 @@ function draw(){
             background( 150 );
             fill( 0, 121, 184 );
             stroke(255);
-
+-
             textSize(100);
             text('Training...', width/2, height/2);
 
