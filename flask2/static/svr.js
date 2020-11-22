@@ -178,7 +178,7 @@ async function runSVRlive(){
 
 
 
-//    // Draw second one
+//    // Draw second one to visualize greyscale
 //    pred2 = tf.tidy(() => {
 //                let curGeom = tf.tensor(faceGeom.getGeom()).reshape([1,4]);
 //
