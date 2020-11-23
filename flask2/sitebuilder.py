@@ -64,6 +64,11 @@ def acceldemo():
 def faceangle():
     return render_template("faceangle.html")
 
+# interactions time!
+@app.route('/zoo/<string:interactionNum>')
+def zoo(interactionNum):
+    return render_template("zoo/" + interactionNum + ".html")
+
 
 @app.after_request
 def add_header(response):
