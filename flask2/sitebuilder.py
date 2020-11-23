@@ -7,10 +7,13 @@ from flask_cors import CORS
 
 
 app = Flask(__name__)
+app.config.from_object(__name__)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
-CORS(app)
-
 freezer = Freezer(app)
+
+
+# CORS(app)
+
 
 
 @app.route('/')
@@ -65,10 +68,20 @@ def faceangle():
     return render_template("faceangle.html")
 
 # interactions time!
-@app.route('/zoo/<string:interactionNum>')
-def zoo(interactionNum):
-    return render_template("zoo/" + interactionNum + ".html")
+@app.route('/zoo/1/')
+def zoo1():
+    return render_template("zoo.html", zooNum = 1)
 
+@app.route('/zoo/2/')
+def zoo2():
+    return render_template("zoo.html", zooNum = 2)
+
+# @freezer.register_generator
+# def numPages():
+#     path = os.path.join(app.root_path, 'images')
+#     images = next(os.walk(path))[2]
+#     for image in images:
+#         yield {"image": image}
 
 @app.after_request
 def add_header(response):

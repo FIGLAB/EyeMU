@@ -114,7 +114,7 @@ function draw(){
         if (Math.min(...eyeExtremesX) < margin*2 || Math.max(...eyeExtremesX) > (1.0 - margin*2) ||
             Math.min(...eyeExtremesY) < margin || Math.max(...eyeExtremesY) > (1.0-margin) ||
             (typeof(prediction) != 'undefined' && prediction.faceInViewConfidence < 0.9)){
-            fill(255, 160, 160);
+            fill(255, 20, 20);
             text("Eyes are off-camera! \nData collection paused.", width/2, height/2);
         } else if ((calib_rounds < n_calib_rounds) && !stopped){
 

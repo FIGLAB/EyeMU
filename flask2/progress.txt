@@ -1,3 +1,6 @@
+November 22
+Rewrote hiding prediction and target dot code.
+
 November 21
 - Tried various ways to fix the problem from yesterday. The regression model generalizes well to head translation, and to head angle — but this is because the data we give to it has data from various angles, and the base model learns translation from the eye corner coordinates. Feeding the model a blend of head rotation and head rotation+translation data seems to sort of fix the issue, but the final model is definitely less robust to head angle. I think that we just have to add extra data to the collection process. The current process takes 3 minutes, with more maybe 5.
 - also added error catching when user's face is off-camera.
