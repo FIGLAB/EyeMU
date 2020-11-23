@@ -23,6 +23,7 @@ var windowHeight = window.innerHeight;
 // Show HTML prediction dot or p5js
 var showPredictDot = true;
 
+
 //Draw the prediction as an orange dot on the screen.
 async function drawPrediction(predictedXY) {
     // Remove all existing predicdots
@@ -47,13 +48,8 @@ async function drawPrediction(predictedXY) {
     elem = document.createElement("div");
     elem.setAttribute("class", "predicdot");
 
-    // Regression
     if (regression){
-//        if (color == undefined){
-            elem.setAttribute("style", "left:"+ predX +"%;top:"+ predY +"%;");
-//        } else{
-//            elem.setAttribute("style", "left:"+ predX +"%;top:"+ predY +"%; background-color:" + color + ";");
-//        }
+        elem.setAttribute("style", "left:"+ predX +"%;top:"+ predY +"%;");
     } else{
         // Dividing regions, by percentage
         let x_bounds = [25, 75];
@@ -79,42 +75,16 @@ async function drawPrediction(predictedXY) {
 
                                + " top:" + (row_top ? 0 : (row_bot ? y_bounds[1] : y_bounds[0])) + "%;"
                                + " bottom:" + (row_top ? y_bounds[1] : (row_bot ? 0 : y_bounds[0])) + "%;");
-//        reg.setAttribute("style", "left: 25%; right:75%; top:25%; bottom:75%;")
-//        reg.setAttribute("style", "left: 10%; right:40%; top: 10%; bottom: 40%;")
-        document.body.appendChild(reg);
     }
 
-    document.body.appendChild(elem);
-};
 
-
-// Second dot -.-
-//Draw the prediction as an orange dot on the screen.
-async function drawPrediction2(predictedXY) {
-    // Remove all existing predicdots
-    const predicdots = document.getElementsByClassName('predicdot2');
-    if (predicdots.length > 0){
-        predicdots[0].parentNode.removeChild(predicdots[0]);
-    };
-
-    //Generate prediction dot
-    predX = Math.floor(predictedXY[0]*100);
-    predY = Math.floor(predictedXY[1]*100);
-
-    predX = Math.min(Math.max(predX, 0), 100);
-    predY = Math.min(Math.max(predY, 0), 100);
-
-    elem = document.createElement("div");
-    elem.setAttribute("class", "predicdot2");
-
-    // Regression
-    if (regression){
-        elem.setAttribute("style", "left:"+ predX +"%;top:"+ predY +"%;");
+    if (showPredictDot){
+        document.body.appendChild(elem);
+        if (reg != undefined){
+            document.body.appendChild(reg);
+        }
     }
-
-    document.body.appendChild(elem);
 };
-
 
 
 
@@ -172,40 +142,7 @@ async function runSVRlive(){
     curPred[0] = Math.max(0.05, Math.min(.95, curPred[0]))
     curPred[1] = Math.max(0.05, Math.min(.95, curPred[1]))
 
-    if (showPredictDot){
-        drawPrediction(curPred)
-    }
-
-
-
-//    // Draw second one to visualize greyscale
-//    pred2 = tf.tidy(() => {
-//                let curGeom = tf.tensor(faceGeom.getGeom()).reshape([1,4]);
-//
-//                 // EXPERIMENT: Trying to greyscale images to increase accuracy
-//                leye = greyscaleImage(curEyes[0])
-//                reye = greyscaleImage(curEyes[1])
-//                let embed = natureModelEmbeddings.predict([leye.div(255).sub(0.5).reshape([1, 128, 128, 3]), reye.div(255).sub(0.5).reshape([1, 128, 128, 3]), curEyes[2].reshape([1, 8]), curGeom]);
-////                let embed = natureModelEmbeddings.predict([curEyes[0].div(256).sub(0.5).reshape([1, 128, 128, 3]), curEyes[1].div(256).sub(0.5).reshape([1, 128, 128, 3]), curEyes[2].reshape([1, 8]), curGeom]);
-//                embed[0] = embed[0].div(100);
-//                embed[1] = embed[1].div(10);
-//                embed = tf.concat(embed, 1);
-//
-//                allFeatures = tf.concat([embed, curEyes[2].reshape([1,8]), curGeom], 1);
-//                allFeatures_mat = array2mat(allFeatures.arraySync());
-//                return [svr_x.predict(allFeatures_mat), svr_y.predict(allFeatures_mat)]
-//            })
-//
-//    a = 0.5;
-//    curPred2[0] = curPred2[0]*(1-a) + pred2[0]*a;
-//    curPred2[1] = curPred2[1]*(1-a) + pred2[1]*a;
-//
-//    curPred2[0] = Math.max(0.05, Math.min(.95, curPred2[0]))
-//    curPred2[1] = Math.max(0.05, Math.min(.95, curPred2[1]))
-//
-//    if (showPredictDot){
-//        drawPrediction2(curPred2);
-//    }
+    drawPrediction(curPred)
 
     setTimeout(runSVRlive, 100);
 }
@@ -215,17 +152,40 @@ var h_op = [100/10, 100/2, 9*100/10];
 var nx_arr = [w_op[1], w_op[2], w_op[0], w_op[2], w_op[1], w_op[0], w_op[1], w_op[0], w_op[2], w_op[2]]
 var ny_arr = [h_op[0], h_op[2], h_op[1], h_op[0], h_op[1], h_op[2], h_op[2], h_op[0], h_op[1], h_op[1]];
 var targetNum = 0;
+var targetTimerLen = 10;
+var targetTimerCount = 0;
 async function drawTargetDot(){
-    const dot = document.getElementsByClassName('targetdot')[0];
-//    dot.setAttribute("style", "left:"+ predX +"%;top:"+ predY +"%;");
-    const nextTargetNum = (targetNum + 1) % ny_arr.length;
+    // Remove old target dots
+    const targs = document.getElementsByClassName('targetdot');
+    while (targs.length > 0){
+        targs[0].parentNode.removeChild(targs[0]);
+    };
 
-    dot.setAttribute("style", "left:" + nx_arr[targetNum] +"%; top:" + ny_arr[targetNum] + "%;");
+    // Create a new one
+    targDot = document.createElement("div");
+    targDot.setAttribute("class", "targetdot");
+    document.body.appendChild(targDot);
 
-    // Call self again after delay
+    // Set its location and add it to the body
+    if (showPredictDot){
+        targDot.setAttribute("style", "left:" + nx_arr[targetNum] +"%; top:" + ny_arr[targetNum] + "%;");
+    } else{
+        targDot.setAttribute("style", "left:" + "-10" +"%; top:" + "-10" + "%;");
+    }
+
+    // update target number if enough time has passed. This is to make the target dot reactive
+    targetTimerCount += 1;
+    let nextTargetNum;
+    if (targetTimerCount % targetTimerLen == 0){
+        nextTargetNum = (targetNum + 1) % ny_arr.length;
+    } else{
+        nextTargetNum = targetNum % ny_arr.length;
+    }
     targetNum = nextTargetNum;
 
-    setTimeout(drawTargetDot, 5000);
+
+    // Call self again after delay
+    setTimeout(drawTargetDot, 500);
 }
 
 // Draw regression button
@@ -295,7 +255,7 @@ async function main() {
     ctx = canvas.getContext('2d');
 
 
-        // start in the eval loop
+    // start the live loop
     done_with_training = true;
     curPred = [-1, -1];
     curPred2 = [-1, -1];
@@ -305,9 +265,8 @@ async function main() {
         }, 2000);
 
     setTimeout(runSVRlive, 3000);
-    if (showPredictDot){
-        drawTargetDot()
-    }
+
+    drawTargetDot()
 
     console.log("regression loading done");
 }
