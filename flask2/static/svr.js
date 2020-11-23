@@ -246,7 +246,11 @@ async function main() {
     videoHeight = video.videoHeight;
 
     // Resize the regression/classification toggle to look nice
-    document.getElementById('regtoggle').style.width = windowWidth + "px"
+    const regtoggle = document.getElementById('regtoggle');
+    if (regtoggle != undefined){
+        regtoggle.style.width = windowWidth + "px"
+    }
+
 
     // Set up canvas to draw the eyes of the user (debugging feature)
     canvas = document.getElementById('eyecache');

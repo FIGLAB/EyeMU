@@ -71,19 +71,130 @@
 
 <!-- Javascript specific to this page -->
 <script src="/static/ML.js"></script>
-<script src="/static/fileIO.js"></script>
 <script src="/static/svr.js"></script>
 <script src="/static/collectioncolor.js"></script>
-<!--<script src="/static/livetest.js"></script>-->
+<script src="/static/zoo.js"></script>
 
 
 <!--Other ML library-->
-<!--<script src="http://mlweb.loria.fr/ml.js"></script>-->
 <script src="/static/mlweb.js"></script>
 
 <script>
     main();
+    showPredictDot = false;
+
+    // Wait until after the body loads before adding elements to it.
+    document.addEventListener("DOMContentLoaded", function(event) {
+        zooSelect(2);
+    })
+
 </script>
+
+
+<style>
+    .top_notif_deselected {
+        margin: 0;
+
+        left: 2%;
+        right: 2%;
+        height: 5%;
+        top: 2%;
+
+        background-color: #dcdcdcaa;
+        border-radius: 15px;
+        position:fixed;
+        backdrop-filter: blur(4px);
+
+        animation: getSmaller 1s;
+    }
+
+    @keyframes getSmaller {
+        from {
+            left: 0%;
+            right: 0%;
+            top: 0%;
+            height: 8%;
+        }
+
+        to {
+            left: 2%;
+            right: 2%;
+            height: 5%;
+            top: 2%;
+        }
+    }
+
+
+    .top_notif_selected {
+        margin: 0;
+
+        left: 0%;
+        right: 0%;
+        top: 0%;
+        height: 8%;
+
+        background-color: #dcdcdcaa;
+        border-radius: 15px;
+        position:fixed;
+        backdrop-filter: blur(4px);
+
+        animation: getBigger 1s;
+    }
+
+    @keyframes getBigger {
+        from {
+            left: 2%;
+            right: 2%;
+            top: 2%;
+            height: 5%;
+        }
+
+        to {
+            left: 0%;
+            right: 0%;
+            top: 0%;
+            height: 8%;
+        }
+    }
+
+
+    .top_notif {
+        margin: 0;
+
+        left: 2%;
+        right: 2%;
+        height: 5%;
+        top: 2%;
+
+        background-color: #dcdcdcaa;
+        border-radius: 15px;
+        position:fixed;
+        backdrop-filter: blur(4px);
+
+        animation: slideintop 1.5s;
+    }
+
+
+    @keyframes slideintop {
+        from {
+            top: -10%;
+        }
+
+        to {
+            top: 2%;
+        }
+    }
+
+
+    p {
+      animation-duration: 3s;
+      animation-name: slidein;
+    }
+
+
+</style>
+
+
 
 
 </head>
@@ -93,25 +204,15 @@
 <div id="main">
 
     <canvas hidden id="eyecache"></canvas>
-
-    <div >
-        <button id="regtoggle"  class="widebutton" onclick="regr_class_toggle()" style="vertical-align: middle; margin-bottom:10px; background:#2196F3; width:100vw;"><h4>Classification</h4></button>
-</div>
-
-
     <video hidden autoplay muted playsinline id="video"  style="
               -webkit-transform: scaleX(-1);
               transform: scaleX(-1);
               visibility: hidden;
               width: auto;
               height: auto;
-              ">
-            </video>
+              "></video>
 
 </div>
-
-<!--<div class="targetdot" style="left:50%; top:50%;"></div>-->
-
 
 </body>
 </html>
