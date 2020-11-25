@@ -36,20 +36,35 @@ function zoomForMore(){
     // Create popup on screen
     notification_elem = document.createElement("p");
     notification_elem.setAttribute("class", "top_notif");
+    notification_elem.innerHTML = "1 New Notification from Messages"
+    notification_elem.style.fontSize = "150%"
+
     setTimeout(() => document.body.append(notification_elem), 1000);
 
     initialHeadSize = faceGeom.getGeom()[3]
     zoomedOnce = false;
+    headBigger = false;
+    headBiggerPrev = false;
     // Set up while loop to check headSize
     setInterval(() => {
         curHeadSize = faceGeom.getGeom()[3];
+        headBiggerPrev = headBigger
+        headBigger = curHeadSize > 1.5*initialHeadSize;
+
         // If user's face is closer, make the banner bigger
-        if (curHeadSize > 1.5*initialHeadSize){
-            notification_elem.setAttribute("class", "top_notif_selected")
-            zoomedOnce = true;
-        } else if (zoomedOnce){
-            notification_elem.setAttribute("class", "top_notif_deselected")
+        if (headBiggerPrev != headBigger){
+            console.log("trigger change")
+
+            if (headBigger){
+                notification_elem.setAttribute("class", "top_notif_selected")
+                notification_elem.innerHTML = "1 New Notification from Messages <br> Jane: What's the name of that waffle shop on Craig Street?"
+                zoomedOnce = true;
+            } else if (zoomedOnce){
+                notification_elem.setAttribute("class", "top_notif_deselected")
+                notification_elem.innerHTML = "1 New Notification from Messages"
+            }
         }
+
     }, 100);
 }
 

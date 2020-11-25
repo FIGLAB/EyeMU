@@ -1,3 +1,7 @@
+November 24
+Fixed 1st interaction at /zoo/2
+
+
 November 22
 Rewrote hiding prediction and target dot code.
 
