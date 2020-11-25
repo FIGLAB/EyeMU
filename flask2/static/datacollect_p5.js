@@ -4,7 +4,7 @@ new p5();
 var n_calib_rounds = 5;
 
 // Global variables
-var radius = 50.0;
+var radius = 70.0;
 var X, Y;
 var nX, nY;
 
@@ -18,6 +18,8 @@ var num_ims_along_line = 15;
 var steps_per_line_im = Math.round(numSteps/num_ims_along_line);
 var num_ims_still = 10;
 var stillsTaken = 0;
+var stillsDone = false;
+var movingsTaken = 0;
 
 // Step size in pixels
 var moveAmountPerFrame = [];
@@ -31,6 +33,19 @@ var ny_arr = [];
 
 // state variables
 var done_with_training = false;
+
+// Instructions array
+movePositionString = "\n\n\n\n\nChange rooms, seating, or position \n(stand/sit in a different angle).\n\n\nThen, with your head facing\ntowards the "
+endString = " corner\nof your phone, track the circle."
+var alertShown = false;
+
+var instructions = [
+    "Face the center of your phone and \ntrack the circle with your eyes.",
+    movePositionString + "top-left" + endString,
+    movePositionString + "top-right" + endString,
+    movePositionString + "bottom-left" + endString,
+    movePositionString + "bottom-right" + endString
+];
 
 // Setup the Processing Canvas
 function setup(){
@@ -73,7 +88,6 @@ function draw(){
         textSize(30);
         text("\nTraining completed", width/2, height/2);
 
-//        setTimeout(() => window.location.href = "../svrtest", 1000);
         noLoop();
         return;
     }
@@ -83,25 +97,27 @@ function draw(){
     textSize(45);
     fill( 0, 101, 150 );
     if (calib_rounds < n_calib_rounds){
-        text("Round: " + (calib_rounds+1) + "/" + n_calib_rounds +
-                "\nLocation: " + ((calib_counter+1) % nx_arr.length) + "/" + nx_arr.length + "\nTap to advance", width/2, 4*height/5)
+        text("Round: " + (calib_rounds+1) + "/" + n_calib_rounds + "\nTap to advance", width/2, 4*height/5)
 
-        textSize(40);
 
-        text("Instructions: Track the blue ball with your eyes. \nWhen it turns green, you're safe to blink." +
-            "\nEach round, turn your head towards a different \n corner of your phone, or the center", width/2, height/5)
+        // If we're in the center, show instructions on screen and send an alert
+        if (calib_counter % nx_arr.length == 0 && movingsTaken == 0){
+            text("\n\n" + instructions[calib_rounds], width/2, 2*height/5)
+        }
+        text("Instructions: Track the ball with your eyes. \nWhen it turns green, you're safe to blink.", width/2, height/5)
     } else {
-        text("\n\n\nTap to start training", width/2, height/2);
+        text("\n\n\nTap to start training", width/2, 3*height/5);
     }
 
-    fill( 0, 121, 184 );
+//    fill( 0, 121, 184 ); // dark blue
+    fill(194, 21, 2); // dark red
+
 
     // Draw circle, with gradually oscillating radius
-    radius = radius + sin( frameCount / 8 );
+    radius = radius + sin( frameCount / 8 )
     ellipse( X, Y, radius, radius );
 
     if (rBB != undefined ){ // if the face has been detected, start the data collection
-
         // Unless eyes are too far off screen
         eyeExtremesX = lBB.slice(0,2).concat(rBB.slice(0,2))
         eyeExtremesY = lBB.slice(2,4).concat(rBB.slice(2,4))
@@ -115,23 +131,26 @@ function draw(){
             Math.min(...eyeExtremesY) < margin || Math.max(...eyeExtremesY) > (1.0-margin) ||
             (typeof(prediction) != 'undefined' && prediction.faceInViewConfidence < 0.9)){
             fill(255, 20, 20);
-            text("Eyes are off-camera! \nData collection paused.", width/2, height/2);
+            text("Eyes are off-camera! \nData collection paused.", width/2, 3*height/5);
         } else if ((calib_rounds < n_calib_rounds) && !stopped){
-
+            // Show that images are being taken before XY increments
+            textSize(20)
+            fill(255,255,255)
+            text(movingsTaken, X, Y);
 
             // Track circle to new destination
             X += moveAmountPerFrame[0];
             Y += moveAmountPerFrame[1];
             stepsTaken += 1;
 
+            // Take an eye pic at linear increments
             if ((stepsTaken % steps_per_line_im) == 0){
                 eyeSelfie(false);
+                movingsTaken += 1;
                 console.log("eyeSelfie along line");
-//                console.log("eyeSelfie along line", X, Y);
             }
 
-            // Take a certain # of photos at each location if close enough
-    //        if ((Math.abs(nX-X) + Math.abs(nY-Y)) < 2){
+            // If destination point is reached, move to stationary capture
             if (stepsTaken >= numSteps){
                 stepsTaken = 0;
                 calib_counter += 1;
@@ -145,9 +164,11 @@ function draw(){
                 // Moves faster in the y direction, but whatever. Too hard to fix
                 moveAmountPerFrame = [(nX-X)/numSteps , (nY-Y)/numSteps];
                 stopped = true;
+                stillsDone = false;
                 stillsTaken = 0;
             }
         } else if (stopped){
+            movingsTaken = 0;
             if (stillsTaken < num_ims_still){
                 if (frameCount % 1 == 0){ // take screenshot every N frames
                     eyeSelfie(false);
@@ -155,11 +176,13 @@ function draw(){
                     stillsTaken += 1;
                 } // Write number of photo and draw circle going around
                 textSize(20)
+                fill(255,255,255)
                 text(stillsTaken, X, Y)
 
             } else if (stillsTaken >= num_ims_still){
-                fill( 0, 121, 20 ); // Green circle if all images taken
-                ellipse( X, Y, radius, radius );
+                fill(0, 121, 20); // Green circle if all images taken
+                ellipse( X, Y, radius, radius);
+                stillsDone = true
             }
         } else{
             console.log("collection done, starting training")

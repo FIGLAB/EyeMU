@@ -143,19 +143,18 @@ function eyeBoundsFromCorners(leftCorner, rightCorner){
 
 // Calls face mesh on the video and outputs the eyes and face bounding boxes to global vars
 async function renderPrediction() {
-    const facepred = await fmesh.estimateFaces(video);
+    let facepred;
+    try {
+        facepred = await fmesh.estimateFaces(video);
+    } catch(err) {
+        console.log(err);
+        setTimeout(renderPrediction, 1000);
+        return
+    }
 
     if (facepred.length > 0) {
         // If we find a face, proceed with first and only prediction
         prediction = facepred[0];
-
-        // Find the eyeboxes (you could index directly but it wouldn't be that much faster)
-//        right_eyebox = (prediction.annotations.rightEyeUpper2).concat(prediction.annotations.rightEyeLower2);
-//        left_eyebox = (prediction.annotations.leftEyeUpper2).concat(prediction.annotations.leftEyeLower2);
-
-        // find bounding boxes [left, right, top, bottom]
-//        rBB = maxminofXY(right_eyebox);
-//        lBB = maxminofXY(left_eyebox);
 
         // find eye corners
         eyeCorners = getEyeCorners(prediction, videoHeight, videoWidth)
@@ -181,19 +180,6 @@ function greyscaleImage(imTensor){
         return imTensor.mean(2).reshape([inx, iny, 1]).tile([1,1,3]);
     });
 }
-
-//function greyscaleEyes(){
-//    leftEyes_x.forEach((elem, ind) => {
-//        tmp = elem.mean(2).reshape([inx, iny, 1]).tile([1,1,3]);
-//        leftEyes_x[ind] = tmp
-//    });
-//
-//    rightEyes_x.forEach((elem, ind) => {
-//        tmp = elem.mean(2).reshape([inx, iny, 1]).tile([1,1,3]);
-//        rightEyes_x[ind] = tmp
-//    });
-//    console.log("grescaling complete");
-//
 
 function gammaChangeIm(im, gamma){
     return tf.tidy(() => im.div(255).pow(1/gamma).mul(255));
