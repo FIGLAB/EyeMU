@@ -76,13 +76,6 @@ def zoo1():
 def zoo2():
     return render_template("zoo.html", zooNum = 2)
 
-# @freezer.register_generator
-# def numPages():
-#     path = os.path.join(app.root_path, 'images')
-#     images = next(os.walk(path))[2]
-#     for image in images:
-#         yield {"image": image}
-
 @app.after_request
 def add_header(response):
     """

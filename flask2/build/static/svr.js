@@ -80,7 +80,7 @@ async function drawPrediction(predictedXY) {
 
     if (showPredictDot){
         document.body.appendChild(elem);
-        if (reg != undefined){
+        if (!regression){
             document.body.appendChild(reg);
         }
     }

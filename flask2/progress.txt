@@ -1,5 +1,8 @@
 November 24
-Fixed 1st interaction at /zoo/2
+Fixed 1st interaction at /zoo/2, added text. Renders fine and works smoothly on iOS 14 iPhone XR Safari.
+Tried to show an alert with the instructions for each round, but I think the liverunning face-mesh gets all messed up due to the thread being blocked. Restarts in about 9 seconds, much too short for my liking.
+
+
 
 
 November 22
