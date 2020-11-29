@@ -20,9 +20,7 @@ var numSteps = 20;
 var stepsTaken = 0;
 
 // equal collection ims along each line
-var num_ims_along_line = 10;
-var steps_per_line_im = Math.trunc(numSteps/num_ims_along_line);
-var num_ims_still = 5;
+var num_ims_still = 10;
 var stillsTaken = 0;
 var delayFrames = 20;
 var delay_frames_taken = 0;
@@ -46,6 +44,12 @@ var errorsY = [];
 var tmpErrorX = [];
 var tmpErrorY = [];
 
+// State tracking
+var locations_acc = [];
+
+var initial_width = window.innerWidth;
+var initial_height = window.innerHeight;
+
 // Setup the Processing Canvas
 function setup(){
     createCanvas(windowWidth, windowHeight);
@@ -55,9 +59,9 @@ function setup(){
 
     let w_op = [width/10, width/2, width*9/10];
     let h_op = [height/20, height/2, height*19/20];
-            // center,mid-right,topright,topleft, midleft, botleft, botright, mid-right again
-    nx_arr = [w_op[1], w_op[2], w_op[2], w_op[0], w_op[0], w_op[0], w_op[2], w_op[2]]
-    ny_arr = [h_op[1], h_op[1], h_op[0], h_op[0], h_op[1], h_op[2], h_op[2], h_op[1]];
+            // center,mid-right,topright, topmid, topleft, midleft, botleft, botmid botright, mid-right again
+    nx_arr = [w_op[1], w_op[2], w_op[2], w_op[1], w_op[0], w_op[0], w_op[0], w_op[1], w_op[2], w_op[2]]
+    ny_arr = [h_op[1], h_op[1], h_op[0], h_op[0], h_op[0], h_op[1], h_op[2], h_op[2], h_op[2], h_op[1]];
 
     X = nx_arr[calib_counter];
     Y = ny_arr[calib_counter];
@@ -101,6 +105,20 @@ function draw(){
                 14.4*errY_avg, width/2, height/2);
         text("\n\n\n\n\n\n\n\ncm combined: " +
                 nf(Math.sqrt(14.4*errY_avg*14.4*errY_avg + 6.3*errX_avg*6.3*errX_avg), 1, 2), width/2, height/2);
+
+
+        // errorsY and errorsX are just arrays, should be of length 9
+        // Each time eval is executed in full, store:
+            // - Date/time
+            // - window width/height,
+            // - normalized x and y error for each location
+            // - Pixel corrdinates of each xy location, in order
+
+//        let d = new Date();
+        addToStorageArray("eval", [Date.now(), [initial_width, initial_height], errorsX, errorsY, locations_acc]);
+
+        text("Evaluation results saved at /results", width/2, height*4/5);
+        noLoop();
     }
 
     // Draw target circle
@@ -113,21 +131,13 @@ function draw(){
         let currentErrorX = abs(X - curPred[0]*windowWidth);
         let currentErrorY = abs(Y - curPred[1]*windowHeight);
 
-        // Draw prediction circle
-//        if (){
-            fill(204, 102, 0);
-            ellipse(curPred[0]*windowWidth, curPred[1]*windowHeight, radius/2, radius/2);
-//        }
+        fill(204, 102, 0);
+        ellipse(curPred[0]*windowWidth, curPred[1]*windowHeight, radius/2, radius/2);
         if ((calib_rounds < n_calib_rounds) && !stopped){
-
-            // record at even intervals along the line
-//            if ((stepsTaken % steps_per_line_im) == 0){}
-
             // Track circle to new destination
             X += moveAmountPerFrame[0];
             Y += moveAmountPerFrame[1];
             stepsTaken += 1;
-
 
             // Take a certain # of photos at each location
             if (stepsTaken >= numSteps){
@@ -149,7 +159,7 @@ function draw(){
             if (delay_frames_taken < delayFrames){
                 delay_frames_taken += 1;
             } else if (stillsTaken < num_ims_still){
-                if (frameCount % 5 == 0){ // take screenshot every N frames
+                if (frameCount % 2 == 0){ // take screenshot every N frames
 //                    eyeSelfie(false);
                     console.log("eyeSelfie at corner");
                     stillsTaken += 1;
@@ -161,19 +171,21 @@ function draw(){
                 tmpErrorX.push(currentErrorX);
                 tmpErrorY.push(currentErrorY);
                 errorsAdded = false;
-
             } else if (stillsTaken >= num_ims_still){
                 fill( 0, 121, 20 ); // Green circle if all images taken
                 ellipse( X, Y, radius, radius );
 
-
                 if (!errorsAdded){
+                    // Accumulate errors and reset the tmpErr tracking
                     errorsX.push(average(tmpErrorX));
                     errorsY.push(average(tmpErrorY));
                     errorsAdded = true;
 
                     tmpErrorX = [];
                     tmpErrorY = [];
+
+                    // Remember the location
+                    locations_acc.push([X,Y])
                 }
 
             }
@@ -182,7 +194,7 @@ function draw(){
 }
 
 function touchStarted(){
-    if (stopped){
+    if (stopped && stillsTaken >= num_ims_still){
         stopped = false;
         stepsTaken = 0;
         delay_frames_taken = 0;

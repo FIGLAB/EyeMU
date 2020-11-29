@@ -137,10 +137,7 @@ const s = ( p ) => {
                 }
             }
 
-//            console.log("img bottom at:", (instr_y + instr_h))
-//            console.log("height is ", height)
-//            console.log("gap height is:", (height - (instr_y + instr_h)))
-//            console.log("text at:", height + (height - (instr_y + instr_h))/2)
+
             p.text("Round: " + (calib_rounds+1) + "/" + n_calib_rounds + "\nTap to advance",
                         width/2,
                         height - (height - (instr_y + instr_h))/2)
