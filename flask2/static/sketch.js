@@ -8,7 +8,7 @@ var num_ims_per_location = 10;
 var locations_traversed = 0;
 
 // Global variables
-var radius = 50.0;
+var radius = 75.0;
 var X, Y;
 var nX, nY;
 var delay = 16;
@@ -66,7 +66,7 @@ function draw(){
         Y+=(nY-Y)/delay;
 
         // Draw target circle
-        ellipse(X, Y, radius, radius);
+//        ellipse(X, Y, radius, radius);
 
         if(frameCount % (delay+moveDelay)==0){
             nX = nx_arr[calib_counter];
@@ -79,7 +79,7 @@ function draw(){
         if (regression){
             let pred_X = curPred[0]*windowWidth;
             let pred_Y = curPred[1]*windowHeight;
-            ellipse(pred_X, pred_Y, radius/2, radius/2);
+            ellipse(pred_X, pred_Y, radius, radius);
 
 
             // If regression, track the error and write it to screen
@@ -98,16 +98,16 @@ function draw(){
             let x_cm_error = errorX * 7.1;
             let y_cm_error = errorY * 14.4;
 
-            // Writing error to the canvas
-            fill(20)
-            const spacing = 30;
-            textSize(20);
-            text("Assuming iPhone X screen size: 7.1 x 14.4 cm", 10, spacing);
-            textSize(30);
-            text("X % Error: " + nf(errorX*100,2,1) + "\t\tX cm error: " + nf(x_cm_error,1,2), 10, spacing*2);
-            text("Y % Error: " + nf(errorY*100,2,1) + "\t\tY cm error: " + nf(y_cm_error,1,2), 10, spacing*3);
-            text("X+Y % Error: " + nf(Math.sqrt(errorX*errorX + errorY*errorY)*100,2,1) +
-                 "\tX+Y cm error: " + nf(Math.sqrt(x_cm_error*x_cm_error + y_cm_error*y_cm_error),1,2), 10, spacing*4);
+//            // Writing error to the canvas
+//            fill(20)
+//            const spacing = 30;
+//            textSize(20);
+//            text("Assuming iPhone X screen size: 7.1 x 14.4 cm", 10, spacing);
+//            textSize(30);
+//            text("X % Error: " + nf(errorX*100,2,1) + "\t\tX cm error: " + nf(x_cm_error,1,2), 10, spacing*2);
+//            text("Y % Error: " + nf(errorY*100,2,1) + "\t\tY cm error: " + nf(y_cm_error,1,2), 10, spacing*3);
+//            text("X+Y % Error: " + nf(Math.sqrt(errorX*errorX + errorY*errorY)*100,2,1) +
+//                 "\tX+Y cm error: " + nf(Math.sqrt(x_cm_error*x_cm_error + y_cm_error*y_cm_error),1,2), 10, spacing*4);
 
         } else{
             const leftHalf = curPred[0] < 0.5;
