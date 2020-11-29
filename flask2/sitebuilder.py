@@ -67,6 +67,10 @@ def acceldemo():
 def faceangle():
     return render_template("faceangle.html")
 
+@app.route("/results/")
+def results():
+    return render_template("results.html")
+
 # interactions time!
 @app.route('/zoo/1/')
 def zoo1():

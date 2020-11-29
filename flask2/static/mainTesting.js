@@ -385,5 +385,10 @@ function tmp_testNormedAndNormalX(){
 // // Draw tensor with this function:
 //tf.browser.toPixels(a.div(255), canvas)
 
+setInterval(() => {
+    console.log("innerwidth and height", window.innerWidth, window.innerHeight);
+
+}, 1000)
+
 
 
