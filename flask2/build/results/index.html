@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GAZEL</title>
+
+<!-- For drawing the predicted output directly onto the HTML page with an icon-->
+<!-- CSS comments are not //, and if you put them in the <style> header they break it -->
+    <style>
+    .placeholderdot{
+        width: 30px;
+        height: 30px;
+        background-color: #ffab56;
+        border-radius: 50%;
+        position:fixed;
+    }
+
+    .targetdot{
+        width: 60px;
+        height: 60px;
+        background-color: #0e5cab;
+        border-radius: 50%;
+        position:fixed;
+    }
+
+    .predicdot{
+        width: 30px;
+        height: 30px;
+        background-color: #ffab56;
+        border-radius: 50%;
+        position:fixed;
+    }
+
+    .predicdot2{
+        width: 30px;
+        height: 30px;
+        background-color: #e84338bb;
+        border-radius: 50%;
+        position:fixed;
+    }
+
+    .onscreenregion{
+        position:fixed;
+        background-color:#00003010;
+        left: 0px;
+        top: 0px;
+        right:100px;
+        bottom:100px;
+    }
+
+
+    .widebutton {
+        display: block;
+        width: 100%;
+        border: none;
+        background-color: #CCC;
+        padding: 14px 28px;
+        font-size: 16px;
+        cursor: pointer;
+        text-align: center;
+    }
+
+
+    </style>
+
+    
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(event) {
+        var average = (array) => array.reduce((a, b) => a + b) / array.length;
+        var divideAll = (array, divisor) => array.map((elem) => elem/divisor);
+
+
+        var evalResults = JSON.parse(localStorage['eval']);
+        // Format is [d.getTime(), [initial_width, initial_height], errorsX, errorsY, locations_acc]
+
+        evalResults.forEach((elem, ind) => {
+            let dateInMillis = elem[0];
+            let screenW = elem[1][0];
+            let screenH = elem[1][1];
+            let errsX = elem[2];
+            let errsY = elem[3];
+            let locs = elem[4];
+
+            tmp = document.createElement("div");
+
+            // Header
+            tmp.innerHTML += "<h2>GAZEL Evaluation Trial " + ind + "</h2>" + "<br>";
+
+            // Date
+            tmp.innerHTML += "Time Captured: &emsp;" + Date(dateInMillis) + "<br>"
+
+            // Display dimensions
+            tmp.innerHTML += "Screen dimensions WxH: &emsp;" + screenW + "x" + screenH + "<br>"
+
+            // Errors
+            // let normedErrs = getNormedErrorXY(errsX, errsY, locs, screenW, screenH);
+
+            norm_errsX = divideAll(errsX, screenW);
+            norm_errsY = divideAll(errsY, screenH);
+
+
+            tmp.innerHTML += "Errors X: &emsp;" + norm_errsX + "<br>";
+            tmp.innerHTML += "Errors Y: &emsp;" + norm_errsY + "<br>";
+
+            roundedNormedErrors = [Number(average(norm_errsX).toFixed(2)), Number(average(norm_errsY).toFixed(2))]
+
+            tmp.innerHTML += "Average normalized X error: &emsp;" + roundedNormedErrors[0] + "<br>";
+            tmp.innerHTML += "Average normalized Y error: &emsp;" + roundedNormedErrors[1] + "<br>";
+
+            tmp.innerHTML += "<hr>"
+
+            document.body.append(tmp);
+        });
+    });
+</script>
+
+
+</head>
+<body style="background-color:lightblue;">
+
+
+
+
+
+</body>
+</html>

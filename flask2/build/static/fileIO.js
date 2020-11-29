@@ -81,39 +81,20 @@ function openFile(event) {
 }
 
 
-//var isArray = Array.isArray || function(value) {
-//  return {}.toString.call(value) !== "[object Array]"
-//};
-//
-//function shuffle() {
-//  var arrLength = 0;
-//  var argsLength = arguments.length;
-//  var rnd, tmp;
-//
-//  for (var index = 0; index < argsLength; index += 1) {
-//    if (!isArray(arguments[index])) {
-//      throw new TypeError("Argument is not an array.");
-//    }
-//
-//    if (index === 0) {
-//      arrLength = arguments[0].length;
-//    }
-//
-//    if (arrLength !== arguments[index].length) {
-//      throw new RangeError("Array lengths do not match.");
-//    }
-//  }
-//
-//  while (arrLength) {
-//    rnd = Math.floor(Math.random() * arrLength);
-//    arrLength -= 1;
-//    for (argsIndex = 0; argsIndex < argsLength; argsIndex += 1) {
-//      tmp = arguments[argsIndex][arrLength];
-//      arguments[argsIndex][arrLength] = arguments[argsIndex][rnd];
-//      arguments[argsIndex][rnd] = tmp;
-//    }
-//  }
-//}
+function addToStorageArray(key, arr){
+    if (localStorage[key] == undefined){
+        localStorage[key] = JSON.stringify([])
+    }
+    try{
+        tmp = JSON.parse(localStorage[key])
+    } catch{
+        tmp = []
+    }
+    tmp.push(arr);
+    localStorage[key] = JSON.stringify(tmp);
+    console.log("after storage:", localStorage[key])
+}
+
 
 
 
