@@ -67,6 +67,12 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function(event) {
+        if (localStorage['eval'] == undefined){
+            tmp = document.createElement("div");
+            tmp.innerHTML = "No evaluation results to show.";
+            document.body.append(tmp);
+        }
+
         var average = (array) => array.reduce((a, b) => a + b) / array.length;
         var divideAll = (array, divisor) => array.map((elem) => elem/divisor);
 
@@ -85,7 +91,7 @@
             tmp = document.createElement("div");
 
             // Header
-            tmp.innerHTML += "<h2>GAZEL Evaluation Trial " + ind + "</h2>" + "<br>";
+            tmp.innerHTML += "<h2>GAZEL Evaluation Trial #" + ind + "</h2>";
 
             // Date
             tmp.innerHTML += "Time Captured: &emsp;" + Date(dateInMillis) + "<br>"
