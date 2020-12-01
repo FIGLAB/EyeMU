@@ -21,10 +21,14 @@ var iny = 128;
 // eye image drawing zone
 var ctx;
 var canvas;
+// 2nd canvas for video stuff
+var videoCanvas;
+var videoCtx;
 
 // eye bounding boxes
 var rBB;
 var lBB;
+
 
 
 
@@ -151,12 +155,13 @@ async function setupCamera() {
 
   return new Promise((resolve) => {
     video.onloadedmetadata = () => {
-//    video.onloadeddata = () => {
       resolve(video);
     };
   });
 }
 
+
+var videoDivisor = 4; // How much to reduce the video by in the facemesh detection
 // Assume leftcorner, rightcorner : (x,y) (x,y) for the corner format
 function eyeBoundsFromCorners(leftCorner, rightCorner){
     eyeLen = leftCorner[0] - rightCorner[0]
@@ -168,13 +173,20 @@ function eyeBoundsFromCorners(leftCorner, rightCorner){
     tmp = [rightCorner[0] - xshift, leftCorner[0] + xshift, yref - yshift, yref + yshift]
     tmp.push(tmp[1]-tmp[0]); // Add width
     tmp.push(tmp[3]-tmp[2]); // Add height
+
+//    tmp.forEach((elem, ind) => {
+//        tmp[ind] = elem*videoDivisor;
+//    });
+
     return tmp
-//    return [left, right, top, bottom, width, height]
-}
+} // return [left, right, top, bottom, width, height]
 
 // Calls face mesh on the video and outputs the eyes and face bounding boxes to global vars
 async function renderPrediction() {
+    const now = performance.now();
     const facepred = await fmesh.estimateFaces(video);
+
+//    const facepred = await fmesh.estimateFaces(videoCtx);
 
     if (facepred.length > 0) {
         // If we find a face, proceed with first and only prediction
@@ -200,6 +212,8 @@ async function renderPrediction() {
         if (elem != undefined){
             elem.innerHTML = ("eyebox size: " + Math.round(lBB[4]) + " x " + Math.round(lBB[5]));
         }
+
+        console.log("facemesh", performance.now()- now);
     }
 
     if (!stopFacemesh){
@@ -214,6 +228,9 @@ async function drawCache(continuous){
                         0, 0, inx, iny); // Destination x,y,w,h
         ctx.drawImage(video, rBB[0], rBB[2], rBB[4], rBB[5],
                        10 + inx, 0, inx, iny);
+
+        // Draw face onto reduced canvas
+        videoCtx.drawImage(video, 0, 0, videoCanvas.width, videoCanvas.height);
 }
 
 
@@ -274,6 +291,8 @@ const state = {
         maxFaces: 1, // Only one mouse cursor, after all
 };
 
+
+
 async function collectmain() {
     fmesh = await facemesh.load({maxFaces: state.maxFaces});
 
@@ -288,6 +307,16 @@ async function collectmain() {
     canvas.width = 300;
     canvas.height = 200;
     ctx = canvas.getContext('2d');
+
+    // Set up second canvas to draw the video stream at a reduced size
+    videoCanvas = document.createElement("canvas");
+    videoCanvas.setAttribute("id", "facecanvas");
+    videoCanvas.setAttribute("hidden", "true");
+    document.body.appendChild(videoCanvas);
+
+    videoCanvas.width = videoWidth/videoDivisor;
+    videoCanvas.height = videoHeight/videoDivisor;
+    videoCtx = videoCanvas.getContext('2d')
 
     // start training loop
 //    setTimeout(renderPrediction, 2000);

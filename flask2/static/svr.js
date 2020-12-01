@@ -88,22 +88,22 @@ async function drawPrediction(predictedXY) {
 
 
 
-async function setupCamera() {
-  video = document.getElementById('video');
-  const stream = await navigator.mediaDevices.getUserMedia({
-    'audio': false,
-    'video': {
-      facingMode: 'user',
-    },
-  });
-  video.srcObject = stream;
-
-  return new Promise((resolve) => {
-    video.onloadedmetadata = () => {
-      resolve(video);
-    };
-  });
-}
+//async function setupCamera() {
+//  video = document.getElementById('video');
+//  const stream = await navigator.mediaDevices.getUserMedia({
+//    'audio': false,
+//    'video': {
+//      facingMode: 'user',
+//    },
+//  });
+//  video.srcObject = stream;
+//
+//  return new Promise((resolve) => {
+//    video.onloadedmetadata = () => {
+//      resolve(video);
+//    };
+//  });
+//}
 
 // For greying out images
 function greyscaleImage(imTensor){
@@ -214,6 +214,8 @@ async function main() {
     tf.setBackend('webgl');
     await tf.ready();
 
+    await collectmain();
+
     // import custom model
     models = [];
     console.log("loading model");
@@ -236,14 +238,14 @@ async function main() {
     svr_y_str = localStorage.getItem("svr_y");
     svr_y = renewObject(JSON.parse(svr_y_str));
 
-    // Load in face mesh model
-    fmesh = await facemesh.load({maxFaces: 1});
-
-    // Set up camera
-    await setupCamera();
-    video.play();
-    videoWidth = video.videoWidth;
-    videoHeight = video.videoHeight;
+//    // Load in face mesh model
+//    fmesh = await facemesh.load({maxFaces: 1});
+//
+//    // Set up camera
+//    await setupCamera();
+//    video.play();
+//    videoWidth = video.videoWidth;
+//    videoHeight = video.videoHeight;
 
     // Resize the regression/classification toggle to look nice
     const regtoggle = document.getElementById('regtoggle');
@@ -252,18 +254,18 @@ async function main() {
     }
 
 
-    // Set up canvas to draw the eyes of the user (debugging feature)
-    canvas = document.getElementById('eyecache');
-    canvas.width = 300;
-    canvas.height = 200;
-    ctx = canvas.getContext('2d');
+//    // Set up canvas to draw the eyes of the user (debugging feature)
+//    canvas = document.getElementById('eyecache');
+//    canvas.width = 300;
+//    canvas.height = 200;
+//    ctx = canvas.getContext('2d');
 
 
     // start the live loop
     done_with_training = true;
     curPred = [-1, -1];
     curPred2 = [-1, -1];
-    renderPrediction();
+//    renderPrediction();
     setTimeout(function(){
             eyeSelfie(true);
         }, 2000);

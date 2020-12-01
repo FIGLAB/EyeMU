@@ -5,6 +5,7 @@ var lBB;
 var inx = 128;
 var iny = 128;
 
+var videoDivisor = 4;
 
 async function setupCamera() {
   video = document.getElementById('video');
@@ -138,6 +139,9 @@ function eyeBoundsFromCorners(leftCorner, rightCorner){
     tmp = [rightCorner[0] - xshift, leftCorner[0] + xshift, yref - yshift, yref + yshift]
     tmp.push(tmp[1]-tmp[0]); // Add width
     tmp.push(tmp[3]-tmp[2]); // Add height
+    tmp.forEach((elem, ind) => {
+        tmp[ind] = elem*videoDivisor;
+    });
     return tmp
 //    return [left, right, top, bottom, width, height]
 }
@@ -146,7 +150,9 @@ function eyeBoundsFromCorners(leftCorner, rightCorner){
 var now;
 // Calls face mesh on the video and outputs the eyes and face bounding boxes to global vars
 async function renderPrediction() {
-    const facepred = await fmesh.estimateFaces(video);
+    const now = performance.now();
+//    const facepred = await fmesh.estimateFaces(video);
+    const facepred = await fmesh.estimateFaces(canvas2);
 
     if (facepred.length > 0) {
         // If we find a face, proceed with first and only prediction
@@ -166,38 +172,40 @@ async function renderPrediction() {
         lBB = eyeBoundsFromCorners([eyeCorners[0]*w, eyeCorners[1]*h], [eyeCorners[2]*w, eyeCorners[3]*h]);
         rBB = eyeBoundsFromCorners([eyeCorners[6]*w, eyeCorners[7]*h], [eyeCorners[4]*w, eyeCorners[5]*h]);
 
-        console.log(eyeCorners[4]*w, rBB[0])
 
         // Get face geometry
         faceGeom.update(prediction);
         document.getElementById('RPY').innerHTML = "Roll: " + faceGeom.curRoll
                                                       + "<br>Pitch: " + faceGeom.curPitch
                                                       + "<br>Yaw: " + faceGeom.curYaw;
-    }
-    drawCache()
 
+        console.log("Facemesh loop time:", performance.now()-now)
+    }
+
+    drawCache();
     setTimeout(requestAnimationFrame(renderPrediction), 100); // call self after 100 ms
 //    requestAnimationFrame(renderPrediction)
 };
 
 // Draws the current eyes onto the canvas, directly from video streams
 async function drawCache(){
-        // Get eye images from the video stream directly
-        ctx.drawImage(video, lBB[0], lBB[2], lBB[4], lBB[5], // Source x,y,w,h
-                        0, 0, inx, iny); // Destination x,y,w,h
-        ctx.drawImage(video, rBB[0], rBB[2], rBB[4], rBB[5],
-                       10 + inx, 0, inx, iny);
+    ctx2.drawImage(video, 0, 0, canvas2.width,  canvas2.height)
+
+
+    // Get eye images from the video stream directly
+    ctx.drawImage(video, lBB[0], lBB[2], lBB[4], lBB[5], // Source x,y,w,h
+                    0, 0, inx, iny); // Destination x,y,w,h
+    ctx.drawImage(video, rBB[0], rBB[2], rBB[4], rBB[5],
+                   10 + inx, 0, inx, iny);
 
 
 //    ctx.drawImage(video, 10, 10, canvas.width, canvas.height)
-    ctx.drawImage(video, 10, 150,  video.videoWidth,  video.videoHeight)
 
-    ctx.fillStyle = 'red';
-    ctx.beginPath();
-    ctx.ellipse(eyeCorners[0]*w + 10, eyeCorners[1]*h + 150,5,5, 0, 0, 2*Math.PI)
-    ctx.fill();
-
-//    requestAnimationFrame(drawCache);
+    // Draw an eye corner from the face mesh prediction
+//    ctx.fillStyle = 'red';
+//    ctx.beginPath();
+//    ctx.ellipse(eyeCorners[0]*w + 10, eyeCorners[1]*h + 150,5,5, 0, 0, 2*Math.PI)
+//    ctx.fill();
 }
 
 function saveCurrentCanvas(){
@@ -210,6 +218,10 @@ function saveCurrentCanvas(){
     console.log("yaw: ", faceGeom.curYaw)
 }
 
+var canvas;
+var ctx;
+var canvas2;
+var ctx2;
 
 async function main() {
     await tf.setBackend('webgl')
@@ -223,11 +235,17 @@ async function main() {
 
     // Set up canvas to draw the eyes of the user (debugging feature)
     canvas = document.getElementById('eyecache');
-//    canvas.width = window.innerWidth;
-//    canvas.height = window.innerHeight;
-    canvas.width = videoWidth;
-    canvas.height = videoHeight;
+    canvas.width = 300;
+    canvas.height = 200;
     ctx = canvas.getContext('2d');
+
+    // Canvas for the video feed
+    canvas2 = document.getElementById('facecanvas');
+    canvas2.width = videoWidth/videoDivisor;
+    canvas2.height = videoHeight/videoDivisor;
+//    canvas2.width = videoWidth;
+//    canvas2.height = videoHeight;
+    ctx2 = canvas2.getContext('2d');
 
     // start training loop
     renderPrediction();
