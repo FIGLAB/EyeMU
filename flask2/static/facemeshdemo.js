@@ -13,8 +13,11 @@ async function setupCamera() {
     'audio': false,
     'video': {
       facingMode: 'user',
-      width: { ideal: 1280 },
-      height: { ideal: 1280 }
+      aspectRatio: 1.333,
+      width: { ideal: 1920 },
+//      height: { ideal: 1440 }
+//      width: { ideal: 1440 },
+//      height: { ideal: 1920 }
     },
   });
   video.srcObject = stream;
@@ -179,7 +182,7 @@ async function renderPrediction() {
                                                       + "<br>Pitch: " + faceGeom.curPitch
                                                       + "<br>Yaw: " + faceGeom.curYaw;
 
-        console.log("Facemesh loop time:", performance.now()-now)
+//        console.log("Facemesh loop time:", performance.now()-now)
     }
 
     drawCache();
