@@ -221,6 +221,8 @@ async function renderPrediction() {
 //        console.log("facemesh", performance.now()- now);
     }
 
+    drawCache();
+
     if (!stopFacemesh){
         setTimeout(requestAnimationFrame(renderPrediction), 100); // call self after 100 ms
     }
@@ -250,7 +252,7 @@ async function eyeSelfie(continuous){
     }
 
     // Draw from video onto canvas BEFORE you try to clip it out of the canvas
-    drawCache(continuous);
+//    drawCache(continuous);
 
     // If running continuously, update the curEyes and curCorners vec AS TENSORS, BUT THROW AWAY OLD VALS
     if (continuous){

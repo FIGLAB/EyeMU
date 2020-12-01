@@ -54,25 +54,8 @@ async function main() {
     naturemodel = models[0];
     console.log('Successfully loaded model');
 
-    // Load in face mesh model
-//    fmesh = await facemesh.load({maxFaces: state.maxFaces});
-
-    // Set up camera
-//    await setupCamera();
-//    video.play();
-//    videoWidth = video.videoWidth;
-//    videoHeight = video.videoHeight;
-//    document.getElementById("videostats").innerHTML = videoWidth + " " + videoHeight;
-
     // Resize the regression/classification toggle to look nice
     document.getElementById('regtoggle').style.width = windowWidth + "px"
-
-    // Set up canvas to draw the eyes of the user (debugging feature)
-//    canvas = document.getElementById('eyecache');
-//    canvas.width = 300;
-//    canvas.height = 200;
-//    ctx = canvas.getContext('2d');
-
 
     // start in the eval loop
     done_with_training = true;
