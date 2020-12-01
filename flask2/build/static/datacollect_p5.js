@@ -150,7 +150,7 @@ const s = ( p ) => {
         }
 
         // Draw circle, with gradually oscillating radius
-    //    fill( 0, 121, 184 ); // dark blue
+//        fill( 0, 121, 184 ); // dark blue
         p.fill(194, 21, 2); // dark red
         radius = radius + sin( p.frameCount / 8 )
         p.ellipse( X, Y, radius, radius );
@@ -218,7 +218,8 @@ const s = ( p ) => {
                     p.text(stillsTaken, X, Y)
 
                 } else if (stillsTaken >= num_ims_still){
-                    p.fill(0, 121, 20); // Green circle if all images taken
+//                    p.fill(0, 121, 20); // Green circle if all images taken
+                    p.fill(0, 121, 184); // Blue circle if all images taken (because of color blindness
                     p.ellipse( X, Y, radius, radius);
                     stillsDone = true
                 }
