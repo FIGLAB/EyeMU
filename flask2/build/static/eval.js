@@ -118,7 +118,7 @@ function draw(){
         addToStorageArray("eval", [Date.now(), [initial_width, initial_height], errorsX, errorsY, locations_acc]);
 
         text("Evaluation results saved at /results", width/2, height*4/5);
-        noLoop();
+//        noLoop();
     }
 
     // Draw target circle
@@ -127,34 +127,49 @@ function draw(){
 
 
 
-    if (rBB != undefined && curPred != undefined && curPred[0] != -1){ // if the face has been detected, start the data collection
-        let currentErrorX = abs(X - curPred[0]*windowWidth);
-        let currentErrorY = abs(Y - curPred[1]*windowHeight);
+    if (rBB != undefined){
+        eyeExtremesX = lBB.slice(0,2).concat(rBB.slice(0,2))
+        eyeExtremesY = lBB.slice(2,4).concat(rBB.slice(2,4))
 
-        fill(204, 102, 0);
-        ellipse(curPred[0]*windowWidth, curPred[1]*windowHeight, radius/2, radius/2);
-        if ((calib_rounds < n_calib_rounds) && !stopped){
-            // Track circle to new destination
-            X += moveAmountPerFrame[0];
-            Y += moveAmountPerFrame[1];
-            stepsTaken += 1;
+        eyeExtremesX = eyeExtremesX.map(elem => elem/videoWidth)
+        eyeExtremesY = eyeExtremesY.map(elem => elem/videoHeight)
+        const margin = 0.025
 
-            // Take a certain # of photos at each location
-            if (stepsTaken >= numSteps){
-                stepsTaken = 0;
-                calib_counter += 1;
-                calib_rounds = Math.floor(calib_counter/nx_arr.length);
+        // If the eyes are off-screen, notify the user and pause the collection
+        if (Math.min(...eyeExtremesX) < margin*2 || Math.max(...eyeExtremesX) > (1.0 - margin*2) ||
+            Math.min(...eyeExtremesY) < margin || Math.max(...eyeExtremesY) > (1.0-margin) ||
+            (typeof(prediction) != 'undefined' && prediction.faceInViewConfidence < 0.9)){
+            fill(255, 20, 20);
+            text("Eyes are off-camera! \nData collection paused.", width/2, 3*height/5);
+        } else if (curPred != undefined && curPred[0] != -1){ // if the face has been detected, start the data collection
+            let currentErrorX = abs(X - curPred[0]*windowWidth);
+            let currentErrorY = abs(Y - curPred[1]*windowHeight);
 
-                X = nx_arr[calib_counter % nx_arr.length];
-                Y = ny_arr[calib_counter % nx_arr.length];
-                nX = nx_arr[(calib_counter+1) % nx_arr.length];
-                nY = ny_arr[(calib_counter+1) % nx_arr.length];
+            fill(204, 102, 0);
+            ellipse(curPred[0]*windowWidth, curPred[1]*windowHeight, radius/2, radius/2);
 
-                // Moves faster in the y direction, but whatever. Too hard to fix
-                moveAmountPerFrame = [(nX-X)/numSteps , (nY-Y)/numSteps];
-                stopped = true;
-                stillsTaken = 0;
-            }
+            if ((calib_rounds < n_calib_rounds) && !stopped){
+                // Track circle to new destination
+                X += moveAmountPerFrame[0];
+                Y += moveAmountPerFrame[1];
+                stepsTaken += 1;
+
+                // Take a certain # of photos at each location
+                if (stepsTaken >= numSteps){
+                    stepsTaken = 0;
+                    calib_counter += 1;
+                    calib_rounds = Math.floor(calib_counter/nx_arr.length);
+
+                    X = nx_arr[calib_counter % nx_arr.length];
+                    Y = ny_arr[calib_counter % nx_arr.length];
+                    nX = nx_arr[(calib_counter+1) % nx_arr.length];
+                    nY = ny_arr[(calib_counter+1) % nx_arr.length];
+
+                    // Moves faster in the y direction, but whatever. Too hard to fix
+                    moveAmountPerFrame = [(nX-X)/numSteps , (nY-Y)/numSteps];
+                    stopped = true;
+                    stillsTaken = 0;
+                }
         } else if (stopped){
             if (delay_frames_taken < delayFrames){
                 delay_frames_taken += 1;
@@ -189,6 +204,7 @@ function draw(){
                 }
 
             }
+        }
         }
     }
 }
