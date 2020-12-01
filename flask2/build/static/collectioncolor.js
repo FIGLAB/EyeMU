@@ -147,8 +147,10 @@ async function setupCamera() {
     'audio': false,
     'video': {
       facingMode: 'user',
-      width: { ideal: 1280 },
-      height: { ideal: 1280 }
+      aspectRatio: 1.3333,
+      width: { ideal: 1920 },
+//      height: { ideal: 1708 }
+//      height: { ideal: 1280 }
     },
   });
   video.srcObject = stream;
@@ -156,6 +158,7 @@ async function setupCamera() {
   return new Promise((resolve) => {
     video.onloadedmetadata = () => {
       resolve(video);
+      setTimeout(drawCache, 2000); // Draw the first vid frame
     };
   });
 }
@@ -174,9 +177,9 @@ function eyeBoundsFromCorners(leftCorner, rightCorner){
     tmp.push(tmp[1]-tmp[0]); // Add width
     tmp.push(tmp[3]-tmp[2]); // Add height
 
-//    tmp.forEach((elem, ind) => {
-//        tmp[ind] = elem*videoDivisor;
-//    });
+    tmp.forEach((elem, ind) => {
+        tmp[ind] = elem*videoDivisor;
+    });
 
     return tmp
 } // return [left, right, top, bottom, width, height]
@@ -184,9 +187,8 @@ function eyeBoundsFromCorners(leftCorner, rightCorner){
 // Calls face mesh on the video and outputs the eyes and face bounding boxes to global vars
 async function renderPrediction() {
     const now = performance.now();
-    const facepred = await fmesh.estimateFaces(video);
-
-//    const facepred = await fmesh.estimateFaces(videoCtx);
+//    const facepred = await fmesh.estimateFaces(video);
+    const facepred = await fmesh.estimateFaces(videoCanvas);
 
     if (facepred.length > 0) {
         // If we find a face, proceed with first and only prediction
@@ -197,11 +199,14 @@ async function renderPrediction() {
         left_eyebox = (prediction.annotations.leftEyeUpper1).concat(prediction.annotations.leftEyeLower1);
 
         // find eye corners
-        eyeCorners = getEyeCorners(prediction, videoHeight, videoWidth)
+//        eyeCorners = getEyeCorners(prediction, videoHeight, videoWidth)
+        eyeCorners = getEyeCorners(prediction, videoCanvas.height, videoCanvas.width)
 
         // Get eye bounding boxes from eye corners
-        h = videoHeight
-        w = videoWidth
+//        h = videoHeight
+//        w = videoWidth
+        h = videoCanvas.height
+        w = videoCanvas.width
         lBB = eyeBoundsFromCorners([eyeCorners[0]*w, eyeCorners[1]*h], [eyeCorners[2]*w, eyeCorners[3]*h]);
         rBB = eyeBoundsFromCorners([eyeCorners[6]*w, eyeCorners[7]*h], [eyeCorners[4]*w, eyeCorners[5]*h]);
 
@@ -213,7 +218,7 @@ async function renderPrediction() {
             elem.innerHTML = ("eyebox size: " + Math.round(lBB[4]) + " x " + Math.round(lBB[5]));
         }
 
-        console.log("facemesh", performance.now()- now);
+//        console.log("facemesh", performance.now()- now);
     }
 
     if (!stopFacemesh){
@@ -222,15 +227,16 @@ async function renderPrediction() {
 };
 
 // Draws the current eyes onto the canvas, directly from video streams
-async function drawCache(continuous){
+async function drawCache(){
+        // Draw face onto reduced canvas
+        videoCtx.drawImage(video, 0, 0, videoCanvas.width, videoCanvas.height);
+
+
         // Get eye images from the video stream directly
         ctx.drawImage(video, lBB[0], lBB[2], lBB[4], lBB[5], // Source x,y,w,h
                         0, 0, inx, iny); // Destination x,y,w,h
         ctx.drawImage(video, rBB[0], rBB[2], rBB[4], rBB[5],
                        10 + inx, 0, inx, iny);
-
-        // Draw face onto reduced canvas
-        videoCtx.drawImage(video, 0, 0, videoCanvas.width, videoCanvas.height);
 }
 
 
@@ -321,6 +327,7 @@ async function collectmain() {
     // start training loop
 //    setTimeout(renderPrediction, 2000);
     renderPrediction();
+//    setTimeout(drawCache, 2000);
 
     console.log("collection color main complete");
 }
