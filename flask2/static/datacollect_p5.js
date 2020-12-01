@@ -117,7 +117,7 @@ const s = ( p ) => {
 
         if (done_with_training){
             p.textSize(30);
-            p.text("\nTraining completed", width/2, height/2);
+            p.text("\nTraining completed, tap to return to homepage", width/2, height/2);
 
             p.noLoop();
             return;
@@ -137,13 +137,16 @@ const s = ( p ) => {
                 }
             }
 
-
             p.text("Round: " + (calib_rounds+1) + "/" + n_calib_rounds + "\nTap to advance",
                         width/2,
                         height - (height - (instr_y + instr_h))/2)
             p.text("Instructions: Track the ball with your eyes. \nWhen it turns green, you're safe to blink.", width/2, height/5)
         } else {
-            p.text("\n\n\nTap to start training", width/2, 3*height/5);
+            // Start training automatically
+            if (stillsDone){
+                stopped = false;
+                p.text("\n\n\nTap to start training", width/2, 3*height/5);
+            }
         }
 
         // Draw circle, with gradually oscillating radius
@@ -232,10 +235,11 @@ const s = ( p ) => {
 
     //            eyeSelfie(true); // called at the end of training as well
                 calib_counter = 0
-                p.noLoop();
 
                 trainNatureRegHead(leftEyes_x, rightEyes_x, eyeCorners_x,screenXYs_y);
                 done_with_training = true;
+
+//                p.noLoop();
             }
         }
     }
