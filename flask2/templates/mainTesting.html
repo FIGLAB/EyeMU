@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block headextra %}
+<!--Other ML library-->
+<!--<script src="http://mlweb.loria.fr/ml.js"></script>-->
+<script src="{{url_for('static', filename='mlweb.js')}}"></script>
+
+
+            <!--Tensorflow javascript import-->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+
+<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>-->
+<!-- Adds the WASM backend to the global backend registry -->
+<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/tf-backend-wasm.js"></script>-->
+
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/regression/2.0.1/regression.js"></script>-->
+<!--<script src="https://rawgit.com/chen0040/js-regression/master/build/jsregression.min.js"></script>-->
+
+<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>-->
+<script src="{{url_for('static', filename='ML.js')}}"></script>
+<script src="{{url_for('static', filename='hist.js')}}"></script>
+<script src="{{url_for('static', filename='transfer.js')}}"></script>
+<script src="{{url_for('static', filename='fileIO.js')}}"></script>
+<script src="{{url_for('static', filename='mainTesting.js')}}"></script>
+
+
+
+<script>
+    main()
+</script>
+
+{% endblock %}
+
+
+{% block body %}
+
+<input type="file" accept="application/json" id="eyeData" multiple onchange='openFile(event)'></input>
+yaga
+
+<!--<div class="predicdot" style="left:20px; top:40px"></div>-->
+
+<!--<div class="onscreenregion" style="width: 100px; height:100px;"></div>-->
+<!--<div class="onscreenregion" style="left: 10%; right:40%; top: 10%; bottom: 40%;"></div>-->
+<!--                                   left: 75%; right:100%; top:25%; bottom: 75%;-->
+
+<div id="main">
+    <div class="container">
+      <div class="canvas-wrapper">
+        <canvas id="output"></canvas>
+        <video id="video" playsinline style="
+          -webkit-transform: scaleX(-1);
+          transform: scaleX(-1);
+          visibility: hidden;
+          width: auto;
+          height: auto;
+          ">
+        </video>
+      </div>
+      <div id="scatter-gl-container"></div>
+        <button type="button" onclick="saveRegressionModels()">Save current regression models</button>
+        <br>
+        <button type="button" onclick="greyscaleEyes()">Greyscale images</button>
+        <button type="button" onclick="getBaseline()">Test Baseline Model</button>
+        <br>
+
+        <button type="button" onclick="saveEyes()">Save Eyes</button>
+        <button type="button" onclick="trainOnCurrentData()">Train Regression Model</button>
+        <button type="button" onclick="testOnCurrentData()">Test Model</button>
+
+        <br>
+        <button type="button" onclick="trainSVRs()">Train SVRs</button>
+        <button type="button" onclick="testSVRs()">Test SVRs</button>
+        <button type="button" onclick="exportWEBML()">Save SVRs</button>
+        <p id="svrstatus"></p>
+
+
+        <br><br>
+        <canvas id="eyecache"></canvas>
+        <canvas id="eyecache2"></canvas>
+
+
+    </div>
+  </div>
+
+
+{% endblock %}

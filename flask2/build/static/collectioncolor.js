@@ -319,7 +319,7 @@ async function collectmain() {
     // Set up second canvas to draw the video stream at a reduced size
     videoCanvas = document.createElement("canvas");
     videoCanvas.setAttribute("id", "facecanvas");
-//    videoCanvas.setAttribute("hidden", "true");
+    videoCanvas.setAttribute("hidden", "true");
     document.body.appendChild(videoCanvas);
 
     videoCanvas.width = videoWidth/videoDivisor;

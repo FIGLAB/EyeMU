@@ -140,3 +140,13 @@ function saveRegressionModels(){
     link.download = "regressionmodels.json";
     link.click();
 }
+
+function downloadResults(){
+    resultsStr = localStorage.getItem("eval");
+
+    var link = document.createElement('a');
+    link.href = makeTextFile(resultsStr);
+    link.target = '_blank';
+    link.download = "GAZEL_results.json";
+    link.click();
+}
