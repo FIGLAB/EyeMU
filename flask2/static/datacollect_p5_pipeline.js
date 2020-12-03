@@ -104,8 +104,8 @@ async function trainNatureRegHead(){
     x_mat = array2mat(x_vect_as_array)
     console.log("x_vect assembled")
 
-    ground_x = array2mat(dataVecs)
-    ground_y = array2mat(dataVecs)
+    ground_x = array2mat(dataVecs[1])
+    ground_y = array2mat(dataVecs[2])
     console.log("y_vects assembled")
 
 

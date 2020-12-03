@@ -1,7 +1,7 @@
 //new p5();
 
 // datacollect_p5.js moves a circle around the screen, once per round for ~5 rounds, then does regression training on them.
-var n_calib_rounds = 4;
+var n_calib_rounds = 5;
 
 // Global variables
 var radius = 70.0;
@@ -106,6 +106,8 @@ const s = ( p ) => {
             instructions_imgs.push(p.loadImage("../static/instr_ims/" + elem));
         });
 
+        calib_counter = howManyCheckpoints() * nx_arr.length;
+        calib_rounds = Math.floor(calib_counter/nx_arr.length);
     }
 
     // Main draw loop
@@ -140,7 +142,7 @@ const s = ( p ) => {
             p.text("Round: " + (calib_rounds+1) + "/" + n_calib_rounds + "\nTap to advance",
                         width/2,
                         height - (height - (instr_y + instr_h))/2)
-            p.text("Instructions: Track the ball with your eyes. \nWhen it turns green, you're safe to blink.", width/2, height/5)
+            p.text("Instructions: Track the ball with your eyes. \nWhen it turns blue, you're safe to blink.", width/2, height/5)
         } else {
             // Start training automatically
             if (stillsDone){
@@ -206,7 +208,7 @@ const s = ( p ) => {
                     stillsDone = false;
                     stillsTaken = 0;
                 }
-            } else if (stopped){
+            } else if (stopped){ // taking stills
                 movingsTaken = 0;
                 if (stillsTaken < num_ims_still){
                     if (p.frameCount % 2 == 0){ // take screenshot every N frames
@@ -218,13 +220,32 @@ const s = ( p ) => {
                     p.fill(255,255,255)
                     p.text(stillsTaken, X, Y)
 
+                    if (stillsTaken >= num_ims_still){
+                        p.fill(0, 121, 184); // Blue circle if all images taken (because of color blindness
+                        p.ellipse( X, Y, radius, radius);
+                        stillsDone = true
+
+                        // Store the last set of embeddings, eyeCorners, and head geoms
+                        if (calib_counter % nx_arr.length == 0){
+                            console.log("saving last set of embeddings in localstorage, calib_rounds is n", calib_rounds);
+                            saveNthRoundinLS(calib_rounds - 1);
+                        }
+
+//                                leftEyes_x.push(left);
+//                                rightEyes_x.push(right);
+//                                eyeCorners_x.push(tmpEyeCorn);
+//                                faceGeom_x.push(faceGeom.getGeom());
+//
+//                                // Add y vars
+//                                const nowVals = [X/windowWidth, Y/windowHeight];
+//                                screenXYs_y.push(nowVals);
+                    }
                 } else if (stillsTaken >= num_ims_still){
-//                    p.fill(0, 121, 20); // Green circle if all images taken
                     p.fill(0, 121, 184); // Blue circle if all images taken (because of color blindness
                     p.ellipse( X, Y, radius, radius);
                     stillsDone = true
                 }
-            } else{
+            } else {
                 console.log("collection done, starting training")
 
                 // Reset canvas
@@ -240,6 +261,7 @@ const s = ( p ) => {
 
                 trainNatureRegHead(leftEyes_x, rightEyes_x, eyeCorners_x,screenXYs_y);
                 done_with_training = true;
+                clearCheckpoints();
 
 //                p.noLoop();
             }
@@ -247,7 +269,7 @@ const s = ( p ) => {
     }
 
     p.touchEnded = function (){
-        if (stopped){
+        if (stopped && stillsDone){
             stopped = false;
             stepsTaken = 0;
         } else if (done_with_training){
@@ -256,5 +278,98 @@ const s = ( p ) => {
     };
 };
 
+
+
 let myp5 = new p5(s);
 
+
+function checkpointTextify(){
+    vects = tf.tidy(() => {
+        // TODO: Check if new model's embeddings need to be regularized at all
+        // First embeds, range up to 300
+        // 2nd embeds, range up to 50~
+        embeds0 = tf.concat(embeddings_x.map(x => x[0])).div(100)
+        embeds1 = tf.concat(embeddings_x.map(x => x[1])).div(10)
+        embeds2 = tf.concat(embeddings_x.map(x => x[2]))
+
+        // Combine the embeddings horizontally, turn 8,4,2 into 14
+        embeds = tf.concat([embeds0, embeds1, embeds2], 1);
+
+        x_vect = tf.concat([embeds, tf.stack(eyeCorners_x), tf.stack(faceGeom_x)],1)
+
+        // y_vect
+        y_vect = tf.tensor(screenXYs_y, [screenXYs_y.length, 2])
+        return [x_vect.arraySync(), y_vect.arraySync()];
+    });
+
+    return JSON.stringify(vects); // format is [x_vect, y_vect]
+}
+
+function cleanupAfterCheckpoint(){
+    console.log(tf.memory());
+    // x cleanup
+    embeddings_x.forEach((elem) => {
+        elem[0].dispose();
+        elem[1].dispose();
+        elem[2].dispose();
+    });
+    embeddings_x = [];
+
+    eyeCorners_x.forEach((elem) => {
+        elem.dispose()
+    });
+    eyeCorners_x = [];
+
+    faceGeom_x = [];
+
+    // y cleanup
+    screenXYs_y = [];
+    console.log(tf.memory());
+}
+
+const strName = 'gazel_checkpoint';
+function saveNthRoundinLS(n){
+    strDataToAdd = checkpointTextify();
+
+    if (n == 0){
+        // If this is the first one, clear the checkpoints and set it
+        localStorage.removeItem(strName);
+        localStorage.setItem(strName, JSON.stringify([strDataToAdd]));
+    } else{
+        // Otherwise, add the string to the list of strings of data
+        const tmp = JSON.parse(localStorage.getItem(strName));
+        tmp.push(strDataToAdd);
+        localStorage.setItem(strName, JSON.stringify(tmp));
+    }
+
+    cleanupAfterCheckpoint();
+}
+
+function clearCheckpoints(){
+    localStorage.removeItem(strName);
+}
+
+function howManyCheckpoints(){
+    let tmp = JSON.parse(localStorage.getItem(strName));
+    if (tmp != null){ // if we have old checkpoints
+        return tmp.length
+    }
+    return 0;
+}
+
+function retrieveRoundsAsArrays(){
+    let tmp = JSON.parse(localStorage.getItem(strName));
+    if (tmp != null){
+        // if we have old checkpoints load them as arrays
+        tmp.forEach((elem, ind) => {
+            tmp[ind] = JSON.parse(elem);
+        }); // Now they look like [[x,y], [x,y], ...]
+
+        Xs = tmp.map(elem => elem[0]).flat()
+        Ys = tmp.map(elem => elem[1]).flat()
+        Ys_x = Ys.map(elem => elem[0])
+        Ys_y = Ys.map(elem => elem[1])
+
+        return [Xs, Ys_x, Ys_y]
+    }
+}
