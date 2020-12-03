@@ -60,8 +60,8 @@ function setup(){
     let w_op = [width/10, width/2, width*9/10];
     let h_op = [height/20, height/2, height*19/20];
             // center,mid-right,topright, topmid, topleft, midleft, botleft, botmid botright, mid-right again
-    nx_arr = [w_op[1], w_op[2], w_op[2], w_op[1], w_op[0], w_op[0], w_op[0], w_op[1], w_op[2], w_op[2]]
-    ny_arr = [h_op[1], h_op[1], h_op[0], h_op[0], h_op[0], h_op[1], h_op[2], h_op[2], h_op[2], h_op[1]];
+    nx_arr = [w_op[1], w_op[2], w_op[2], w_op[1], w_op[0], w_op[0], w_op[0], w_op[1], w_op[2]]
+    ny_arr = [h_op[1], h_op[1], h_op[0], h_op[0], h_op[0], h_op[1], h_op[2], h_op[2], h_op[2]];
 
     X = nx_arr[calib_counter];
     Y = ny_arr[calib_counter];
@@ -87,10 +87,9 @@ function draw(){
     // Give textual indicator to user of the round
     textAlign(CENTER, CENTER);
     textSize(35);
-    if (calib_rounds < n_calib_rounds){
-        text("\nLocation: " + (calib_counter+1) + "/" + (nx_arr.length-1) + "\nTap to advance", width/2, height/2)
-    } else if (errorsAdded){
-//        text("\n\n\nTap to start training", width/2, height/2);
+    if (typeof(rBB) == 'undefined' || curPred[0] == -1){
+        text("\n\nPlease wait, loading", width/2, height*2/3)
+    } else if (errorsX.length == nx_arr.length){
         textSize(30);
         let errX_avg = nf(average(errorsX)/windowWidth, 1, 2)
         let errY_avg = nf(average(errorsY)/windowHeight, 1, 2)
@@ -106,26 +105,22 @@ function draw(){
         text("\n\n\n\n\n\n\n\ncm combined: " +
                 nf(Math.sqrt(14.4*errY_avg*14.4*errY_avg + 6.3*errX_avg*6.3*errX_avg), 1, 2), width/2, height/2);
 
-
-        // errorsY and errorsX are just arrays, should be of length 9
         // Each time eval is executed in full, store:
             // - Date/time
             // - window width/height,
             // - normalized x and y error for each location
             // - Pixel corrdinates of each xy location, in order
-
-//        let d = new Date();
         addToStorageArray("eval", [Date.now(), [initial_width, initial_height], errorsX, errorsY, locations_acc]);
 
-        text("Evaluation results saved at /results", width/2, height*4/5);
+        text("Evaluation results saved at /results", width/2, height*9/10);
         noLoop();
+    } else {
+        text("\nLocation: " + (calib_counter) + "/" + (nx_arr.length) + "\nTap to advance", width/2, height*2/3);
     }
 
     // Draw target circle
     radius = radius + sin( frameCount / 8 );
     ellipse( X, Y, radius, radius );
-
-
 
     if (rBB != undefined){
         eyeExtremesX = lBB.slice(0,2).concat(rBB.slice(0,2))
