@@ -278,6 +278,8 @@ const s = ( p ) => {
     };
 };
 
+
+
 let myp5 = new p5(s);
 
 
@@ -360,7 +362,13 @@ function retrieveRoundsAsArrays(){
         // if we have old checkpoints load them as arrays
         tmp.forEach((elem, ind) => {
             tmp[ind] = JSON.parse(elem);
-        });
-        return tmp
+        }); // Now they look like [[x,y], [x,y], ...]
+
+        Xs = tmp.map(elem => elem[0]).flat()
+        Ys = tmp.map(elem => elem[1]).flat()
+        Ys_x = Ys.map(elem => elem[0])
+        Ys_y = Ys.map(elem => elem[1])
+
+        return [Xs, Ys_x, Ys_y]
     }
 }

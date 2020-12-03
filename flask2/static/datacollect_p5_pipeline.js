@@ -78,37 +78,38 @@ async function eyeSelfie(continuous){
 async function trainNatureRegHead(){
     stopFacemesh = true;
 
-    x_vect = await tf.tidy(() => {
-            // TODO: Check if new model's embeddings need to be regularized at all
-            // First embeds, range up to 300
-            // 2nd embeds, range up to 50~
-            embeds0 = tf.concat(embeddings_x.map(x => x[0])).div(100)
-            embeds1 = tf.concat(embeddings_x.map(x => x[1])).div(10)
-            embeds2 = tf.concat(embeddings_x.map(x => x[2]))
+//    x_vect = await tf.tidy(() => {
+//            // TODO: Check if new model's embeddings need to be regularized at all
+//            // First embeds, range up to 300
+//            // 2nd embeds, range up to 50~
+//            embeds0 = tf.concat(embeddings_x.map(x => x[0])).div(100)
+//            embeds1 = tf.concat(embeddings_x.map(x => x[1])).div(10)
+//            embeds2 = tf.concat(embeddings_x.map(x => x[2]))
+//
+//            // Combine the embeddings horizontally, turn 8,4,2 into 14
+//            embeds = tf.concat([embeds0, embeds1, embeds2], 1);
+//            return tf.concat([embeds, tf.stack(eyeCorners_x), tf.stack(faceGeom_x)],1);
+//    });
+//
+//    console.log("embeddings extracted, x_vect shape: ", x_vect.shape)
+//    y_vect = tf.tensor(screenXYs_y, [screenXYs_y.length, 2])
 
-            // Combine the embeddings horizontally, turn 8,4,2 into 14
-            embeds = tf.concat([embeds0, embeds1, embeds2], 1);
-            return tf.concat([embeds, tf.stack(eyeCorners_x), tf.stack(faceGeom_x)],1);
-    });
-
-    console.log("embeddings extracted, x_vect shape: ", x_vect.shape)
-    y_vect = tf.tensor(screenXYs_y, [screenXYs_y.length, 2])
+    dataVecs = retrieveRoundsAsArrays()
 
     // Offer to save the embeddings data
 //    saveTensors(x_vect, y_vect);
 
     // Assemble the data into mlweb's format
-    x_vect_as_array = x_vect.arraySync();
+    x_vect_as_array = dataVecs[0]
     x_mat = array2mat(x_vect_as_array)
     console.log("x_vect assembled")
 
-    tmp = y_vect.split(2, 1)
-    ground_x = tmp[0]
-    ground_y = tmp[1]
-
-    ground_x = array2mat(ground_x.arraySync())
-    ground_y = array2mat(ground_y.arraySync())
+    ground_x = array2mat(dataVecs)
+    ground_y = array2mat(dataVecs)
     console.log("y_vects assembled")
+
+
+
 
     // Model init and training
     svr_x = newModel();
@@ -123,7 +124,7 @@ async function trainNatureRegHead(){
     console.log("x and y regression are exported")
 
     // Restart the p5js canvas just to show that the training is done.
-    loop();
+//    loop();
 }
 
 
