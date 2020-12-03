@@ -1,7 +1,7 @@
 //new p5();
 
 // datacollect_p5.js moves a circle around the screen, once per round for ~5 rounds, then does regression training on them.
-var n_calib_rounds = 5;
+var n_calib_rounds = 4;
 
 // Global variables
 var radius = 70.0;
@@ -166,8 +166,9 @@ const s = ( p ) => {
 
             // If the eyes are off-screen, notify the user and pause the collection
             if (Math.min(...eyeExtremesX) < margin*2 || Math.max(...eyeExtremesX) > (1.0 - margin*2) ||
-                Math.min(...eyeExtremesY) < margin || Math.max(...eyeExtremesY) > (1.0-margin) ||
-                (typeof(prediction) != 'undefined' && prediction.faceInViewConfidence < 0.9)){
+                Math.min(...eyeExtremesY) < margin || Math.max(...eyeExtremesY) > (1.0-margin)){
+//                Math.min(...eyeExtremesY) < margin || Math.max(...eyeExtremesY) > (1.0-margin) ||
+//                (typeof(prediction) != 'undefined' && prediction.faceInViewConfidence < 0.9)){
                 p.fill(255, 20, 20);
                 p.text("Eyes are off-camera! \nData collection paused.", width/2, 3*height/5);
             } else if ((calib_rounds < n_calib_rounds) && !stopped){
@@ -208,7 +209,7 @@ const s = ( p ) => {
             } else if (stopped){
                 movingsTaken = 0;
                 if (stillsTaken < num_ims_still){
-                    if (p.frameCount % 1 == 0){ // take screenshot every N frames
+                    if (p.frameCount % 2 == 0){ // take screenshot every N frames
                         eyeSelfie(false);
                         console.log("eyeSelfie at corner");
                         stillsTaken += 1;
@@ -250,7 +251,7 @@ const s = ( p ) => {
             stopped = false;
             stepsTaken = 0;
         } else if (done_with_training){
-            window.location.href = "../svrtest";
+            window.location.href = "../";
         }
     };
 };
