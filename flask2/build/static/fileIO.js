@@ -85,6 +85,7 @@ function addToStorageArray(key, arr){
     if (localStorage[key] == undefined){
         localStorage[key] = JSON.stringify([])
     }
+
     try{
         tmp = JSON.parse(localStorage[key])
     } catch{

@@ -87,7 +87,7 @@ function draw(){
     // Give textual indicator to user of the round
     textAlign(CENTER, CENTER);
     textSize(35);
-    if (typeof(rBB) == 'undefined' || curPred[0] == -1){
+    if (typeof(rBB) == 'undefined' || typeof(curPred) == 'undefined' || curPred[0] == -1){
         text("\n\nPlease wait, loading", width/2, height*2/3)
     } else if (errorsX.length == nx_arr.length){
         textSize(30);
@@ -112,7 +112,7 @@ function draw(){
             // - Pixel corrdinates of each xy location, in order
         addToStorageArray("eval", [Date.now(), [initial_width, initial_height], errorsX, errorsY, locations_acc]);
 
-        text("Evaluation results saved at /results", width/2, height*9/10);
+        text("Evaluation results saved at /results\nTap to return to the main page", width/2, height*4/5);
         noLoop();
     } else {
         text("\nLocation: " + (calib_counter) + "/" + (nx_arr.length) + "\nTap to advance", width/2, height*2/3);
@@ -169,7 +169,7 @@ function draw(){
             if (delay_frames_taken < delayFrames){
                 delay_frames_taken += 1;
             } else if (stillsTaken < num_ims_still){
-                if (frameCount % 1 == 0){ // take screenshot every N frames
+                if (frameCount % 2 == 0){ // take screenshot every N frames
 //                    eyeSelfie(false);
                     console.log("eyeSelfie at corner");
                     stillsTaken += 1;
@@ -221,6 +221,8 @@ function touchStarted(){
         stopped = false;
         stepsTaken = 0;
         delay_frames_taken = 0;
+    } else if (errorsX.length == nx_arr.length){
+        location.href = "../";
     }
 }
 

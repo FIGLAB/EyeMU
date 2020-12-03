@@ -77,6 +77,7 @@
         if (a){
             console.log("cleared eval from localstorage");
             localStorage['eval'] = undefined;
+            location.reload();
         }
     }
 
@@ -104,6 +105,8 @@
 
         evalResults.forEach((elem, ind) => {
             let dateInMillis = elem[0];
+            console.log(dateInMillis);
+            console.log(Date(dateInMillis));
             let screenW = elem[1][0];
             let screenH = elem[1][1];
             let errsX = elem[2];
@@ -116,7 +119,7 @@
             tmp.innerHTML += "<h2>GAZEL Evaluation Trial #" + (ind+1) + "</h2>";
 
             // Date
-            tmp.innerHTML += "Time Captured: &emsp;" + Date(dateInMillis) + "<br>"
+            tmp.innerHTML += "Time Captured: &emsp;" + new Date(dateInMillis) + "<br>"
 
             // Display dimensions
             tmp.innerHTML += "Screen dimensions WxH: &emsp;" + screenW + "x" + screenH + "<br>"
@@ -149,6 +152,7 @@
 
 <div>
 <!--    <button onclick="checkDownloadResults()" style="height:40px;">Download results</button>-->
+    <button onclick="location.href='../'" style="height:40px;">Back to GAZEL Home</button>
     <button onclick="checkDownloadResults()" style="height:40px;">Download results</button>
     &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
     <button onclick="clearResults()" style="height:20px;background-color:lightcoral;">Clear results</button>

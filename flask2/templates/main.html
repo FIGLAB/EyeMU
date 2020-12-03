@@ -126,9 +126,9 @@
             Before you start:
         </p>
         <ul>
-            <li>You should be using a smartphone to do this study. It is eye tracking on smartphones, after all.</li>
+            <li>You should be using a <b>smartphone in portrait mode(vertical)</b> to do this study. It is eye tracking on smartphones, after all.</li>
             <li>Please make sure that you're <b>not in an incognito tab</b>, or else we won't be able to save your personalized model.</li>
-            <li>Make sure that you're in a well-lit area. If you can read comfortably, it's probably fine.</li>
+            <li>Make sure that you're in a well-lit area. If you can read comfortably, the lighting is  fine.</li>
         </ul>
 
         <p>
@@ -172,12 +172,12 @@
   <div class="rightpane" id="right1">
     <h1 style="text-align:center">2. Evaluate</h1>
       <p>
-        This step will have you test;
-          In this step, you'll get to test the model you've personalized.
 
-          You'll be tracking a circle around the screen again, but this time it will be accompanied by a smaller, orange circle which is your predicted gaze location. When arriving at a location, the large tracking dot will stop for a short while, then start recording the prediction's error. After reaching each of the 10
+          In this step, you'll test your personalized model.
 
-          It looks like the first data collection page, but instead of recording your eye images, they'll be used to predict your
+          You'll be tracking a green circle around the screen again, but this time it will be accompanied by a smaller, orange circle which is your predicted gaze location. When arriving at a location, the large tracking dot will stop for a short while, then start recording the prediction's error. When it's done counting, the numbers will stop and it will turn blue. Tap to continue.
+
+          After the circle returns to the center, the trial is done and the errors will be written to the screen
 
       </p>
 
@@ -189,10 +189,22 @@
 
   <div class="leftpane" style="border-top-style: solid;" id="left2">
     <h1 style="text-align:center">3. See Results</h1>
+      <p>
+          Lastly, go to the results page to see your personalized model's errors. Export them from this page to send us your results as a .json, or view as text and paste them into an email.
+      </p>
+      <div style="text-align:center;">
+          <button style="width:50%; height:10%;" onclick="location.href = '/results/'">Results</button>
+      </div>
   </div>
 
   <div class="rightpane" style="border-top-style: solid;" id="right2">
     <h1 style="text-align:center">Playground</h1>
+      <p>
+          Playground visualizes your personalized model.
+      </p>
+      <div style="text-align:center;">
+          <button style="width:50%; height:10%;" onclick="location.href = '/svrtest/'">Playground</button>
+      </div>
   </div>
 </div>
 
