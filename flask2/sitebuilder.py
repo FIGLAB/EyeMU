@@ -71,6 +71,12 @@ def faceangle():
 def results():
     return render_template("results.html")
 
+@app.route("/testing/")
+def testing():
+    return render_template("mainTesting.html")
+
+
+
 # interactions time!
 @app.route('/zoo/1/')
 def zoo1():
@@ -79,6 +85,8 @@ def zoo1():
 @app.route('/zoo/2/')
 def zoo2():
     return render_template("zoo.html", zooNum = 2)
+
+
 
 @app.after_request
 def add_header(response):

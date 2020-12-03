@@ -11,7 +11,7 @@ freezer = Freezer(app)
 
 @app.route('/')
 def index():
-    return render_template("main.html")
+    return render_template("mainTesting.html")
 
 @app.route('/datacollection/')
 def datacollection():

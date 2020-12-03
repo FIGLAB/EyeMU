@@ -88,8 +88,8 @@ function draw(){
     textAlign(CENTER, CENTER);
     textSize(35);
     if (calib_rounds < n_calib_rounds){
-        text("\nLocation: " + (calib_counter+1) + "/" + nx_arr.length + "\nTap to advance", width/2, height/2)
-    } else {
+        text("\nLocation: " + (calib_counter+1) + "/" + (nx_arr.length-1) + "\nTap to advance", width/2, height/2)
+    } else if (errorsAdded){
 //        text("\n\n\nTap to start training", width/2, height/2);
         textSize(30);
         let errX_avg = nf(average(errorsX)/windowWidth, 1, 2)
@@ -118,7 +118,7 @@ function draw(){
         addToStorageArray("eval", [Date.now(), [initial_width, initial_height], errorsX, errorsY, locations_acc]);
 
         text("Evaluation results saved at /results", width/2, height*4/5);
-//        noLoop();
+        noLoop();
     }
 
     // Draw target circle
@@ -141,7 +141,7 @@ function draw(){
             (typeof(prediction) != 'undefined' && prediction.faceInViewConfidence < 0.9)){
             fill(255, 20, 20);
             text("Eyes are off-camera! \nData collection paused.", width/2, 3*height/5);
-        } else if (curPred != undefined && curPred[0] != -1){ // if the face has been detected, start the data collection
+        } else if (typeof(curPred) != 'undefined' && curPred[0] != -1){ // if the face has been detected, start the data collection
             let currentErrorX = abs(X - curPred[0]*windowWidth);
             let currentErrorY = abs(Y - curPred[1]*windowHeight);
 
@@ -174,7 +174,7 @@ function draw(){
             if (delay_frames_taken < delayFrames){
                 delay_frames_taken += 1;
             } else if (stillsTaken < num_ims_still){
-                if (frameCount % 2 == 0){ // take screenshot every N frames
+                if (frameCount % 1 == 0){ // take screenshot every N frames
 //                    eyeSelfie(false);
                     console.log("eyeSelfie at corner");
                     stillsTaken += 1;
@@ -186,11 +186,8 @@ function draw(){
                 tmpErrorX.push(currentErrorX);
                 tmpErrorY.push(currentErrorY);
                 errorsAdded = false;
-            } else if (stillsTaken >= num_ims_still){
-                fill( 0, 121, 20 ); // Green circle if all images taken
-                ellipse( X, Y, radius, radius );
 
-                if (!errorsAdded){
+                if (stillsTaken >= num_ims_still){
                     // Accumulate errors and reset the tmpErr tracking
                     errorsX.push(average(tmpErrorX));
                     errorsY.push(average(tmpErrorY));
@@ -203,6 +200,21 @@ function draw(){
                     locations_acc.push([X,Y])
                 }
 
+            } else if (stillsTaken >= num_ims_still){
+                fill( 0, 121, 20 ); // Green circle if all images taken
+                ellipse( X, Y, radius, radius );
+//                if (!errorsAdded){
+//                    // Accumulate errors and reset the tmpErr tracking
+//                    errorsX.push(average(tmpErrorX));
+//                    errorsY.push(average(tmpErrorY));
+//                    errorsAdded = true;
+//
+//                    tmpErrorX = [];
+//                    tmpErrorY = [];
+//
+//                    // Remember the location
+//                    locations_acc.push([X,Y])
+//                }
             }
         }
         }

@@ -235,10 +235,12 @@ async function drawCache(){
 
 
         // Get eye images from the video stream directly
-        ctx.drawImage(video, lBB[0], lBB[2], lBB[4], lBB[5], // Source x,y,w,h
-                        0, 0, inx, iny); // Destination x,y,w,h
-        ctx.drawImage(video, rBB[0], rBB[2], rBB[4], rBB[5],
-                       10 + inx, 0, inx, iny);
+        if (typeof(lBB) != 'undefined'){
+            ctx.drawImage(video, lBB[0], lBB[2], lBB[4], lBB[5], // Source x,y,w,h
+                            0, 0, inx, iny); // Destination x,y,w,h
+            ctx.drawImage(video, rBB[0], rBB[2], rBB[4], rBB[5],
+                           10 + inx, 0, inx, iny);
+        }
 }
 
 
