@@ -86,8 +86,31 @@
 
 
 <script>
-    main()
+    function checkRegressionModel(){
+        elem = document.getElementById('regressionModelFound');
+        elem.style.textAlign = "center";
+
+        regModel = localStorage['svr_x'];
+        if (regModel == undefined || regModel.length == 0){
+            elem.innerText = "Personalized Model Not Found";
+            elem.style.backgroundColor = "pink";
+        } else {
+            // elem.innerText = "Personalized Model Found <br> Click to start evaluation";
+            elem.innerHTML = "Personalized Model Found <br><a href='/eval/'>Click here to start evaluation</a>";
+            elem.style.backgroundColor = "lightgreen";
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function(event) {
+           console.log("DOM fully loaded and parsed");
+           checkRegressionModel()
+    });
+
+
+    //main();
 </script>
+
+
 
 <style>
 
@@ -103,37 +126,35 @@
 
     .container {
       width: 100%;
-      height: 100%;
+      height: auto;
+    }
+
+    .panelrow{
+      display: flex;
     }
 
     .leftpane {
-        width: 33.333%;
-        height: 100%;
+        width: 50%;
+        /*height: 100%;*/
         float: left;
         /*background-color: rosybrown;*/
         border-collapse: collapse;
-        border-right-style: dotted;
+        border-color:grey;
         box-sizing: border-box;
-    }
-
-    .middlepane {
-        width: 33.333%;
-        height: 100%;
-        float: left;
-        background-color: royalblue;
-        border-collapse: collapse;
-        box-sizing: border-box;
+        display:block;
     }
 
     .rightpane {
-      width: 33.333%;
-      height: 100%;
+      width: 50%;
+      /*height: 100%;*/
       position: relative;
       float: right;
       /* background-color: yellow; */
       border-collapse: collapse;
       border-left-style: dotted;
       box-sizing: border-box;
+      border-color:grey;
+      display:block;
     }
 
     .toppane {
@@ -143,6 +164,11 @@
       /*background-color: #4da6ff;*/
       border-style: double;
       display:block;
+      border-color:grey;
+    }
+
+    p {
+      padding: 15px;
     }
 
 </style>
@@ -155,19 +181,98 @@
 
 
 <div class="container">
-  <div class="toppane" style="text-align:center; overflow:auto">
-      <h1> GAZEL</h1>
-      <h4>Gaze + Accelerometer Mobile Interactions</h4>
+    <div class="toppane" style="text-align:center; overflow:auto">
+        <h1> GAZEL</h1>
+        <h4>Gaze + Accelerometer Mobile Interactions</h4>
+    </div>
+
+    <div class="toppane" style="overflow:auto">
+        <p style="text-align:center;">
+            Hello! Thanks for participating in our research in novel smartphone interactions.
+        </p>
+        <p>
+            Before you start:
+        </p>
+        <ul>
+            <li>You should be using a smartphone to do this study. It is eye tracking on smartphones, after all.</li>
+            <li>Please make sure that you're <b>not in an incognito tab</b>, or else we won't be able to save your personalized model.</li>
+            <li>Make sure that you're in a well-lit area. If you can read comfortably, it's probably fine.</li>
+        </ul>
+
+        <p>
+            Instructions:
+        </p>
+        <ol>
+            <li>Create an eye tracker personalized to you</li>
+            <li>Evaluate the performance of the personalized eye tracking</li>
+            <li>Export and send the results to akong@andrew.cmu.edu ("See Results" section)</li>
+        </ol>
+    </div>
+</div>
+
+<div class="panelrow">
+  <div class="leftpane" id="left1">
+    <h1 style="text-align:center">1. Personalize</h1>
+
+      <p>
+        On this page, you'll be asked to track a circle around the screen with your eyes in 5 different rounds of data collection. The circle will be red to indicate when we're recording data, so try not to blink until the circle turns blue.
+
+        <br><br>
+
+        Hold your phone at a natural angle. After 5 rounds, we'll use your eye images to train an eye tracker personalized for you.
+
+        <br><br>
+        Each round should be done in a different pose or a different lighting, for a total of 5 unique setups. They should be normal poses that one could use a phone comfortably in. This will help the eye tracker learn your eyes. <br> An example procedure could have 5 rounds at the following poses:
+        <ol>
+          <li>Sitting normally in a desk chair</li>
+          <li>Sitting in the same chair, facing a lamp instead of away from it</li>
+          <li>Standing in the bathroom</li>
+          <li>Sitting in the kitchen</li>
+          <li>Lying on your bed looking up at your phone</li>
+      </ol>
+      </p>
+
+      <div style="text-align:center;">
+          <button style="width:50%; height:10%;" onclick="location.href = '/datacollection/'">Press here to start the data collection and model personalization</button>
+      </div>
   </div>
 
-  <div class="leftpane">
-    <h1>Test Page</h1>
+  <div class="rightpane" id="right1">
+    <h1 style="text-align:center">2. Evaluate</h1>
+      <p>
+        This step will have you test;
+          In this step, you'll get to test the model you've personalized.
+
+          You'll be tracking a circle around the screen again, but this time it will be accompanied by a smaller, orange circle which is your predicted gaze location. When arriving at a location, the large tracking dot will stop for a short while, then start recording the prediction's error. After reaching each of the 10
+
+          It looks like the first data collection page, but instead of recording your eye images, they'll be used to predict your
+
+      </p>
+
+      <p id="regressionModelFound"></p>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="leftpane" style="border-top-style: solid;" id="left2">
+    <h1 style="text-align:center">3. See Results</h1>
+      <p>
+          Lastly, go to the results page to see your personalized model's errors. Export them from this page to send us your results as a .json, or view as text and paste them into an email.
+      </p>
+      <div style="text-align:center;">
+          <button style="width:50%; height:10%;" onclick="location.href = '/results/'">Results</button>
+      </div>
   </div>
 
-  <div class="middlepane">Test Page</div>
-
-  <div class="rightpane">
-    <h1>Test Page</h1>
+  <div class="rightpane" style="border-top-style: solid;" id="right2">
+    <h1 style="text-align:center">Playground</h1>
+      <p>
+          Playground visualizes your personalized model.
+      </p>
+      <div style="text-align:center;">
+          <button style="width:50%; height:10%;" onclick="location.href = '/svrtest/'">Playground</button>
+      </div>
   </div>
 </div>
 
