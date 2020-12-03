@@ -318,6 +318,7 @@ function cleanupAfterCheckpoint(){
     eyeCorners_x.forEach((elem) => {
         elem.dispose()
     });
+    eyeCorners_x = [];
 
     faceGeom_x = [];
 
