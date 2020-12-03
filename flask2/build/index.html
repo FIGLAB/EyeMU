@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+
+
+
     <title>GAZEL</title>
 
 <!-- For drawing the predicted output directly onto the HTML page with an icon-->
@@ -69,6 +72,8 @@
     </style>
 
     
+<meta name="viewport" content="initial-scale=1.0;" />
+
 <!--Other ML library-->
 <!--<script src="http://mlweb.loria.fr/ml.js"></script>-->
 <script src="/static/mlweb.js"></script>
@@ -101,9 +106,17 @@
         }
     }
 
+    function enlargeButtons(){
+        elems = document.getElementsByTagName("button");
+        elems.forEach((elem) => {
+            elem.style.fontSize = "100%";
+        });
+    }
+
     document.addEventListener("DOMContentLoaded", function(event) {
            console.log("DOM fully loaded and parsed");
-           checkRegressionModel()
+           checkRegressionModel();
+           enlargeButtons();
     });
 
 
@@ -115,7 +128,7 @@
 <style>
 
     :root {
-      --innerpadding: 10px;
+      --innerpadding: 5%;
     }
 
     body, html {
@@ -168,7 +181,30 @@
     }
 
     p {
-      padding: 15px;
+      padding: var(--innerpadding);
+    }
+
+    h1{
+      padding-left: var(--innerpadding);
+      padding-right: var(--innerpadding);
+    }
+
+    h2{
+      padding-left: var(--innerpadding);
+      padding-right: var(--innerpadding);
+    }
+
+    button{
+        display: inline-block;
+        fontSize: 200% !important;
+        overflow:auto;
+        -webkit-appearance:none;
+        background-color: #ccc;
+
+    }
+
+    div{
+        overflow-wrap:normal;
     }
 
 </style>
@@ -190,18 +226,18 @@
         <p style="text-align:center;">
             Hello! Thanks for participating in our research in novel smartphone interactions.
         </p>
-        <p>
+        <h2>
             Before you start:
-        </p>
+        </h2>
         <ul>
-            <li>You should be using a smartphone to do this study. It is eye tracking on smartphones, after all.</li>
+            <li>You should be using a <b>smartphone in portrait mode (vertical)</b> to do this study. It is eye tracking on smartphones, after all.</li>
             <li>Please make sure that you're <b>not in an incognito tab</b>, or else we won't be able to save your personalized model.</li>
-            <li>Make sure that you're in a well-lit area. If you can read comfortably, it's probably fine.</li>
+            <li>Make sure that you're in a <b>well-lit area</b>. If you can read comfortably, the lighting is fine.</li>
         </ul>
 
-        <p>
+        <h2>
             Instructions:
-        </p>
+        </h2>
         <ol>
             <li>Create an eye tracker personalized to you</li>
             <li>Evaluate the performance of the personalized eye tracking</li>
@@ -212,7 +248,7 @@
 
 <div class="panelrow">
   <div class="leftpane" id="left1">
-    <h1 style="text-align:center">1. Personalize</h1>
+    <h3 style="text-align:center">1. Personalize</h3>
 
       <p>
         On this page, you'll be asked to track a circle around the screen with your eyes in 5 different rounds of data collection. The circle will be red to indicate when we're recording data, so try not to blink until the circle turns blue.
@@ -223,7 +259,7 @@
 
         <br><br>
         Each round should be done in a different pose or a different lighting, for a total of 5 unique setups. They should be normal poses that one could use a phone comfortably in. This will help the eye tracker learn your eyes. <br> An example procedure could have 5 rounds at the following poses:
-        <ol>
+        <ol style="padding-left:-5%;">
           <li>Sitting normally in a desk chair</li>
           <li>Sitting in the same chair, facing a lamp instead of away from it</li>
           <li>Standing in the bathroom</li>
@@ -233,45 +269,50 @@
       </p>
 
       <div style="text-align:center;">
-          <button style="width:50%; height:10%;" onclick="location.href = '/datacollection/'">Press here to start the data collection and model personalization</button>
+          <button style="width:75%;height:20%;" onclick="location.href = '/datacollection/'">Press here to start the data collection and model personalization</button>
+          <br><br>
       </div>
   </div>
 
   <div class="rightpane" id="right1">
-    <h1 style="text-align:center">2. Evaluate</h1>
+    <h3 style="text-align:center">2. Evaluate</h3>
       <p>
-        This step will have you test;
-          In this step, you'll get to test the model you've personalized.
 
-          You'll be tracking a circle around the screen again, but this time it will be accompanied by a smaller, orange circle which is your predicted gaze location. When arriving at a location, the large tracking dot will stop for a short while, then start recording the prediction's error. After reaching each of the 10
-
-          It looks like the first data collection page, but instead of recording your eye images, they'll be used to predict your
-
+          In this step, you'll test your personalized model.
+            <br><br>
+          You'll be tracking a green circle around the screen again, but this time it will be accompanied by a smaller, orange circle which is your predicted gaze location. When arriving at a location, the large tracking dot will stop for a short while, then start recording the prediction's error. When it's done counting, the numbers will stop and it will turn blue. Tap to continue.
+            <br><br>
+          After the circle returns to the center, the trial is done and the errors will be written to the screen. You will need to do five (5) of these evaluations, each in a different location or pose. Find diverse positions that you didn't train your model on.
+            <br><br>
+          To start a new evaluation, refresh the page.
       </p>
 
       <p id="regressionModelFound"></p>
+
+      <br>
+      <p>To train a new model, simply redo the personalization section.</p>
   </div>
 </div>
 
-<div class="container">
+<div class="panelrow">
 
   <div class="leftpane" style="border-top-style: solid;" id="left2">
-    <h1 style="text-align:center">3. See Results</h1>
+    <h3 style="text-align:center">3. See Results</h3>
       <p>
           Lastly, go to the results page to see your personalized model's errors. Export them from this page to send us your results as a .json, or view as text and paste them into an email.
       </p>
       <div style="text-align:center;">
-          <button style="width:50%; height:10%;" onclick="location.href = '/results/'">Results</button>
+          <button style="width:75%; height:20%;" onclick="location.href = '/results/'">Results</button>
       </div>
   </div>
 
   <div class="rightpane" style="border-top-style: solid;" id="right2">
-    <h1 style="text-align:center">Playground</h1>
+    <h3 style="text-align:center">Playground</h3>
       <p>
           Playground visualizes your personalized model.
       </p>
       <div style="text-align:center;">
-          <button style="width:50%; height:10%;" onclick="location.href = '/svrtest/'">Playground</button>
+          <button style="width:75%; height:20%;" onclick="location.href = '/svrtest/'">Playground</button>
       </div>
   </div>
 </div>
