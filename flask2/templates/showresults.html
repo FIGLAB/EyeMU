@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block headextra %}
+<!--Other ML library-->
+
+<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>-->
+<script src="{{url_for('static', filename='ML.js')}}"></script>
+<script src="{{url_for('static', filename='fileIO.js')}}"></script>
+<script src="{{url_for('static', filename='mainTesting.js')}}"></script>
+
+
+{% endblock %}
+
+
+{% block body %}
+
+<input type="file" accept="application/json" id="eyeData" multiple onchange='openFile(event)'></input>
+
+<div id="main">
+
+</div>
+
+
+{% endblock %}
