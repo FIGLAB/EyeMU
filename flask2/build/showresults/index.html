@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+
+
+    <title>GAZEL</title>
+
+<!-- For drawing the predicted output directly onto the HTML page with an icon-->
+<!-- CSS comments are not //, and if you put them in the <style> header they break it -->
+    <style>
+    .placeholderdot{
+        width: 30px;
+        height: 30px;
+        background-color: #ffab56;
+        border-radius: 50%;
+        position:fixed;
+    }
+
+    .targetdot{
+        width: 60px;
+        height: 60px;
+        background-color: #0e5cab;
+        border-radius: 50%;
+        position:fixed;
+    }
+
+    .predicdot{
+        width: 30px;
+        height: 30px;
+        background-color: #ffab56;
+        border-radius: 50%;
+        position:fixed;
+    }
+
+    .predicdot2{
+        width: 30px;
+        height: 30px;
+        background-color: #e84338bb;
+        border-radius: 50%;
+        position:fixed;
+    }
+
+    .onscreenregion{
+        position:fixed;
+        background-color:#00003010;
+        left: 0px;
+        top: 0px;
+        right:100px;
+        bottom:100px;
+    }
+
+
+    .widebutton {
+        display: block;
+        width: 100%;
+        border: none;
+        background-color: #CCC;
+        padding: 14px 28px;
+        font-size: 16px;
+        cursor: pointer;
+        text-align: center;
+    }
+
+    hr {
+        background-color:#ccc;
+        height:1px;
+        border:none;
+    }
+
+    </style>
+
+    
+<!--Other ML library-->
+
+<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>-->
+<script src="/static/ML.js"></script>
+<script src="/static/fileIO.js"></script>
+<script src="/static/mainTesting.js"></script>
+
+
+
+</head>
+<body style="background-color:aliceblue; font-family: Verdana, sans-serif;">
+
+
+<input type="file" accept="application/json" id="eyeData" multiple onchange='openFile(event)'></input>
+
+<div id="main">
+
+</div>
+
+
+
+</body>
+</html>

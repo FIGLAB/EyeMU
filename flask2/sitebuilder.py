@@ -71,6 +71,10 @@ def faceangle():
 def results():
     return render_template("results.html")
 
+@app.route("/showresults/")
+def showresults():
+    return render_template("showresults.html")
+
 @app.route("/testing/")
 def testing():
     return render_template("mainTesting.html")

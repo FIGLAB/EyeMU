@@ -139,10 +139,10 @@ const s = ( p ) => {
                 }
             }
 
+            p.text("Personalization Wizard\nInstructions: Track the ball with your eyes. \nWhen it turns blue, you're safe to blink.", width/2, height/5)
             p.text("Round: " + (calib_rounds+1) + "/" + n_calib_rounds + "\nTap to advance",
                         width/2,
                         height - (height - (instr_y + instr_h))/2)
-            p.text("Instructions: Track the ball with your eyes. \nWhen it turns blue, you're safe to blink.", width/2, height/5)
         } else {
             // Start training automatically
             if (stillsDone){
