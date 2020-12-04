@@ -5,16 +5,78 @@
 
 <!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>-->
 <script src="{{url_for('static', filename='ML.js')}}"></script>
-<script src="{{url_for('static', filename='fileIO.js')}}"></script>
 <script src="{{url_for('static', filename='mainTesting.js')}}"></script>
 
+<script>
+    var imported_data = new Object();
+    function openResultsFiles(event) {
+        var input = event.target;
+        expose2 = input;
+
+        // Read each file into an object of results
+        for (let i = 0; i< input.files.length; i++){
+            input.files[i].text().then(fileContents => {
+                parsedData = JSON.parse(fileContents);
+
+                fileName = input.files[i].name;
+                fileName = fileName.replace(".json", "").replace(" ", "");
+
+                imported_data[fileName] = parsedData;
+                console.log(fileName, " parsed");
+            });
+        };
+
+        // Show results
+        setTimeout(displayResults, 1000);
+    }
+
+    // Trials have the format [Date.now(), [initial_width, initial_height], errorsX, errorsY, locations_acc]
+    function displayResults(){
+        // Create a section for each key
+        Object.keys(imported_data).forEach((key) => {
+            let user_data = imported_data[key];
+            user_data.forEach((trialData) => {
+
+                let screenw = user_data[1][0];
+                let screenh = user_data[1][1];
+
+                let elem = document.createElement("div");
+
+                // Add name (remove this in final)
+                elem.innerHTML += "<h3>" + key + "</h3>";
+
+                console.log(user_data);
+
+                // Show average X and Y error from each trial
+                elem.innerHTML += "X errors: ";
+                user_data[2].forEach((elem) => {
+                    elem.innerHTML += (elem/screenw).toFixed(2) + ", ";
+                });
+                elem.innerHTML += "<br>";
+                elem.innerHTML += "Y errors: ";
+                user_data[3].forEach((elem) => {
+                    elem.innerHTML += (elem/screenh).toFixed(2) + ", ";
+                });
+            });
+            elem.innerHTML += "<br>";
+
+
+
+
+
+
+            //
+        });
+    }
+
+</script>
 
 {% endblock %}
 
 
 {% block body %}
 
-<input type="file" accept="application/json" id="eyeData" multiple onchange='openFile(event)'></input>
+<input type="file" accept="application/json" id="eyeData" multiple onchange='openResultsFiles(event)'></input>
 
 <div id="main">
 
