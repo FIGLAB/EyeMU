@@ -247,7 +247,7 @@ async function drawCache(){
 // extracts current eyes to a tensor, as well as the eye corners
 async function eyeSelfie(continuous){
     // Wait to start if rBB not defined
-    if (rBB == undefined){
+    if (rBB == undefined && !stopFacemesh){
         console.log("rBB undefined in eyeSelfie, trying again")
         setTimeout(function(){eyeSelfie(continuous)}, 500);
         return

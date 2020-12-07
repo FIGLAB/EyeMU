@@ -94,7 +94,7 @@ function greyscaleImage(imTensor){
 }
 
 async function runSVRlive(){
-    if (curEyes[0] == undefined){
+    if (curEyes[0] == undefined && !stopFacemesh){
         console.log("curEyes undefined while running prediction, trying again")
         setTimeout(runSVRlive, 500);
         return
