@@ -86,9 +86,13 @@ def testing():
 def zoo1():
     return render_template("zoo.html", zooNum = 1)
 
-@app.route('/zoo/2/')
+@app.route('/zoo/notification/')
 def zoo2():
     return render_template("zoo.html", zooNum = 2)
+
+@app.route('/zoo/gallery/')
+def zoo3():
+    return render_template("zoo.html", zooNum = 3)
 
 
 

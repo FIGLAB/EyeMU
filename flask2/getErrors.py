@@ -34,8 +34,8 @@ for i, userErrors in enumerate(normedErrors):
     tmp_avgx = userErrors[0]*screen_sizes[i][0]
     tmp_avgy = userErrors[1]*screen_sizes[i][1]
 
-    print("Average x error:", tmp_avgx)
-    print("Average y error:", tmp_avgy)
+    print("Average x error:", round(tmp_avgx,2))
+    print("Average y error:", round(tmp_avgy,2))
     print("Combined:", (tmp_avgx**2 + tmp_avgy**2)**.5)
 
     print()
