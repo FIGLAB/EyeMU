@@ -66,37 +66,43 @@ function zoomForMore(){
 
 
 // Zoo #3, one-handed photo editing
+// 12/7 CLARIFICATION: I'm setting all the style in javascript so I can edit it more easily on my end. Should probably move to a CSS global, but this will never see the light of the public so w/e
 function imageGallery(){
     // temporary, while I'm debugging CSS stuff
     stopFacemesh = true;
 
-    window.onscroll = function (e) {
-        document.activeElement.blur()
-    }
-
+    // Remove ugly margin on edges of page. Small margins still exist oh well
     document.body.style.margin = "0px";
+    // Focus on window automatically
+    window.focus();
 
-    // Add all images
+    // Create the container that holds all the elements
     galleryDiv = document.createElement("div");
     galleryDiv.id = "galleryContainer";
     galleryDiv.style.width = window.innerWidth - 15 + "px";
     galleryDiv.style.overflow = "hidden";
+    galleryDiv.style.lineHeight = "0px";
+    document.body.append(galleryDiv);
 
 
+    // Add all images to the page
     galleryElements = [];
     for (let i = 0; i<imageGalleryIms.length; i++){
-//    for (let i = 0; i<3; i++){
         let a = document.createElement("img")
         a.src = "data:image/png;base64," + imageGalleryIms[i];
         a.style.width = "32.33%";
-        a.style.marginLeft = "0.5%";
-        a.style.marginRight = "0.5%";
-        a.style.marginTop = "0.5%";
-        a.tabIndex = 1;
+//        a.style.marginLeft = "0.5%";
+//        a.style.marginRight = "0.5%";
+//        a.style.marginTop = "0.5%";
+        a.style.margin = "0.5%";
+        a.style.marginBottom = "0.25%";
 
-        a.style.outline = 'none';
-        a.style.transition = "all 0.2s ease";
+        a.tabIndex = 1; // Allows the images to be focused
+        a.style.outline = 'none'; // Removes border from their being focused
 
+
+        // Create animations when they're focused (eye gaze on them)
+        a.style.transition = "all 0.4s ease";
         a.onfocus = () => {
                             a.style.borderRadius = "5%";
                             a.style.zIndex = "-1";
@@ -108,10 +114,70 @@ function imageGallery(){
                             a.style.zIndex = "";
                          };
 
+        a.onclick = () => {
+//                            console.log(a);
+                          };
+
+        // Add element to our internal list and the page
         galleryDiv.append(a);
         galleryElements.push(a);
     }
-    document.body.append(galleryDiv);
+
+    // Reset the focused image when user scrolls
+    window.onscroll = function (e) {
+        document.activeElement.blur()
+    }
+
+
+
+
+
+    // Generate the top and bottom bounds of one elem in each row
+    let heightBounds = [0.0];
+    for (let i = 3; i < galleryElements.length; i += 3){
+//        heightBounds.push([galleryElements[i].offsetTop, galleryElements[i].offsetTop + galleryElements[i].offsetHeight]);
+        heightBounds.push(galleryElements[i].offsetTop);
+    }
+
+    // Generate left and right bounds of the middle col
+    let midLeft = galleryElements[1].offsetLeft;
+    let midRight = midLeft + galleryElements[1].offsetWidth;
+
+    document.onmousemove = function (e){
+    // Check which square is being looked at depending on the scroll index
+//        actualX = window.scrollX + e.pageX;
+//        actualY = window.scrollY + e.pageY;
+        actualX = e.pageX;
+        actualY = e.pageY;
+
+        let row;
+        heightBounds.forEach((elem, ind) => {
+//            console.log(actualY, elem)
+            if (actualY > elem){
+                row = ind;
+            }
+        });
+        let col = actualX < midLeft ? 0 : (actualX > midRight ? 2 : 1)
+
+//        console.log(row, col);
+
+        galleryElements[col + row * 3].focus()
+
+    };
+
+//    setInterval(() => {
+//        actualX = window.scrollX + 5;
+//        actualY = window.scrollY + 5;
+//
+//        let row = Math.trunc(actualY/squareSideLen);
+//        let col = Math.trunc(actualX/squareSideLen);
+//        console.log(row)
+//
+//
+//
+//
+//    }, 100);
+
 }
 
 
