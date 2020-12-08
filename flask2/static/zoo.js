@@ -70,7 +70,6 @@ function hideAll(){
         elem.hidden = !elemsClicked[ind];
     });
 }
-
 function showAll(){
     galleryElements.forEach((elem,ind) => {
         elem.hidden = elemsClicked[ind];
@@ -86,14 +85,39 @@ function imageGallery(){
     stopFacemesh = true;
 
 
+    // Create filter variables
+//    filterList = ["blur(0px)", "hue-rotate(180deg)", "blur(5px)", "sepia(60%)",  "invert(100%)"];
+    filterList = ["blur(0px) hue-rotate(0deg) sepia(0%) contrast(100%)",
+    "blur(5px) hue-rotate(0deg) sepia(0%) contrast(100%)",
+    "blur(0px) hue-rotate(180deg) sepia(0%) contrast(100%)",
+    "blur(0px) hue-rotate(0deg) sepia(60%) contrast(100%)",
+    "blur(0px) hue-rotate(0deg) sepia(0%) contrast(250%)",];
 
+
+
+    numFilters = filterList.length
 
     // Remove ugly margin on edges of page. Small margins still exist oh well
     document.body.style.margin = "0px";
 
     // Attach event handler to detect keypresses
     document.body.onkeydown = (event) => {
-        console.log("body detected keydown", event.key)
+//        console.log(event);
+        if (elemsClicked.some(elem => elem)){
+            // Find which painting is selected when the keypress happened
+            const selectedElemIndex = elemsClicked.findIndex(elem => elem)
+            console.log("currently selected", selectedElemIndex, "key is", event.key)
+
+            // If left or right arrow, change filter number
+            if (event.key == "ArrowLeft"){
+                elemsFilters[selectedElemIndex] = (elemsFilters[selectedElemIndex] + numFilters - 1) % numFilters;
+            } else if (event.key == "ArrowRight"){
+                elemsFilters[selectedElemIndex] = (elemsFilters[selectedElemIndex] + numFilters + 1) % numFilters;
+            }
+
+            // Apply the filter to that element's CSS
+            galleryElements[selectedElemIndex].style.filter = filterList[elemsFilters[selectedElemIndex]];
+        }
     };
 
     // Reset the focused image when user scrolls
@@ -107,57 +131,22 @@ function imageGallery(){
 
     // Create the container that holds all the elements
     galleryDiv = document.createElement("div");
-    galleryDiv.id = "galleryContainer";
-//    galleryDiv.style.width = window.innerWidth + "px";
-    galleryDiv.style.minWidth = window.innerWidth + "px";
-    galleryDiv.style.overflowX = "hidden";
-    galleryDiv.style.lineHeight = "0px";
-    galleryDiv.style.alignItem = "center";
-    galleryDiv.style.position = "relative";
-//    galleryDiv.style.overflow = "hidden";
-
+    galleryDiv.classList.toggle("galleryContainer");
     document.body.append(galleryDiv);
-
-
-
-
 
     // Add all images to the page
     galleryElements = [];
     elemsClicked = [];
     elemsFilters = [];
+
+
     for (let i = 0; i<imageGalleryIms.length; i++){
         let a = document.createElement("img")
         a.src = "data:image/png;base64," + imageGalleryIms[i];
-        a.classList.toggle("photogallery")
-
-//        a.style.width = "32.333%";
-//        a.style.margin = "0.5%";
-//        a.style.marginBottom = "0.25%";
-//        a.style.objectFit = "contain"
-//        a.style.outline = 'none'; // Removes border on ims
-//
-//        a.style.top = "0px";
-//        a.style.left = "0px";
-//        a.style.bottom = "0px";
-//        a.style.right = "0px";
-
         a.tabIndex = 1; // Allows the images to be focused
 
-
-        // Create animations when they're focused (eye gaze on them)
-//        a.style.transition = "all 0.4s ease";
-        a.onfocus = () => {
-//                            a.style.borderRadius = "5%";
-//                            a.style.zIndex = "2";
-//                            a.style.transform = "scale(1.2)";
-
-                          };
-        a.onblur = () => {
-//                            a.style.borderRadius = "";
-//                            a.style.transform = "";
-//                            a.style.zIndex = "";
-                         };
+        // This class adds animations when they're focused on (eye gaze on them)
+        a.classList.toggle("photogallery")
 
         a.onclick = () => {
                             elemsClicked[i] = !elemsClicked[i];
@@ -185,7 +174,6 @@ function imageGallery(){
                                     a.style.right = "0px";
                                 }, 100)
 
-
                                 a.blur();
 
                                 setTimeout(hideAll, 100);
@@ -194,35 +182,17 @@ function imageGallery(){
 
 
                                 console.log(i, 'deselected');
-
-//                                a.style.margin = "auto";
-                                a.style.margin = "0.5%";
-                                a.style.marginBottom = "0.25%";
-                                a.style.width = "32.33%";
-                                a.style.height = ""
-                                a.style.left = "0px";
-                                a.style.right = "0px";
-                                a.style.top = "0px";
-                                a.style.bottom = "0px";
-                                a.style.zIndex = "";
-
-                                a.style.display = "";
-                                a.style.position = "relative"
-
-//                                showAll();
+                                let tmp = a.style.filter;
+                                a.removeAttribute("style")
+                                a.style.filter = tmp;
 
                                 setTimeout(() => {
                                     showAll();
-                                    a.style.position = "";
-                                    a.style.transition = "all 0.4s ease";
                                     }, 20);
-//                                a.style.width = "100%";
-//                                a.style.height = "100%";
                             }
                           };
-
-        // Add element to our internal list and the page
         galleryDiv.append(a);
+
         galleryElements.push(a);
         elemsClicked.push(false);
         elemsFilters.push(0);
@@ -234,55 +204,96 @@ function imageGallery(){
 
 
 
+
     // Detect user focusing on a specific element
+                // 2 elems per row:
     // Generate the top and bottom bounds of one elem in each row
     let heightBounds = [0.0];
-    for (let i = 3; i < galleryElements.length; i += 3){
-//        heightBounds.push([galleryElements[i].offsetTop, galleryElements[i].offsetTop + galleryElements[i].offsetHeight]);
+    for (let i = 2; i < galleryElements.length; i += 2){
         heightBounds.push(galleryElements[i].offsetTop);
     }
 
     // Generate left and right bounds of the middle col
-    let midLeft = galleryElements[1].offsetLeft;
-    let midRight = midLeft + galleryElements[1].offsetWidth;
+//    let midLeft = galleryElements[1].offsetLeft;
+//    let midRight = midLeft + galleryElements[1].offsetWidth;
+    let mid = Math.trunc(window.innerWidth/2);
+
+    function cursorFocus(elem) {
+      var x = window.scrollX, y = window.scrollY;
+      elem.focus();
+      window.scrollTo(x, y);
+    }
 
     document.onmousemove = function (e){
     // Check which square is being looked at depending on the scroll index
-//        actualX = window.scrollX + e.pageX;
-//        actualY = window.scrollY + e.pageY;
         actualX = e.pageX;
         actualY = e.pageY;
 
         let row;
         heightBounds.forEach((elem, ind) => {
-//            console.log(actualY, elem)
             if (actualY > elem){
                 row = ind;
             }
         });
-        let col = actualX < midLeft ? 0 : (actualX > midRight ? 2 : 1)
-
-//        console.log(row, col);
+        let col = actualX < mid ? 0 : 1
 
         // Only focus if nothing is clicked
         if (!elemsClicked.reduce((elem, acc) => elem || acc)){
-            galleryElements[col + row * 3].focus()
+            galleryElements[col + row * 2].focus({preventScroll: true})
         }
-
     };
 
-//    setInterval(() => {
-//        actualX = window.scrollX + 5;
-//        actualY = window.scrollY + 5;
+//                // 3 elems per row:
+//    // Generate the top and bottom bounds of one elem in each row
+//    let heightBounds = [0.0];
+//    for (let i = 3; i < galleryElements.length; i += 3){
+//        heightBounds.push(galleryElements[i].offsetTop);
+//    }
 //
-//        let row = Math.trunc(actualY/squareSideLen);
-//        let col = Math.trunc(actualX/squareSideLen);
-//        console.log(row)
+//    // Generate left and right bounds of the middle col
+//    let midLeft = galleryElements[1].offsetLeft;
+//    let midRight = midLeft + galleryElements[1].offsetWidth;
 //
+//    document.onmousemove = function (e){
+//    // Check which square is being looked at depending on the scroll index
+//        actualX = e.pageX;
+//        actualY = e.pageY;
 //
+//        let row;
+//        heightBounds.forEach((elem, ind) => {
+////            console.log(actualY, elem)
+//            if (actualY > elem){
+//                row = ind;
+//            }
+//        });
+//        let col = actualX < midLeft ? 0 : (actualX > midRight ? 2 : 1)
 //
-//
-//    }, 100);
+//        // Only focus if nothing is clicked
+//        if (!elemsClicked.reduce((elem, acc) => elem || acc)){
+//            galleryElements[col + row * 3].focus()
+//        }
+//    };
+
+
+
+    setInterval(() => {
+        actualX = window.scrollX + curPred[0]*innerWidth;
+        actualY = window.scrollY + curPred[1]*innerHeight;
+        //document.body.dispatchEvent(new KeyboardEvent('keydown',  {'key':'whops'}));
+
+        let row;
+        heightBounds.forEach((elem, ind) => {
+            if (actualY > elem){
+                row = ind;
+            }
+        });
+        let col = actualX < mid ? 0 : 1
+
+        // Only focus if nothing is clicked
+        if (!elemsClicked.reduce((elem, acc) => elem || acc)){
+            galleryElements[col + row * 2].focus({preventScroll: true})
+        }
+    }, 50);
     cur = galleryElements[0];
 }
 

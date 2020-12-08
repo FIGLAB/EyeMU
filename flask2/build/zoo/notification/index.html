@@ -102,7 +102,7 @@
 
 
 
-
+<!-- CSS for the text notification interaction -->
 <style>
 
     :root {
@@ -210,9 +210,56 @@
         }
 
     }
+</style>
+
+
+<style>
+    .photogallery {
+        /*width: 32.333%;*/
+        width: 49%;
+        margin: 0.5%;
+        margin-bottom: 0.25%;
+        object-fit: contain;
+        outline: none;
+        position: relative;
+
+        top: 0px;
+        left: 0px;
+        bottom: 0px;
+        right: 0px;
+
+        transition: all 0.4s ease;
+    }
+
+    .photogallery:focus {
+        /*width: 32.333%;*/
+        width: 49%;
+        margin: 0.5%;
+        margin-bottom: 0.25%;
+        object-fit: contain;
+        outline: none;
+
+        top: 0px;
+        left: 0px;
+        bottom: 0px;
+        right: 0px;
+
+        transition: all 0.4s ease;
+
+        border-radius: 5%;
+        z-index: 2;
+        transform: scale(1.2);
+    }
+
+    .galleryContainer {
+        line-height: 0px;
+        align-item: center;
+        position: relative;
+    }
 
 
 </style>
+<!-- CSS for Image Gallery interaction -->
 
 
 
