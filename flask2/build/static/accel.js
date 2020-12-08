@@ -1,4 +1,5 @@
 //
+var AccelStarted = false;
 
 // Orientation-exposing angles
 var rotateDegrees;
@@ -26,7 +27,7 @@ var py = 50;
 var vx = 0.0;
 var vy = 0.0;
 var bounds = [2, 98];
-var updateRate = 1/60;
+var updateRate = 60;
 
 function zeroAccel(){
     Z_baseline = rotateDegrees;
@@ -42,8 +43,12 @@ function zeroAccel(){
 function getAccel(){
     DeviceMotionEvent.requestPermission().then(response => {
         if (response == 'granted') {
+            AccelStarted = true;
             console.log("accel perms granted")
-            document.getElementById("accelPerms").innerHTML = "accel perms granted";
+            let tmp = document.getElementById("accelPerms");
+            if (tmp != null){
+                document.getElementById("accelPerms").innerHTML = "accel perms granted";
+            }
 
 //            // Accelerometer permissions
 //            window.addEventListener('devicemotion', (e) => {
@@ -58,19 +63,22 @@ function getAccel(){
                 frontToBack = event.beta;
                 leftToRight = event.gamma;
 
-                updateBallAndText(rotateDegrees, frontToBack, leftToRight);
-
                 // Add the angles to short history
                 orient_short_history[0].push(rotateDegrees)
                 orient_short_history[1].push(frontToBack)
                 orient_short_history[2].push(leftToRight)
+//                console.log(orient_short_history[0]);
+//                console.log(rotateDegrees);
+
+                if (orient_short_history[0].length > updateRate){
+                    orient_short_history.forEach(elem => {
+                        elem.shift();
+                    });
+                }
             }, true);
 
             // Hide button if granted permissions
             document.getElementById("accelPermsButton").setAttribute("hidden", true);
-
-            // Run history function
-            orientationCheckContinuous();
     }}).catch(console.error)
 }
 
@@ -82,7 +90,7 @@ function orientationCheckContinuous(){
     }
 
     //
-    if (orient_long_history)
+//    if (orient_long_history)
 
 
 
@@ -109,8 +117,8 @@ function updateBallAndText(alpha, beta, gamma){
          (lr_delta > thresh ? "Right tilt" : lr_delta < -thresh ? "Left tilt" : "Centered");
 
     // Update velocity
-    vx = vx + lr_delta*updateRate*2;
-    vy = vy + fb_delta*updateRate;
+    vx = vx + lr_delta*1/updateRate*2;
+    vy = vy + fb_delta*1/updateRate;
 
 
     // Update position and clip it to bounds

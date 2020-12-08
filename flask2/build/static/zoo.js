@@ -76,12 +76,15 @@ function showAll(){
     });
 }
 
+
+
 // Zoo #3, one-handed photo editing
 // 12/7 CLARIFICATION: I'm setting all the style in javascript so I can edit it more easily on my end. Should probably move to a CSS global, but this will never see the light of the public so w/e
 var cur;
 var origScroll;
+var heightBounds;
 function imageGallery(){
-    if (rBB == undefined){
+    if (rBB == undefined || !AccelStarted){
         console.log("rBB undefined, image gallery restarting")
         setTimeout(imageGallery, 400);
         return;
@@ -109,7 +112,7 @@ function imageGallery(){
 
     // Attach event handler to detect keypresses
     document.body.onkeydown = (event) => {
-//        console.log(event);
+        console.log(event);
         if (elemsClicked.some(elem => elem)){
             // Find which painting is selected when the keypress happened
             const selectedElemIndex = elemsClicked.findIndex(elem => elem)
@@ -146,10 +149,13 @@ function imageGallery(){
     elemsClicked = [];
     elemsFilters = [];
 
-
+    imageGalleryIms = ["1.png", "2.png", "3.jpeg", "4.jpg", "5.png", "6.jpeg", "7.jpeg","8.jpeg"]
     for (let i = 0; i<imageGalleryIms.length; i++){
+//    for (let i = 0; i<8; i++){
         let a = document.createElement("img")
-        a.src = "data:image/png;base64," + imageGalleryIms[i];
+//        a.src = "data:image/png;base64," + imageGalleryIms[i];
+//        a.src = "/static/imagegallery/" + (i+1) + ".png";
+        a.src = "/static/imagegallery/" + imageGalleryIms[i];
         a.tabIndex = 1; // Allows the images to be focused
 
         // This class adds animations when they're focused on (eye gaze on them)
@@ -187,7 +193,6 @@ function imageGallery(){
                             } else{
                                 setTimeout(() => window.scrollBy(0, origScroll - window.scrollY), 30);
 
-
                                 console.log(i, 'deselected');
                                 let tmp = a.style.filter;
                                 a.removeAttribute("style")
@@ -215,10 +220,13 @@ function imageGallery(){
     // Detect user focusing on a specific element
                 // 2 elems per row:
     // Generate the top and bottom bounds of one elem in each row
-    let heightBounds = [0.0];
-    for (let i = 2; i < galleryElements.length; i += 2){
-        heightBounds.push(galleryElements[i].offsetTop);
-    }
+
+//    setTimeout(() => {
+//        heightBounds = [0.0];
+//        for (let i = 2; i < galleryElements.length; i += 2){
+//            heightBounds.push(galleryElements[i].offsetTop);
+//        }
+//    }, 100);
 
     // Get middle coordinate
     let mid = Math.trunc(window.innerWidth/2);
@@ -279,47 +287,73 @@ function imageGallery(){
 //        }
 //    };
 
-
-    initialHeadSize = faceGeom.getGeom()[3]
-//    zoomedOnce = false;
-//    headBigger = false;
-//    headBiggerPrev = false;
-//    // Set up while loop to check headSize
-//        curHeadSize = faceGeom.getGeom()[3];
-//        headBiggerPrev = headBigger
-//        headBigger = curHeadSize > 1.5*initialHeadSize;
-//
     var history_len = 20;
     var head_size_history = [];
+    var steady = true;
 
     setInterval(() => {
-        // Track head size
-        let cur_face_geom = faceGeom.getGeom();
-        let cur_head_size = cur_face_geom[3];
+        // Track rotateDegrees
+        let oldZ = orient_short_history[0][updateRate/2]; // shorter history than the one provided
+        let curZ = orient_short_history[0][updateRate-1];
 
-        head_size_history.push(cur_head_size)
-        if (head_size_history.length > history_len){
-            head_size_history.shift();
+        diff = (oldZ-curZ);
+
+        let thresh = 30;
+        if (diff > 180 && (360-diff > thresh && steady)){ // CCW
+//            console.log("counterclockwise detected")
+            document.body.dispatchEvent(new KeyboardEvent('keydown',  {'key':'ArrowLeft'}));
+            steady = false;
+        } else if (diff < 180 && diff > thresh && steady){
+//            console.log("clockwise detected")
+            document.body.dispatchEvent(new KeyboardEvent('keydown',  {'key':'ArrowRight'}));
+            steady = false;
+        } else {
+//            console.log("calm detected")
+            steady = true;
         }
 
-        // if head has moved a lot in the last second, trigger a click
-//        console.log(head_size_history[0], head_size_history[history_len-1])
-        const selectedElemIndex = elemsClicked.findIndex(elem => elem)
-        if (head_size_history[0]*1.5 < head_size_history[history_len-1] &&
-            selectedElemIndex == -1){
-            console.log("clicking element");
-            document.activeElement.click();
-        } else if (head_size_history[0] > 1.5*head_size_history[history_len-1]
-                && selectedElemIndex != -1){
-            console.log('unclicking element');
-            galleryElements[selectedElemIndex].click();
+//        steady = Math.abs(diff) < 5;
+
+
+        if (steady){
+            // Track head size
+            let cur_face_geom = faceGeom.getGeom();
+            let cur_head_size = cur_face_geom[3];
+
+            head_size_history.push(cur_head_size)
+            if (head_size_history.length > history_len){
+                head_size_history.shift();
+            }
+
+
+            // if head has moved a lot in the last second, trigger a click
+            const selectedElemIndex = elemsClicked.findIndex(elem => elem)
+            if (head_size_history[0]*1.3 < head_size_history[history_len-1] &&
+                selectedElemIndex == -1){ // requires that nothing is clicked
+    //            console.log("clicking element");
+                document.activeElement.click();
+            } else if (head_size_history[0] > 1.2*head_size_history[history_len-1]
+                    && selectedElemIndex != -1){ // requires that something is clicked
+    //            console.log('unclicking element');
+                galleryElements[selectedElemIndex].click();
+            }
         }
+
+
+
 
 
         if (typeof(curPred) != 'undefined'){
             actualX = window.scrollX + curPred[0]*innerWidth;
             actualY = window.scrollY + curPred[1]*innerHeight;
-            //document.body.dispatchEvent(new KeyboardEvent('keydown',  {'key':'whops'}));
+//            console.log(curPred[0], curPred[1]);
+//            console.log(actualX, actualY);
+
+
+            heightBounds = [0.0];
+            for (let i = 2; i < galleryElements.length; i += 2){
+                heightBounds.push(galleryElements[i].offsetTop);
+            }
 
             let row;
             heightBounds.forEach((elem, ind) => {
