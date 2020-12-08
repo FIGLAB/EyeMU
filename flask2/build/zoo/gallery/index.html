@@ -1,6 +1,77 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
 
-{% block headextra %}
+
+
+    <title>GAZEL</title>
+
+<!-- For drawing the predicted output directly onto the HTML page with an icon-->
+<!-- CSS comments are not //, and if you put them in the <style> header they break it -->
+    <style>
+    .placeholderdot{
+        width: 30px;
+        height: 30px;
+        background-color: #ffab56;
+        border-radius: 50%;
+        position:fixed;
+    }
+
+    .targetdot{
+        width: 60px;
+        height: 60px;
+        background-color: #0e5cab;
+        border-radius: 50%;
+        position:fixed;
+    }
+
+    .predicdot{
+        width: 30px;
+        height: 30px;
+        background-color: #ffab56;
+        border-radius: 50%;
+        position:fixed;
+    }
+
+    .predicdot2{
+        width: 30px;
+        height: 30px;
+        background-color: #e84338bb;
+        border-radius: 50%;
+        position:fixed;
+    }
+
+    .onscreenregion{
+        position:fixed;
+        background-color:#00003010;
+        left: 0px;
+        top: 0px;
+        right:100px;
+        bottom:100px;
+    }
+
+
+    .widebutton {
+        display: block;
+        width: 100%;
+        border: none;
+        background-color: #CCC;
+        padding: 14px 28px;
+        font-size: 16px;
+        cursor: pointer;
+        text-align: center;
+    }
+
+    hr {
+        background-color:#ccc;
+        height:1px;
+        border:none;
+    }
+
+    </style>
+
+    
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- Tensorflow core, model, and backend-->
@@ -8,14 +79,14 @@
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
 
 <!-- Javascript specific to this page -->
-<script src="{{url_for('static', filename='ML.js')}}"></script>
-<script src="{{url_for('static', filename='svr.js')}}"></script>
-<script src="{{url_for('static', filename='collectioncolor.js')}}"></script>
-<script src="{{url_for('static', filename='zoo.js')}}"></script>
+<script src="/static/ML.js"></script>
+<script src="/static/svr.js"></script>
+<script src="/static/collectioncolor.js"></script>
+<script src="/static/zoo.js"></script>
 
 
 <!--Other ML library-->
-<script src="{{url_for('static', filename='mlweb.js')}}"></script>
+<script src="/static/mlweb.js"></script>
 
 <script>
     main();
@@ -23,7 +94,7 @@
 
     // Wait until after the body loads before adding elements to it.
     document.addEventListener("DOMContentLoaded", function(event) {
-        zooSelect({{ zooNum }});
+        zooSelect(3);
     })
 
 </script>
@@ -31,7 +102,7 @@
 
 
 
-<!-- CSS for the text notification interaction -->
+
 <style>
 
     :root {
@@ -139,54 +210,16 @@
         }
 
     }
-</style>
-
-
-<!-- CSS for Image Gallery interaction -->
-<style>
-    .photogallery {
-        width: 32.333%;
-        margin: 0.5%;
-        margin-bottom: 0.25%;
-        object-fit: contain;
-        outline: none;
-
-        top: 0px;
-        left: 0px;
-        bottom: 0px;
-        right: 0px;
-
-        transition: all 0.4s ease;
-    }
-
-    .photogallery:focus {
-        width: 32.333%;
-        margin: 0.5%;
-        margin-bottom: 0.25%;
-        object-fit: contain;
-        outline: none;
-
-        top: 0px;
-        left: 0px;
-        bottom: 0px;
-        right: 0px;
-
-        transition: all 0.4s ease;
-
-        border-radius: 5%;
-        z-index: 2;
-        transform: scale(1.2);
-    }
 
 
 </style>
 
 
 
-{% endblock %}
 
+</head>
+<body style="background-color:aliceblue; font-family: Verdana, sans-serif;">
 
-{% block body %}
 
 <div id="main">
 
@@ -200,4 +233,6 @@
               "></video>
 
 </div>
-{% endblock %}
+
+</body>
+</html>

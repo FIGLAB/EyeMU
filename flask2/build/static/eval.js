@@ -91,19 +91,19 @@ function draw(){
         text("\n\nPlease wait, loading", width/2, height*2/3)
     } else if (errorsX.length == nx_arr.length){
         textSize(30);
-        let errX_avg = nf(average(errorsX)/windowWidth, 1, 2)
-        let errY_avg = nf(average(errorsY)/windowHeight, 1, 2)
+        let errX_avg = nf(average(errorsX), 1, 2)
+        let errY_avg = nf(average(errorsY), 1, 2)
 
         text("errorX: " +
                 errX_avg, width/2, height/2);
         text("\n\nerrorY: " +
                 errY_avg, width/2, height/2);
-        text("\n\n\n\ncm X: " +
-                6.3*errX_avg, width/2, height/2);
-        text("\n\n\n\n\n\ncm Y: " +
-                14.4*errY_avg, width/2, height/2);
-        text("\n\n\n\n\n\n\n\ncm combined: " +
-                nf(Math.sqrt(14.4*errY_avg*14.4*errY_avg + 6.3*errX_avg*6.3*errX_avg), 1, 2), width/2, height/2);
+//        text("\n\n\n\ncm X: " +
+//                6.3*errX_avg, width/2, height/2);
+//        text("\n\n\n\n\n\ncm Y: " +
+//                14.4*errY_avg, width/2, height/2);
+//        text("\n\n\n\n\n\n\n\ncm combined: " +
+//                nf(Math.sqrt(14.4*errY_avg*14.4*errY_avg + 6.3*errX_avg*6.3*errX_avg), 1, 2), width/2, height/2);
 
         // Each time eval is executed in full, store:
             // - Date/time
@@ -137,8 +137,8 @@ function draw(){
             fill(255, 20, 20);
             text("Eyes are off-camera! \nData collection paused.", width/2, 3*height/5);
         } else if (typeof(curPred) != 'undefined' && curPred[0] != -1){ // if the face has been detected, start the data collection
-            let currentErrorX = abs(X - curPred[0]*windowWidth);
-            let currentErrorY = abs(Y - curPred[1]*windowHeight);
+            let currentErrorX = abs(X/windowWidth - curPred[0]);
+            let currentErrorY = abs(Y/windowHeight - curPred[1]);
 
             fill(204, 102, 0);
             ellipse(curPred[0]*windowWidth, curPred[1]*windowHeight, radius/2, radius/2);
