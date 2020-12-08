@@ -9,6 +9,7 @@
 
 <!-- Javascript specific to this page -->
 <script src="{{url_for('static', filename='ML.js')}}"></script>
+<script src="{{url_for('static', filename='accel.js')}}"></script>
 <script src="{{url_for('static', filename='svr.js')}}"></script>
 <script src="{{url_for('static', filename='collectioncolor.js')}}"></script>
 <script src="{{url_for('static', filename='zoo.js')}}"></script>
@@ -197,8 +198,9 @@
 
 {% block body %}
 
-<div id="main">
+<button id="accelPermsButton" onclick="getAccel()">Get Accel</button>
 
+<div id="main">
     <canvas hidden id="eyecache"></canvas>
     <video hidden autoplay muted playsinline id="video"  style="
               -webkit-transform: scaleX(-1);
