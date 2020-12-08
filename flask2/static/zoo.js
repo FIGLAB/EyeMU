@@ -81,8 +81,15 @@ function showAll(){
 var cur;
 var origScroll;
 function imageGallery(){
-    // temporary, while I'm debugging CSS stuff
-    stopFacemesh = true;
+    if (rBB == undefined){
+        console.log("rBB undefined, image gallery restarting")
+        setTimeout(imageGallery, 400);
+        return;
+    }
+    console.log("image gallery starting")
+
+//    // temporary, while I'm debugging CSS stuff
+//    stopFacemesh = true;
 
 
     // Create filter variables
@@ -213,9 +220,7 @@ function imageGallery(){
         heightBounds.push(galleryElements[i].offsetTop);
     }
 
-    // Generate left and right bounds of the middle col
-//    let midLeft = galleryElements[1].offsetLeft;
-//    let midRight = midLeft + galleryElements[1].offsetWidth;
+    // Get middle coordinate
     let mid = Math.trunc(window.innerWidth/2);
 
     function cursorFocus(elem) {
@@ -224,24 +229,24 @@ function imageGallery(){
       window.scrollTo(x, y);
     }
 
-    document.onmousemove = function (e){
-    // Check which square is being looked at depending on the scroll index
-        actualX = e.pageX;
-        actualY = e.pageY;
-
-        let row;
-        heightBounds.forEach((elem, ind) => {
-            if (actualY > elem){
-                row = ind;
-            }
-        });
-        let col = actualX < mid ? 0 : 1
-
-        // Only focus if nothing is clicked
-        if (!elemsClicked.reduce((elem, acc) => elem || acc)){
-            galleryElements[col + row * 2].focus({preventScroll: true})
-        }
-    };
+//    document.onmousemove = function (e){
+//    // Check which square is being looked at depending on the scroll index
+//        actualX = e.pageX;
+//        actualY = e.pageY;
+//
+//        let row;
+//        heightBounds.forEach((elem, ind) => {
+//            if (actualY > elem){
+//                row = ind;
+//            }
+//        });
+//        let col = actualX < mid ? 0 : 1
+//
+//        // Only focus if nothing is clicked
+//        if (!elemsClicked.reduce((elem, acc) => elem || acc)){
+//            galleryElements[col + row * 2].focus({preventScroll: true})
+//        }
+//    };
 
 //                // 3 elems per row:
 //    // Generate the top and bottom bounds of one elem in each row
@@ -275,23 +280,59 @@ function imageGallery(){
 //    };
 
 
+    initialHeadSize = faceGeom.getGeom()[3]
+//    zoomedOnce = false;
+//    headBigger = false;
+//    headBiggerPrev = false;
+//    // Set up while loop to check headSize
+//        curHeadSize = faceGeom.getGeom()[3];
+//        headBiggerPrev = headBigger
+//        headBigger = curHeadSize > 1.5*initialHeadSize;
+//
+    var history_len = 20;
+    var head_size_history = [];
 
     setInterval(() => {
-        actualX = window.scrollX + curPred[0]*innerWidth;
-        actualY = window.scrollY + curPred[1]*innerHeight;
-        //document.body.dispatchEvent(new KeyboardEvent('keydown',  {'key':'whops'}));
+        // Track head size
+        let cur_face_geom = faceGeom.getGeom();
+        let cur_head_size = cur_face_geom[3];
 
-        let row;
-        heightBounds.forEach((elem, ind) => {
-            if (actualY > elem){
-                row = ind;
+        head_size_history.push(cur_head_size)
+        if (head_size_history.length > history_len){
+            head_size_history.shift();
+        }
+
+        // if head has moved a lot in the last second, trigger a click
+        const selectedElemIndex = elemsClicked.findIndex(elem => elem)
+        if (head_size_history[0]*1.5 < head_size_history[history_len-1] &&
+            selectedElemIndex == -1){ // requires that nothing is clicked
+//            console.log("clicking element");
+            document.activeElement.click();
+        } else if (head_size_history[0] > 1.5*head_size_history[history_len-1]
+                && selectedElemIndex != -1){ // requires that something is clicked
+//            console.log('unclicking element');
+            galleryElements[selectedElemIndex].click();
+        }
+
+
+        if (typeof(curPred) != 'undefined'){
+            actualX = window.scrollX + curPred[0]*innerWidth;
+            actualY = window.scrollY + curPred[1]*innerHeight;
+            //document.body.dispatchEvent(new KeyboardEvent('keydown',  {'key':'whops'}));
+
+            let row;
+            heightBounds.forEach((elem, ind) => {
+                if (actualY > elem){
+                    row = ind;
+                }
+            });
+            let col = actualX < mid ? 0 : 1
+
+
+            // Only focus if nothing is clicked
+            if (!elemsClicked.reduce((elem, acc) => elem || acc)){
+                galleryElements[col + row * 2].focus({preventScroll: true})
             }
-        });
-        let col = actualX < mid ? 0 : 1
-
-        // Only focus if nothing is clicked
-        if (!elemsClicked.reduce((elem, acc) => elem || acc)){
-            galleryElements[col + row * 2].focus({preventScroll: true})
         }
     }, 50);
     cur = galleryElements[0];
