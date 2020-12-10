@@ -219,15 +219,6 @@ function imageGallery(){
 
     // Detect user focusing on a specific element
                 // 2 elems per row:
-    // Generate the top and bottom bounds of one elem in each row
-
-//    setTimeout(() => {
-//        heightBounds = [0.0];
-//        for (let i = 2; i < galleryElements.length; i += 2){
-//            heightBounds.push(galleryElements[i].offsetTop);
-//        }
-//    }, 100);
-
     // Get middle coordinate
     let mid = Math.trunc(window.innerWidth/2);
 
@@ -237,59 +228,15 @@ function imageGallery(){
       window.scrollTo(x, y);
     }
 
-//    document.onmousemove = function (e){
-//    // Check which square is being looked at depending on the scroll index
-//        actualX = e.pageX;
-//        actualY = e.pageY;
-//
-//        let row;
-//        heightBounds.forEach((elem, ind) => {
-//            if (actualY > elem){
-//                row = ind;
-//            }
-//        });
-//        let col = actualX < mid ? 0 : 1
-//
-//        // Only focus if nothing is clicked
-//        if (!elemsClicked.reduce((elem, acc) => elem || acc)){
-//            galleryElements[col + row * 2].focus({preventScroll: true})
-//        }
-//    };
-
-//                // 3 elems per row:
-//    // Generate the top and bottom bounds of one elem in each row
-//    let heightBounds = [0.0];
-//    for (let i = 3; i < galleryElements.length; i += 3){
-//        heightBounds.push(galleryElements[i].offsetTop);
-//    }
-//
-//    // Generate left and right bounds of the middle col
-//    let midLeft = galleryElements[1].offsetLeft;
-//    let midRight = midLeft + galleryElements[1].offsetWidth;
-//
-//    document.onmousemove = function (e){
-//    // Check which square is being looked at depending on the scroll index
-//        actualX = e.pageX;
-//        actualY = e.pageY;
-//
-//        let row;
-//        heightBounds.forEach((elem, ind) => {
-////            console.log(actualY, elem)
-//            if (actualY > elem){
-//                row = ind;
-//            }
-//        });
-//        let col = actualX < midLeft ? 0 : (actualX > midRight ? 2 : 1)
-//
-//        // Only focus if nothing is clicked
-//        if (!elemsClicked.reduce((elem, acc) => elem || acc)){
-//            galleryElements[col + row * 3].focus()
-//        }
-//    };
 
     var history_len = 20;
     var head_size_history = [];
+    var headSteady = true;
     var steady = true;
+
+
+    var localPred = [0, 0];
+    var steadyHistory = [];
 
     setInterval(() => {
         // Track rotateDegrees
@@ -298,19 +245,30 @@ function imageGallery(){
 
         diff = (oldZ-curZ);
 
-        let thresh = 30;
+        let thresh = 15;
         if (diff > 180 && (360-diff > thresh && steady)){ // CCW
-//            console.log("counterclockwise detected")
+//            console.log("counterclockwise detected");
+            steadyHistory.push(false);
             document.body.dispatchEvent(new KeyboardEvent('keydown',  {'key':'ArrowLeft'}));
-            steady = false;
+//            steady = false;
         } else if (diff < 180 && diff > thresh && steady){
-//            console.log("clockwise detected")
+//            console.log("clockwise detected");
+            steadyHistory.push(false);
             document.body.dispatchEvent(new KeyboardEvent('keydown',  {'key':'ArrowRight'}));
-            steady = false;
+//            steady = false;
         } else {
-//            console.log("calm detected")
-            steady = true;
+//            console.log("calm detected");
+            steadyHistory.push(true);
+//            steady = true;
         }
+
+        // Update steady variable
+        if (steadyHistory.length > history_len/4){
+            steadyHistory.shift();
+        }
+        steady = steadyHistory.every(elem => elem);
+
+
 
 //        steady = Math.abs(diff) < 5;
 
@@ -328,7 +286,7 @@ function imageGallery(){
 
             // if head has moved a lot in the last second, trigger a click
             const selectedElemIndex = elemsClicked.findIndex(elem => elem)
-            if (head_size_history[0]*1.3 < head_size_history[history_len-1] &&
+            if (head_size_history[0]*1.2 < head_size_history[history_len-1] &&
                 selectedElemIndex == -1){ // requires that nothing is clicked
     //            console.log("clicking element");
                 document.activeElement.click();
@@ -337,6 +295,12 @@ function imageGallery(){
     //            console.log('unclicking element');
                 galleryElements[selectedElemIndex].click();
             }
+
+            if (head_size_history.length > 6){
+                let diff = head_size_history[history_len-1] - head_size_history[history_len-5];
+                headSteady = Math.abs(diff) < 0.01;
+//                console.log("head steady", headSteady);
+            }
         }
 
 
@@ -344,12 +308,17 @@ function imageGallery(){
 
 
         if (typeof(curPred) != 'undefined'){
-            actualX = window.scrollX + curPred[0]*innerWidth;
-            actualY = window.scrollY + curPred[1]*innerHeight;
+            if (steady && headSteady){
+                localPred = [curPred[0], curPred[1]];
+            }
+
+            actualX = window.scrollX + localPred[0]*innerWidth;
+            actualY = window.scrollY + localPred[1]*innerHeight;
 //            console.log(curPred[0], curPred[1]);
 //            console.log(actualX, actualY);
 
 
+            // Generate the top and bottom bounds of one elem in each row
             heightBounds = [0.0];
             for (let i = 2; i < galleryElements.length; i += 2){
                 heightBounds.push(galleryElements[i].offsetTop);
