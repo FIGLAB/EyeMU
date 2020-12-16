@@ -31,7 +31,6 @@ function newEvalGrid(){
     window.focus();
     window.scrollTo(0,1);
 
-
     // Attach event handler to detect keypresses
     document.body.onkeydown = (event) => {
         console.log(event);
@@ -63,66 +62,12 @@ function newEvalGrid(){
     elemsFilters = [];
 
     for (let i = 0; i<8; i++){
-        let a = document.createElement("img")
-        a.src = "data:image/png;base64," + imageGalleryIms[i];
-        a.tabIndex = 1; // Allows the images to be focused
-
-        // This class adds animations when they're focused on (eye gaze on them)
-        a.classList.toggle("photogallery")
-
-        a.onclick = () => {
-                            elemsClicked[i] = !elemsClicked[i];
-                            if (elemsClicked[i]){
-                                // Remember initial y position
-                                origScroll = window.scrollY;
-
-                                console.log(i, 'selected');
-                                a.style.transition = "all .3s ease";
-
-                                a.style.position = "fixed";
-                                a.style.display = "block";
-
-                                a.style.maxWidth = "100%";
-                                a.style.maxHeight = "100%";
-                                a.style.height = "100%";
-                                a.style.width = "100%";
-                                a.style.margin = "auto";
-                                a.style.zIndex = "2";
-
-                                setTimeout(() => {
-                                    a.style.top = "0px";
-                                    a.style.left = "0px";
-                                    a.style.bottom = "0px";
-                                    a.style.right = "0px";
-                                }, 100)
-
-                                a.blur();
-
-                                setTimeout(hideAll, 100);
-                            } else{
-                                setTimeout(() => window.scrollBy(0, origScroll - window.scrollY), 30);
-
-                                console.log(i, 'deselected');
-                                let tmp = a.style.filter;
-                                a.removeAttribute("style")
-                                a.style.filter = tmp;
-
-                                setTimeout(() => {
-                                    showAll();
-                                    }, 20);
-                            }
-                          };
         im_container = document.createElement("div");
         im_container.classList.toggle("wackdiv");
         im_container.style.backgroundColor = divColors[i];
-//        im_container.append(a)
 
         galleryDiv.append(im_container);
-
-
-//        galleryDiv.append(a);
-
-        galleryElements.push(a);
+        galleryElements.push(im_container);
         elemsClicked.push(false);
         elemsFilters.push(0);
     }
@@ -143,7 +88,6 @@ function newEvalGrid(){
     var headSteady = true;
     var steady = true;
 
-
     var localPred = [0, 0];
     var steadyHistory = [];
 
@@ -151,24 +95,26 @@ function newEvalGrid(){
         // Track rotateDegrees
         let oldZ = orient_short_history[0][updateRate/2]; // shorter history than the one provided
         let curZ = orient_short_history[0][updateRate-1];
-
         diff = (oldZ-curZ);
 
-        let thresh = 15;
-        if (diff > 180 && (360-diff > thresh && steady)){ // CCW
-//            console.log("counterclockwise detected");
-            steadyHistory.push(false);
-            document.body.dispatchEvent(new KeyboardEvent('keydown',  {'key':'ArrowLeft'}));
-//            steady = false;
-        } else if (diff < 180 && diff > thresh && steady){
-//            console.log("clockwise detected");
-            steadyHistory.push(false);
-            document.body.dispatchEvent(new KeyboardEvent('keydown',  {'key':'ArrowRight'}));
-//            steady = false;
+        let thresh = 15; // degrees
+        if (diff > 180 && (360-diff > thresh)){ // CCW
+            if (steady){
+                steadyHistory.push(false);
+                console.log("flick left");
+            } else{
+                console.log("tilt left");
+            }
+        } else if (diff < 180 && diff > thresh){
+            if (steady){
+                steadyHistory.push(false);
+                console.log("flick right");
+            } else{
+                console.log("tilt right");
+            }
         } else {
-//            console.log("calm detected");
             steadyHistory.push(true);
-//            steady = true;
+            console.log("no motion")
         }
 
         // Update steady variable
@@ -195,14 +141,16 @@ function newEvalGrid(){
 
             // if head has moved a lot in the last second, trigger a click
             const selectedElemIndex = elemsClicked.findIndex(elem => elem)
+                // if old head size is smaller than the current it's a pull
             if (head_size_history[0]*1.2 < head_size_history[history_len-1] &&
-                selectedElemIndex == -1){ // requires that nothing is clicked
-    //            console.log("clicking element");
+                    selectedElemIndex == -1){ // requires that nothing is clicked
                 document.activeElement.click();
+                console.log("pull");
+                // Otherwise, it's a push
             } else if (head_size_history[0] > 1.2*head_size_history[history_len-1]
                     && selectedElemIndex != -1){ // requires that something is clicked
-    //            console.log('unclicking element');
                 galleryElements[selectedElemIndex].click();
+                console.log("push");
             }
 
             if (head_size_history.length > 6){
@@ -241,13 +189,9 @@ function newEvalGrid(){
             });
             let col = actualX < mid ? 0 : 1
 
-
-//            // Only focus if nothing is clicked
-//            if (!elemsClicked.reduce((elem, acc) => elem || acc)){
-//                galleryElements[col + row * 2].focus({preventScroll: true})
-//            }
         }
     }, 50);
+
     cur = galleryElements[0];
 }
 
