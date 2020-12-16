@@ -107,10 +107,15 @@ function updateText(alpha, beta, gamma){
     lr_delta = (gamma-LR_baseline);
 
     // Set text indicators of orientation angles
-    document.getElementById("curOrientation").innerHTML =
-                "z rotation: " + z_delta + "<br>" +
+
+    const elem = document.getElementById("curOrientation")
+    if (elem != null){
+        elem.innerHTML = "z rotation: " + z_delta + "<br>" +
                 "front to back: " + fb_delta + "<br>" +
                 "left to right: " + lr_delta;
+    }
+
+
 
 //    // Show text indicators of orientation positions
 //    document.getElementById("dotLocation").innerHTML =

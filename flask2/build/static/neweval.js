@@ -87,17 +87,20 @@ function newEvalGrid(){
     var head_size_history = [];
     var headSteady = true;
     var steady = true;
+    var steadyLen = history_len*2;
 
     var localPred = [0, 0];
     var steadyHistory = [];
 
     setInterval(() => {
+        console.log("steady", steady, steadyHistory.length);
+
         // Track rotateDegrees
         let oldZ = orient_short_history[0][updateRate/2]; // shorter history than the one provided
         let curZ = orient_short_history[0][updateRate-1];
         diff = (oldZ-curZ);
 
-        let thresh = 15; // degrees
+        let thresh = 25; // degrees
         if (diff > 180 && (360-diff > thresh)){ // CCW
             if (steady){
                 steadyHistory.push(false);
@@ -114,18 +117,31 @@ function newEvalGrid(){
             }
         } else {
             steadyHistory.push(true);
-            console.log("no motion")
+//            console.log("no motion")
         }
 
+        // Track forward tilt
+        let oldfb = orient_short_history[1][updateRate/2]; // shorter history than the one provided
+        let newfb = orient_short_history[1][updateRate-1];
+        fbdiff = (oldfb-newfb);
+
+        let fbthresh = -30;
+        if (fbdiff < fbthresh){ // tilt down, towards user
+            console.log("tilt forward");
+            steadyHistory.push(false);
+        }  else {
+            steadyHistory.push(true);
+//            console.log("no motion")
+        }
+
+
         // Update steady variable
-        if (steadyHistory.length > history_len/4){
+        if (steadyHistory.length > steadyLen){
+            steadyHistory.shift();
             steadyHistory.shift();
         }
         steady = steadyHistory.every(elem => elem);
 
-
-
-//        steady = Math.abs(diff) < 5;
 
 
         if (steady){
@@ -189,13 +205,9 @@ function newEvalGrid(){
             });
             let col = actualX < mid ? 0 : 1
 
-
-//            // Only focus if nothing is clicked
-//            if (!elemsClicked.reduce((elem, acc) => elem || acc)){
-//                galleryElements[col + row * 2].focus({preventScroll: true})
-//            }
         }
     }, 50);
+
     cur = galleryElements[0];
 }
 
