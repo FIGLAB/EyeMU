@@ -52,6 +52,11 @@ def svrtest():
 def eval():
     return render_template("eval.html")
 
+# new eval, combined gaze + gesture
+@app.route('/neweval/')
+def neweval():
+    return render_template("neweval.html")
+
 # Just shows facemesh and yaw/pitch/roll calculations
 @app.route('/facemeshdemo/')
 def facemeshdemo():
