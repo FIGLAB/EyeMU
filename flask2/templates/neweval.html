@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block headextra %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+
+<!-- Tensorflow core, model, and backend-->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
+
+<!-- Javascript specific to this page -->
+<script src="{{url_for('static', filename='ML.js')}}"></script>
+<script src="{{url_for('static', filename='accel.js')}}"></script>
+<script src="{{url_for('static', filename='svr.js')}}"></script>
+<script src="{{url_for('static', filename='collectioncolor.js')}}"></script>
+<script src="{{url_for('static', filename='neweval.js')}}"></script>
+
+
+<!--Other ML library-->
+<script src="{{url_for('static', filename='mlweb.js')}}"></script>
+
+<script>
+    // main();
+    showPredictDot = false;
+
+    // Wait until after the body loads before adding elements to it.
+    document.addEventListener("DOMContentLoaded", function(event) {
+        // zooSelect({{ zooNum }});
+        newEvalGrid();
+    })
+
+</script>
+
+<style>
+    html, body {width: 100vw; height: 100vh; padding: 0; margin: 0; }
+
+    .wackdiv {
+        width: 49%;
+        height: 24%;
+        margin:0.5%;
+        display: inline-block;
+
+    }
+
+    .galleryContainer {
+        height:100%;
+        width: 100%;
+        line-height: 0px;
+        align-item: center;
+        position: relative;
+    }
+</style>
+
+{% endblock %}
+
+
+{% block body %}
+<!--<button id="accelPermsButton" onclick="getAccel()">Get Accel</button>-->
+
+<div id="main">
+    <canvas hidden id="eyecache"></canvas>
+    <video hidden autoplay muted playsinline id="video"  style="
+              -webkit-transform: scaleX(-1);
+              transform: scaleX(-1);
+              visibility: hidden;
+              width: auto;
+              height: auto;
+              "></video>
+</div>
+{% endblock %}
