@@ -63,6 +63,8 @@ function getAccel(){
                 frontToBack = event.beta;
                 leftToRight = event.gamma;
 
+                updateText(rotateDegrees, frontToBack, leftToRight);
+
                 // Add the angles to short history
                 orient_short_history[0].push(rotateDegrees)
                 orient_short_history[1].push(frontToBack)
@@ -98,7 +100,7 @@ function orientationCheckContinuous(){
 }
 
 
-function updateBallAndText(alpha, beta, gamma){
+function updateText(alpha, beta, gamma){
     // Calculate difference from baseline for each angle
     z_delta = (alpha-Z_baseline);
     fb_delta = (beta-FB_baseline);
@@ -110,33 +112,33 @@ function updateBallAndText(alpha, beta, gamma){
                 "front to back: " + fb_delta + "<br>" +
                 "left to right: " + lr_delta;
 
-    // Show text indicators of orientation positions
-    document.getElementById("dotLocation").innerHTML =
-         (z_delta > thresh ? "Counterclockwise" : z_delta < -thresh ? "Clockwise" : "Centered") + "<br>" +
-         (fb_delta > thresh ? "Backwards" : fb_delta < -thresh ? "Forward" : "Centered") + "<br>" +
-         (lr_delta > thresh ? "Right tilt" : lr_delta < -thresh ? "Left tilt" : "Centered");
-
-    // Update velocity
-    vx = vx + lr_delta*1/updateRate*2;
-    vy = vy + fb_delta*1/updateRate;
-
-
-    // Update position and clip it to bounds
-    px = px + vx*.5;
-    if (px > bounds[1] || px < bounds[0]){
-        px = Math.max(bounds[0], Math.min(bounds[1], px))
-        vx = 0;
-    }
-
-
-    py = py + vy*.5;
-    if (py > bounds[1] || py < bounds[0]){
-        py = Math.max(bounds[0], Math.min(bounds[1], py))
-        vy = 0;
-    }
-
-    ind_dot = document.getElementsByClassName("predicdot")[0]
-    ind_dot.setAttribute('style', "left:" + (px) + "%;" +
-                                  "top:" + (py) + "%;"
-                        );
+//    // Show text indicators of orientation positions
+//    document.getElementById("dotLocation").innerHTML =
+//         (z_delta > thresh ? "Counterclockwise" : z_delta < -thresh ? "Clockwise" : "Centered") + "<br>" +
+//         (fb_delta > thresh ? "Backwards" : fb_delta < -thresh ? "Forward" : "Centered") + "<br>" +
+//         (lr_delta > thresh ? "Right tilt" : lr_delta < -thresh ? "Left tilt" : "Centered");
+//
+//    // Update velocity
+//    vx = vx + lr_delta*1/updateRate*2;
+//    vy = vy + fb_delta*1/updateRate;
+//
+//
+//    // Update position and clip it to bounds
+//    px = px + vx*.5;
+//    if (px > bounds[1] || px < bounds[0]){
+//        px = Math.max(bounds[0], Math.min(bounds[1], px))
+//        vx = 0;
+//    }
+//
+//
+//    py = py + vy*.5;
+//    if (py > bounds[1] || py < bounds[0]){
+//        py = Math.max(bounds[0], Math.min(bounds[1], py))
+//        vy = 0;
+//    }
+//
+//    ind_dot = document.getElementsByClassName("predicdot")[0]
+//    ind_dot.setAttribute('style', "left:" + (px) + "%;" +
+//                                  "top:" + (py) + "%;"
+//                        );
 }
