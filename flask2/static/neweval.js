@@ -66,6 +66,11 @@ function newEvalGrid(){
         im_container.classList.toggle("wackdiv");
         im_container.style.backgroundColor = divColors[i];
 
+        a = document.createElement('div')
+        a.classList.toggle("wackdivtext");
+        a.innerText = (i%2)*4 + Math.trunc(i/2) + 1;
+        im_container.append(a)
+
         galleryDiv.append(im_container);
         galleryElements.push(im_container);
         elemsClicked.push(false);
@@ -92,6 +97,7 @@ function newEvalGrid(){
     var localPred = [0, 0];
     var steadyHistory = [];
 
+    // set up the accel detection loop
     setInterval(() => {
         console.log("steady", steady, steadyHistory.length);
 
