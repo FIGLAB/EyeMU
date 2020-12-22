@@ -38,39 +38,39 @@ var cur;
 var origScroll;
 var heightBounds;
 function newEvalGrid(){
-//    if (rBB == undefined || !AccelStarted){
-//        console.log("rBB undefined, image gallery restarting")
-//        setTimeout(imageGallery, 400);
-//        return;
-//    }
+    if (rBB == undefined || !AccelStarted){
+        console.log("rBB undefined, image gallery restarting")
+        setTimeout(newEvalGrid, 500);
+        return;
+    }
     console.log("image gallery starting")
 
-    // temporary, while I'm debugging CSS stuff
-    stopFacemesh = true;
+//    // temporary, while I'm debugging CSS stuff
+//    stopFacemesh = true;
 
     // Focus on window automatically
     window.focus();
     window.scrollTo(0,1);
 
-    // Attach event handler to detect keypresses
-    document.body.onkeydown = (event) => {
-        console.log(event);
-        if (elemsClicked.some(elem => elem)){
-            // Find which painting is selected when the keypress happened
-            const selectedElemIndex = elemsClicked.findIndex(elem => elem)
-            console.log("currently selected", selectedElemIndex, "key is", event.key)
-
-            // If left or right arrow, change filter number
-            if (event.key == "ArrowLeft"){
-                elemsFilters[selectedElemIndex] = (elemsFilters[selectedElemIndex] + numFilters - 1) % numFilters;
-            } else if (event.key == "ArrowRight"){
-                elemsFilters[selectedElemIndex] = (elemsFilters[selectedElemIndex] + numFilters + 1) % numFilters;
-            }
-
-            // Apply the filter to that element's CSS
-            galleryElements[selectedElemIndex].style.filter = filterList[elemsFilters[selectedElemIndex]];
-        }
-    };
+//    // Attach event handler to detect keypresses
+//    document.body.onkeydown = (event) => {
+//        console.log(event);
+//        if (elemsClicked.some(elem => elem)){
+//            // Find which painting is selected when the keypress happened
+//            const selectedElemIndex = elemsClicked.findIndex(elem => elem)
+//            console.log("currently selected", selectedElemIndex, "key is", event.key)
+//
+//            // If left or right arrow, change filter number
+//            if (event.key == "ArrowLeft"){
+//                elemsFilters[selectedElemIndex] = (elemsFilters[selectedElemIndex] + numFilters - 1) % numFilters;
+//            } else if (event.key == "ArrowRight"){
+//                elemsFilters[selectedElemIndex] = (elemsFilters[selectedElemIndex] + numFilters + 1) % numFilters;
+//            }
+//
+//            // Apply the filter to that element's CSS
+//            galleryElements[selectedElemIndex].style.filter = filterList[elemsFilters[selectedElemIndex]];
+//        }
+//    };
 
     // Populate the screen with the boxes
     createGalleryElems();
@@ -190,6 +190,8 @@ function startTrial(){
     num_repeats = trial_time*(1000/trial_delay);
     repeat_counter = 0;
 
+//    TODO: clear the accel history and gyro history before starting
+    head_size_history = [];
     // Call the trial handler
     toggleHide();
     trialLoop(num_repeats);
@@ -207,7 +209,7 @@ function arrayCondenser(arr){
 
     // find the difference w/r/t the first element and remove duplicates
 function historyToCondensed(fullhist, threshold){
-    diffs = fullhist.slice(updateRate/4);
+    diffs = fullhist.slice(fullhist.length/4);
 //    diffs.forEach((elem, i) => diffs[i] = (elem - fullhist[0]));
     diffs.forEach((elem, i) => {
 //      angle rotation math
@@ -243,7 +245,6 @@ function accelArrayHandler(accel_history){
 
 function classify_leftright(condensed){
     tmp = JSON.stringify(condensed);
-//    console.log("classleftright", tmp)
 
     lef_tilt = tmp == "[1]";
     lef_flick = tmp == "[0,1,0]";
@@ -259,7 +260,7 @@ function classify_backfront(condensed){
     front_dip = tmp == "[0,1,0]";
     back_dip = tmp == "[0,-1,0]";
 
-    return front_dip*1
+    return front_dip*1 + back_dip*-1;
 }
 
 
@@ -271,14 +272,43 @@ function trialLoop(max_repeats){
     leftrightgesture = classify_leftright(condensed_arrays[0]);
     bfgesture = classify_backfront(condensed_arrays[1]);
 
-    console.log(bfgesture, leftrightgesture);
-//    gyro_steady =
-//    orient_short_history.slice(updateRate/2)
+    gyro_steady = (leftrightgesture == 0) && (bfgesture == 0);
 
     // head pose gesture detection
+    let pushpullgesture = 0;
+    if (gyro_steady && prediction.faceInViewConfidence > .85){
+        let cur_face_geom = faceGeom.getGeom();
+        let cur_head_size = cur_face_geom[3];
+
+        head_size_history.push(Math.sqrt(cur_head_size))
+        if (head_size_history.length > 1000/trial_delay){
+            head_size_history.shift();
+        }
+
+        diffs = head_size_history.slice(head_size_history.length/4);
+        diffs.forEach((elem, i) => {
+            diffs[i] = elem/head_size_history[0];
+        });
+
+        diff_classes = [];
+        headsize_threshold = 1.2
+        diffs.forEach((elem) => {
+            diff_classes.push(elem > headsize_threshold ? 1 : (elem < 1/headsize_threshold ? -1 : 0));
+        });
+        condensed = arrayCondenser(diff_classes);
+
+        let tmp = JSON.stringify(condensed);
+        pull = tmp == "[1]";
+        pullpush = tmp == "[0,1,0]";
+
+        pushpullgesture = pull*1 + pullpush*-1
+    }
 
 
-
+    all_gestures = [leftrightgesture, bfgesture, pushpullgesture];
+    if (!all_gestures.every(elem => elem == 0)){
+        console.log(all_gestures);
+    }
 
     repeat_counter += 1;
     if (repeat_counter < max_repeats){

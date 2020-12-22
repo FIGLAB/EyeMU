@@ -77,7 +77,9 @@
 
 
 <!-- Tensorflow core, model, and backend-->
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>-->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.7.0/dist/tf.min.js"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
 
 <!-- Javascript specific to this page -->
@@ -92,12 +94,11 @@
 <script src="/static/mlweb.js"></script>
 
 <script>
-    // main();
+    main();
     showPredictDot = false;
 
     // Wait until after the body loads before adding elements to it.
     document.addEventListener("DOMContentLoaded", function(event) {
-        // zooSelect();
         newEvalGrid();
     })
 
