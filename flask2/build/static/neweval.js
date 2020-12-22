@@ -28,6 +28,10 @@ function createGalleryElems(){
         elemsClicked.push(false);
         elemsFilters.push(0);
     }
+
+    // debug variables
+    a = galleryDiv
+
 }
 
 function toggleHide(){
@@ -57,6 +61,8 @@ function newEvalGrid(){
             startTrial();
         }
     };
+
+
 
     // Populate the screen with the boxes, and hide them
     createGalleryElems();
@@ -111,7 +117,6 @@ function startTrial(){
     toggleHide();
     trialLoop(num_repeats);
 }
-
 
 
 /////////////////////////////////////// Accelerometer gesture detection
