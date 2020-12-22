@@ -104,46 +104,6 @@ function newEvalGrid(){
 //
 //
 ////        console.log("steady", steady, steadyHistory.length);
-//        flicktiltzoom_state = [0, 0, 0];
-//
-//        // Track rotateDegrees
-//        let oldZ = orient_short_history[0][updateRate/4]; // shorter history than the one provided
-//        let curZ = orient_short_history[0][updateRate-1];
-//        diff = (oldZ-curZ);
-//
-//        let thresh = 25; // degrees
-//        if (diff > 180 && (360-diff > thresh)){ // CCW
-//            if (steady){
-//                steadyHistory.push(false);
-//                console.log("flick left");
-//            } else{
-//                console.log("tilt left");
-//            }
-//        } else if (diff < 180 && diff > thresh){
-//            if (steady){
-//                steadyHistory.push(false);
-//                console.log("flick right");
-//            } else{
-//                console.log("tilt right");
-//            }
-//        } else {
-//            steadyHistory.push(true);
-////            console.log("no motion")
-//        }
-//
-//        // Track forward tilt
-//        let oldfb = orient_short_history[1][updateRate/2]; // shorter history than the one provided
-//        let newfb = orient_short_history[1][updateRate-1];
-//        fbdiff = (oldfb-newfb);
-//
-//        let fbthresh = -30;
-//        if (fbdiff < fbthresh){ // tilt down, towards user
-//            console.log("forward tilt");
-//            steadyHistory.push(false);
-//        }  else {
-//            steadyHistory.push(true);
-////            console.log("no motion")
-//        }
 //
 //
 //        // Update steady variable
@@ -248,7 +208,14 @@ function arrayCondenser(arr){
     // find the difference w/r/t the first element and remove duplicates
 function historyToCondensed(fullhist, threshold){
     diffs = fullhist.slice(updateRate/4);
-    diffs.forEach((elem, i) => diffs[i] = (elem - fullhist[0]));
+//    diffs.forEach((elem, i) => diffs[i] = (elem - fullhist[0]));
+    diffs.forEach((elem, i) => {
+//      angle rotation math
+        a = elem - fullhist[0];
+        a = (a + 180) % 360 - 180;
+        diffs[i] = a;
+    });
+
 
     diff_classes = [];
     diffs.forEach((elem) => {
@@ -268,7 +235,7 @@ function accelArrayHandler(accel_history){
     backfront_hist = accel_history[1].slice();
 
     // threshold and remove duplicates
-    lr_condensed = historyToCondensed(leftright_hist, 25);
+    lr_condensed = historyToCondensed(leftright_hist, 30);
     bf_condensed = historyToCondensed(backfront_hist, 30);
 
     return [lr_condensed, bf_condensed]
@@ -276,11 +243,12 @@ function accelArrayHandler(accel_history){
 
 function classify_leftright(condensed){
     tmp = JSON.stringify(condensed);
-    lef_tilt = tmp == "[-1]";
-    lef_flick = tmp == "[0,-1,0]";
+//    console.log("classleftright", tmp)
 
-    right_flick = tmp == "[0,1,0]";
-    right_tilt = tmp == "[1]";
+    lef_tilt = tmp == "[1]";
+    lef_flick = tmp == "[0,1,0]";
+    right_flick = tmp == "[0,-1,0]";
+    right_tilt = tmp == "[-1]";
 
     return lef_tilt*-2 + lef_flick*-1 + right_flick*1 + right_tilt*2
 }
@@ -289,27 +257,30 @@ function classify_backfront(condensed){
     tmp = JSON.stringify(condensed);
 
     front_dip = tmp == "[0,1,0]";
+    back_dip = tmp == "[0,-1,0]";
 
-
-    return front_dip
+    return front_dip*1
 }
 
 
 
 function trialLoop(max_repeats){
-    repeat_counter += 1;
-
-       // // Do accel detection stuff here
-        // TODO: New idea involving using the half second old measurement
-    // Tilt right will be steady steady tilt_right tilt_right, once it hits all tilt-right then set the tilting variable and if its steady then add tilt
-    // flick right will be steady steady tilt_right tilt_right steady steady. complicated!
-
+   // Accel gesture detection
     condensed_arrays = accelArrayHandler(orient_short_history);
+
     leftrightgesture = classify_leftright(condensed_arrays[0]);
     bfgesture = classify_backfront(condensed_arrays[1]);
-    console.log(bfgesture, condensed_arrays[1]);
+
+    console.log(bfgesture, leftrightgesture);
+//    gyro_steady =
+//    orient_short_history.slice(updateRate/2)
+
+    // head pose gesture detection
 
 
+
+
+    repeat_counter += 1;
     if (repeat_counter < max_repeats){
         setTimeout(() => trialLoop(max_repeats), trial_delay);
     } else{
