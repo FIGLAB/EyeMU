@@ -7,7 +7,9 @@
 
 <!-- Tensorflow core, model, and backend-->
 <!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>-->
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.7.0/dist/tf.min.js"></script>
+<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.7.0/dist/tf.min.js"></script>-->
+<!-- TFjs version 2.7 local-->
+<script src="{{url_for('static', filename='tf.min.js')}}"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
 
@@ -62,7 +64,7 @@
 
 
 {% block body %}
-<button id="accelPermsButton" onclick="getAccel()">Get Accel</button>
+<button id="accelPermsButton" style="position:absolute; top:50%; left: 50%" onclick="getAccel()">Get Accel</button>
 
 <div id="main">
     <canvas hidden id="eyecache"></canvas>

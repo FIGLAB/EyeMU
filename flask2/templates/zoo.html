@@ -4,7 +4,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- Tensorflow core, model, and backend-->
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>-->
+<!-- TFjs version 2.7 local-->
+<script src="{{url_for('static', filename='tf.min.js')}}"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
 
 <!-- Javascript specific to this page -->
