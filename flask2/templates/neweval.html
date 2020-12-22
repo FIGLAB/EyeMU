@@ -35,13 +35,20 @@
 
 </script>
 
+<!--width: 100vw; height: 100vh; -->
+<!--body {height100%; width:100%; padding: 0; margin: 0; }-->
 <style>
-    html, body {width: 100vw; height: 100vh; padding: 0; margin: 0; }
+    html, body {
+        height: 100%;
+        width: 100%;
+        margin: 0px;
+    }
 
     .wackdiv {
         width: 49%;
         height: 24%;
         margin:0.5%;
+
         display: inline-block;
     }
 
@@ -57,6 +64,8 @@
         line-height: 0px;
         align-item: center;
         position: relative;
+
+        overflow: hidden;
     }
 </style>
 
@@ -66,7 +75,7 @@
 {% block body %}
 <button id="accelPermsButton" style="position:absolute; top:50%; left: 50%" onclick="getAccel()">Get Accel</button>
 
-<h3 id="trialdisplay" hidden></h3>
+<h3 hidden id="trialdisplay" style="text-align:center;"></h3>
 
 <div id="main">
     <canvas hidden id="eyecache"></canvas>
