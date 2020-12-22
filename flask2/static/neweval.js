@@ -53,7 +53,9 @@ function newEvalGrid(){
     window.scrollTo(0,1);
 
     document.body.onclick = () => {
-        startTrial();
+        if (rBB != undefined && AccelStarted){
+            startTrial();
+        }
     };
 
     // Populate the screen with the boxes, and hide them
@@ -67,8 +69,8 @@ function newEvalGrid(){
 
 /////////////////////////////////////// Eye tracking
 function gaze2Section(gaze_pred){
-    actualX = window.scrollX + localPred[0]*innerWidth;
-    actualY = window.scrollY + localPred[1]*innerHeight;
+    actualX = window.scrollX + gaze_pred[0]*innerWidth;
+    actualY = window.scrollY + gaze_pred[1]*innerHeight;
 
     // Generate the top and bottom bounds of one elem in each row
     heightBounds = [0.0];
@@ -85,9 +87,9 @@ function gaze2Section(gaze_pred){
 
     let col = actualX < Math.trunc(window.innerWidth/2) ? 0 : 1
 
-    console.log(col*4 + row)
-
-    return [col, row]
+    // Calculate the section number and return it
+    let section = col*4 + row + 1
+    return section
 }
 
 // Function that starts trials from clean slate, and resets variables
@@ -98,9 +100,14 @@ function startTrial(){
     num_repeats = trial_time*(1000/trial_delay);
     repeat_counter = 0;
 
+
 //    TODO: clear the accel history and gyro history before starting
     head_size_history = [];
+    localPreds = [];
+
     // Call the trial handler
+    textElem = document.getElementById("trialdisplay");
+    textElem.hidden = true;
     toggleHide();
     trialLoop(num_repeats);
 }
@@ -222,26 +229,59 @@ function trialLoop(max_repeats){
 
     // Update eye tracking only when stable -- maybe only when headsteady?
     if (gyro_steady && head_steady){
-        localPred = [curPred[0], curPred[1]];
-        eye_segment = gaze2Section(localPred);
-        console.log(eye_segment)
+        eye_segment = gaze2Section(curPred);
+        localPreds.push(eye_segment);
+        if (localPreds.length > 1000/trial_delay){
+            localPreds.shift();
+        }
     }
+
 
     all_gestures = [leftrightgesture, bfgesture, pushpullgesture];
     if (!all_gestures.every(elem => elem == 0)){
-//        console.log(all_gestures);
-    }
-
-
-    repeat_counter += 1;
-    if (repeat_counter < max_repeats){
-        setTimeout(() => trialLoop(max_repeats), trial_delay);
+        console.log(all_gestures,localPreds[7]); // take not most recent, but a few ago.
+        trialEndHandler(all_gestures, localPreds[7]);
     } else{
-        // Reset the counter, hide all the squares
-        repeat_counter = 0;
-        toggleHide();
-        return;
+        repeat_counter += 1;
+        if (repeat_counter < max_repeats){
+            setTimeout(() => trialLoop(max_repeats), trial_delay);
+        } else{
+            // Reset the counter, hide all the squares
+            repeat_counter = 0;
+            toggleHide();
+            return;
+        }
     }
+}
+
+
+function trialEndHandler(gestures, segment){
+
+    toggleHide();
+    textElem = document.getElementById("trialdisplay");
+    textElem.hidden = false;
+
+    let displayText = "";
+    if (gestures[1] == 1){ // forward flick
+        displayText = "Forward flick";
+    } else if (gestures[0] == 1){ // right flick
+        displayText = "Right flick";
+    } else if (gestures[0] == 2){ // right tilt
+        displayText = "Right tilt";
+    } else if (gestures[0] == -1){ // left flick
+        displayText = "Left flick";
+    } else if (gestures[0] == -2){ // left tilt
+        displayText = "Left tilt";
+    } else if (gestures[2] == 1){ // Pull
+        displayText = "Pull";
+    } else if (gestures[2] == -1){ // pull, then push
+        displayText = "Pull, push";
+    }
+    textElem.innerHTML = "Gesture: " + displayText;
+    textElem.innerHTML += "<br>Gaze segment: " + segment;
+
+
+
 }
 
 

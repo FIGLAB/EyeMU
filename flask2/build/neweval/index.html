@@ -78,7 +78,9 @@
 
 <!-- Tensorflow core, model, and backend-->
 <!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>-->
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.7.0/dist/tf.min.js"></script>
+<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.7.0/dist/tf.min.js"></script>-->
+<!-- TFjs version 2.7 local-->
+<script src="/static/tf.min.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
 
@@ -134,6 +136,8 @@
 <body style="background-color:aliceblue; font-family: Verdana, sans-serif;">
 
 <button id="accelPermsButton" style="position:absolute; top:50%; left: 50%" onclick="getAccel()">Get Accel</button>
+
+<h3 id="trialdisplay" hidden></h3>
 
 <div id="main">
     <canvas hidden id="eyecache"></canvas>
