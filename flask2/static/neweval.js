@@ -52,137 +52,45 @@ function newEvalGrid(){
     window.focus();
     window.scrollTo(0,1);
 
-//    // Attach event handler to detect keypresses
-//    document.body.onkeydown = (event) => {
-//        console.log(event);
-//        if (elemsClicked.some(elem => elem)){
-//            // Find which painting is selected when the keypress happened
-//            const selectedElemIndex = elemsClicked.findIndex(elem => elem)
-//            console.log("currently selected", selectedElemIndex, "key is", event.key)
-//
-//            // If left or right arrow, change filter number
-//            if (event.key == "ArrowLeft"){
-//                elemsFilters[selectedElemIndex] = (elemsFilters[selectedElemIndex] + numFilters - 1) % numFilters;
-//            } else if (event.key == "ArrowRight"){
-//                elemsFilters[selectedElemIndex] = (elemsFilters[selectedElemIndex] + numFilters + 1) % numFilters;
-//            }
-//
-//            // Apply the filter to that element's CSS
-//            galleryElements[selectedElemIndex].style.filter = filterList[elemsFilters[selectedElemIndex]];
-//        }
-//    };
+    document.body.onclick = () => {
+        startTrial();
+    };
 
-    // Populate the screen with the boxes
+    // Populate the screen with the boxes, and hide them
     createGalleryElems();
-
     toggleHide();
 
-
-
-//    var history_len = 20;
-//    var head_size_history = [];
-//    var headSteady = true;
-//    var steady = true;
-//    var steadyLen = history_len*2;
-//
-//    var localPred = [0, 0];
-//    var steadyHistory = [];
-//
-//    // set up the accel detection loop
-//                // TODO: New idea involving using the half second old measurement
-//            // make array orient_short_history - orient_short_history[0] or orient_short_history[len/2]
-//            // classify each point as tilt left, tilt right, or steady
-//            // remove duplicates and that'll be the measurement.
-//            //
-//            // Tilt right will be steady steady tilt_right tilt_right, once it hits all tilt-right then set the tilting variable and if its steady then add tilt
-//            // flick right will be steady steady tilt_right tilt_right steady steady. complicated!
-//
-//            // Make this function run only when called, and only run for trial_time seconds. call a log functions after it finishes
-//    setInterval(() => {
-//
-//
-//
-//
-////        console.log("steady", steady, steadyHistory.length);
-//
-//
-//        // Update steady variable
-//        if (steadyHistory.length > steadyLen){
-//            steadyHistory.shift();
-//            steadyHistory.shift();
-//        }
-//        steady = steadyHistory.every(elem => elem);
-//
-//
-//
-//        if (steady){
-//            // Track head size
-//            let cur_face_geom = faceGeom.getGeom();
-//            let cur_head_size = cur_face_geom[3];
-//
-//            head_size_history.push(cur_head_size)
-//            if (head_size_history.length > history_len){
-//                head_size_history.shift();
-//            }
-//
-//
-//            // if head has moved a lot in the last second, trigger a click
-//            const selectedElemIndex = elemsClicked.findIndex(elem => elem)
-//                // if old head size is smaller than the current it's a pull
-//            if (head_size_history[0]*1.2 < head_size_history[history_len-1] &&
-//                    selectedElemIndex == -1){ // requires that nothing is clicked
-//                document.activeElement.click();
-//                console.log("pull");
-//                // Otherwise, it's a push
-//            } else if (head_size_history[0] > 1.2*head_size_history[history_len-1]
-//                    && selectedElemIndex != -1){ // requires that something is clicked
-//                galleryElements[selectedElemIndex].click();
-//                console.log("push");
-//            }
-//
-//            if (head_size_history.length > 6){
-//                let diff = head_size_history[history_len-1] - head_size_history[history_len-5];
-//                headSteady = Math.abs(diff) < 0.01;
-////                console.log("head steady", headSteady);
-//            }
-//        }
-//
-//
-//
-//
-//
-//        if (typeof(curPred) != 'undefined'){
-//            if (steady && headSteady){
-//                localPred = [curPred[0], curPred[1]];
-//            }
-//
-//            actualX = window.scrollX + localPred[0]*innerWidth;
-//            actualY = window.scrollY + localPred[1]*innerHeight;
-////            console.log(curPred[0], curPred[1]);
-////            console.log(actualX, actualY);
-//
-//
-//            // Generate the top and bottom bounds of one elem in each row
-//            heightBounds = [0.0];
-//            for (let i = 2; i < galleryElements.length; i += 2){
-//                heightBounds.push(galleryElements[i].offsetTop);
-//            }
-//
-//            let row;
-//            heightBounds.forEach((elem, ind) => {
-//                if (actualY > elem){
-//                    row = ind;
-//                }
-//            });
-//
-//            let mid = Math.trunc(window.innerWidth/2);
-//            let col = actualX < mid ? 0 : 1
-//        }
-//    }, 100);
 
     cur = galleryElements[0];
 }
 
+
+/////////////////////////////////////// Eye tracking
+function gaze2Section(gaze_pred){
+    actualX = window.scrollX + localPred[0]*innerWidth;
+    actualY = window.scrollY + localPred[1]*innerHeight;
+
+    // Generate the top and bottom bounds of one elem in each row
+    heightBounds = [0.0];
+    for (let i = 2; i < galleryElements.length; i += 2){
+        heightBounds.push(galleryElements[i].offsetTop);
+    }
+
+    let row;
+    heightBounds.forEach((elem, ind) => {
+        if (actualY > elem){
+            row = ind;
+        }
+    });
+
+    let col = actualX < Math.trunc(window.innerWidth/2) ? 0 : 1
+
+    console.log(col*4 + row)
+
+    return [col, row]
+}
+
+// Function that starts trials from clean slate, and resets variables
 function startTrial(){
     // Set up trial time variables
     trial_time = 10000;
@@ -197,6 +105,10 @@ function startTrial(){
     trialLoop(num_repeats);
 }
 
+
+
+/////////////////////////////////////// Accelerometer gesture detection
+// remove duplicate elements from array
 function arrayCondenser(arr){
     newArr = [arr[0]];
     for (let i = 1; i < arr.length; i++){
@@ -207,18 +119,19 @@ function arrayCondenser(arr){
     return newArr;
 }
 
-    // find the difference w/r/t the first element and remove duplicates
+    // find the angle difference w/r/t the first element and remove duplicates
+function modmod(a, n){ return a - Math.floor(a/n) * n }
 function historyToCondensed(fullhist, threshold){
+    // Find recent difference with past measurement
     diffs = fullhist.slice(fullhist.length/4);
-//    diffs.forEach((elem, i) => diffs[i] = (elem - fullhist[0]));
     diffs.forEach((elem, i) => {
 //      angle rotation math
         a = elem - fullhist[0];
-        a = (a + 180) % 360 - 180;
+        a = modmod((a + 180), 360) - 180;
         diffs[i] = a;
     });
 
-
+    // "binarize" differences and remove duplicates
     diff_classes = [];
     diffs.forEach((elem) => {
         diff_classes.push(elem > threshold ? 1 : (elem < -threshold ? -1 : 0));
@@ -227,10 +140,6 @@ function historyToCondensed(fullhist, threshold){
     return condensed;
 }
 
-
-    // make array orient_short_history - orient_short_history[0] or orient_short_history[len/2]
-    // classify each point as tilt left, tilt right, or steady
-    // remove duplicates and that'll be the measurement.
 function accelArrayHandler(accel_history){
     // Make a copy so it won't shift as we're modifying it
     leftright_hist = accel_history[0].slice();
@@ -263,8 +172,30 @@ function classify_backfront(condensed){
     return front_dip*1 + back_dip*-1;
 }
 
+/////////////////////////////////////// Push pull gesture detection
+function headsizeToGesture(head_hist, threshold){
+    // Get recent ratios to old head size
+    diffs = head_hist.slice(head_hist.length/4);
+    diffs.forEach((elem, i) => {
+        diffs[i] = elem/head_hist[0];
+    });
 
+    // Threshold by ratio
+    diff_classes = [];
+    diffs.forEach((elem) => {
+        diff_classes.push(elem > threshold ? 1 : (elem < 1/threshold ? -1 : 0));
+    });
 
+    condensed = arrayCondenser(diff_classes);
+
+    // classify the head gesture
+    let tmp = JSON.stringify(condensed);
+    pull = (tmp == "[1]");
+    pullpush = (tmp == "[0,1,0]");
+    return pull*1 + pullpush*-1
+}
+
+// Main loop of the trial running gesture detection and eye segmentation
 function trialLoop(max_repeats){
    // Accel gesture detection
     condensed_arrays = accelArrayHandler(orient_short_history);
@@ -285,30 +216,22 @@ function trialLoop(max_repeats){
             head_size_history.shift();
         }
 
-        diffs = head_size_history.slice(head_size_history.length/4);
-        diffs.forEach((elem, i) => {
-            diffs[i] = elem/head_size_history[0];
-        });
-
-        diff_classes = [];
-        headsize_threshold = 1.2
-        diffs.forEach((elem) => {
-            diff_classes.push(elem > headsize_threshold ? 1 : (elem < 1/headsize_threshold ? -1 : 0));
-        });
-        condensed = arrayCondenser(diff_classes);
-
-        let tmp = JSON.stringify(condensed);
-        pull = tmp == "[1]";
-        pullpush = tmp == "[0,1,0]";
-
-        pushpullgesture = pull*1 + pullpush*-1
+        pushpullgesture = headsizeToGesture(head_size_history, 1.15);
     }
+    head_steady = (pushpullgesture == 0);
 
+    // Update eye tracking only when stable -- maybe only when headsteady?
+    if (gyro_steady && head_steady){
+        localPred = [curPred[0], curPred[1]];
+        eye_segment = gaze2Section(localPred);
+        console.log(eye_segment)
+    }
 
     all_gestures = [leftrightgesture, bfgesture, pushpullgesture];
     if (!all_gestures.every(elem => elem == 0)){
-        console.log(all_gestures);
+//        console.log(all_gestures);
     }
+
 
     repeat_counter += 1;
     if (repeat_counter < max_repeats){
