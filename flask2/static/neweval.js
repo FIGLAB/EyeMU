@@ -208,7 +208,14 @@ function arrayCondenser(arr){
     // find the difference w/r/t the first element and remove duplicates
 function historyToCondensed(fullhist, threshold){
     diffs = fullhist.slice(updateRate/4);
-    diffs.forEach((elem, i) => diffs[i] = (elem - fullhist[0]));
+//    diffs.forEach((elem, i) => diffs[i] = (elem - fullhist[0]));
+    diffs.forEach((elem, i) => {
+//      angle rotation math
+        a = elem - fullhist[0];
+        a = (a + 180) % 360 - 180;
+        diffs[i] = a;
+    });
+
 
     diff_classes = [];
     diffs.forEach((elem) => {
@@ -228,7 +235,7 @@ function accelArrayHandler(accel_history){
     backfront_hist = accel_history[1].slice();
 
     // threshold and remove duplicates
-    lr_condensed = historyToCondensed(leftright_hist, 25);
+    lr_condensed = historyToCondensed(leftright_hist, 30);
     bf_condensed = historyToCondensed(backfront_hist, 30);
 
     return [lr_condensed, bf_condensed]
@@ -236,11 +243,12 @@ function accelArrayHandler(accel_history){
 
 function classify_leftright(condensed){
     tmp = JSON.stringify(condensed);
+//    console.log("classleftright", tmp)
 
-    lef_tilt = tmp == "[-1]";
-    lef_flick = tmp == "[0,-1,0]";
-    right_flick = tmp == "[0,1,0]";
-    right_tilt = tmp == "[1]";
+    lef_tilt = tmp == "[1]";
+    lef_flick = tmp == "[0,1,0]";
+    right_flick = tmp == "[0,-1,0]";
+    right_tilt = tmp == "[-1]";
 
     return lef_tilt*-2 + lef_flick*-1 + right_flick*1 + right_tilt*2
 }
@@ -249,8 +257,9 @@ function classify_backfront(condensed){
     tmp = JSON.stringify(condensed);
 
     front_dip = tmp == "[0,1,0]";
+    back_dip = tmp == "[0,-1,0]";
 
-    return front_dip
+    return front_dip*1
 }
 
 
@@ -262,7 +271,12 @@ function trialLoop(max_repeats){
     leftrightgesture = classify_leftright(condensed_arrays[0]);
     bfgesture = classify_backfront(condensed_arrays[1]);
 
+    console.log(bfgesture, leftrightgesture);
+//    gyro_steady =
+//    orient_short_history.slice(updateRate/2)
+
     // head pose gesture detection
+
 
 
 
