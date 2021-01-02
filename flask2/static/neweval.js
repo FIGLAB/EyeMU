@@ -31,7 +31,6 @@ function createGalleryElems(){
 
     // debug variables
     a = galleryDiv
-
 }
 
 function toggleHide(){
@@ -42,8 +41,8 @@ var cur;
 var origScroll;
 var heightBounds;
 function newEvalGrid(){
-    if (rBB == undefined || !AccelStarted){
-        console.log("rBB undefined, image gallery restarting")
+    if (curPred == undefined || !AccelStarted){
+        console.log("curPred undefined or accel no started, image gallery restarting")
         setTimeout(newEvalGrid, 500);
         return;
     }
@@ -58,7 +57,7 @@ function newEvalGrid(){
 
     // Set up trial starting condition (click)
     document.body.onclick = () => {
-        if (rBB != undefined && AccelStarted){
+        if (curPred != undefined && AccelStarted){
             startTrial();
         }
     };
@@ -67,6 +66,7 @@ function newEvalGrid(){
     createGalleryElems();
     toggleHide();
 
+    startTrial();
     cur = galleryElements[0]; // debuggery
 }
 
@@ -98,6 +98,7 @@ function gaze2Section(gaze_pred){
 
 // Function that starts trials from clean slate, and resets variables
 function startTrial(){
+    console.log("start trial called");
     // Set up trial time variables
     trial_time = 10000; // timeout variable
     trial_delay = 100
@@ -110,10 +111,11 @@ function startTrial(){
     localPreds = [];
 
     // TODO: Generate which trial is next, display it in trialdisplay
+    textElem = document.getElementById("trialdisplay");
+    textElem.hidden = false;
     targetGesture = Math.trunc(Math.random()*7)
     targetSquare = Math.trunc(Math.random()*8)
 
-    textElem = document.getElementById("trialdisplay");
     textElem.innerHTML = "";
     textElem.innerHTML += "Next trial:";
     textElem.innerHTML += "<br>Target gesture: " + gestureNames[targetGesture];
@@ -121,6 +123,7 @@ function startTrial(){
 
         // Start the trial after showing user target info
     setTimeout(() => {
+        console.log("Trial started, targets:", gestureNames[targetGesture], (targetSquare+1));
         textElem.hidden = true;
         toggleHide();
         trialLoop(num_repeats, [targetGesture, targetSquare]);
@@ -162,12 +165,14 @@ function trialLoop(max_repeats, targets){
 
     all_gestures = [leftrightgesture, bfgesture, pushpullgesture];
     if (!all_gestures.every(elem => elem == 0)){ // if a gesture is detected
-        console.log(all_gestures,localPreds[7]); // take not most recent, but a few ago.
+        console.log("all eyes:")
+        console.log(localPreds);
+        console.log("all gestures + eyes", all_gestures,localPreds[7]); // take not most recent, but a few ago.
         trialEndHandler([all_gestures, localPreds[7]], targets);
     } else{
         repeat_counter += 1;
         if (repeat_counter < max_repeats){
-            setTimeout(() => trialLoop(max_repeats), trial_delay);
+            setTimeout(() => trialLoop(max_repeats, targets), trial_delay);
         } else{
             // Reset the counter, hide all the squares
             repeat_counter = 0;
@@ -188,10 +193,10 @@ function trialEndHandler(actual, target){ // Both in [gestures, segment] format
 
     // Show actual text
     gestures = actual[0];
-    target = actual[1];
+    segment = actual[1];
     let displayText = "";
 
-    if (gestures[1] == 1){ // forward flick
+    if (gestures[1] == -1){ // forward flick
         displayText = "Forward flick";
     } else if (gestures[0] == 1){ // right flick
         displayText = "Right flick";
@@ -207,15 +212,15 @@ function trialEndHandler(actual, target){ // Both in [gestures, segment] format
         displayText = "Pull close, then push back";
     }
     textElem.innerHTML = "";
-    textElem.innerHTML += "<h5>Detected gesture and gaze location:</h5>"
-    textElem.innerHTML += "<br>Gesture: " + displayText;
+    textElem.innerHTML += "Detected gesture and gaze location:</h5>"
+    textElem.innerHTML += "Gesture: " + displayText;
     textElem.innerHTML += "<br>Gaze segment: " + segment;
 
     // Show target text
     textElem.innerHTML += "<br><br>";
     textElem.innerHTML += "<h5>Target gesture and segment:</h5>"
-    textElem.innerHTML += "<br>Gesture: " + gestureNames[target[0]]
-    textElem.innerHTML += "<br>Gaze segment: " + target[1]+1;
+    textElem.innerHTML += "Gesture: " + gestureNames[target[0]]
+    textElem.innerHTML += "<br>Gaze segment: " + (target[1]+1);
 
 
 }
