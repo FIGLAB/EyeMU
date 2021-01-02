@@ -1,6 +1,8 @@
-// Zoo #3, one-handed photo editing
-// 12/7 CLARIFICATION: I'm setting all the style in javascript so I can edit it more easily on my end. Should probably move to a CSS global, but this will never see the light of the public so w/e
+// New eval that tests both gestures and eye tracking
+
 var gestureNames = ["Forward flick", "Right flick", "Right tilt", "Left flick", "Left tilt", "Pull", "Pull close, then push back"];
+var trialStarted
+
 
 function createGalleryElems(){
     // Create the container that holds all the elements
@@ -191,16 +193,16 @@ function trialLoop(max_repeats, targets){
 }
 
 //function trialEndHandler(gestures, segment){
-function trialEndHandler(actual, target){ // Both in [gestures, segment] format
+function trialEndHandler(detected, target){ // Both in [gestures, segment] format
 
     // Show text box
     toggleHide();
     textElem = document.getElementById("trialdisplay");
     textElem.hidden = false;
 
-    // Show actual text
-    gestures = actual[0];
-    segment = actual[1];
+    // Show detected text
+    gestures = detected[0];
+    segment = detected[1];
     let displayText = "";
 
     if (gestures[1] == -1){ // forward flick
@@ -229,7 +231,9 @@ function trialEndHandler(actual, target){ // Both in [gestures, segment] format
     textElem.innerHTML += "<br>Gesture: " + gestureNames[target[0]]
     textElem.innerHTML += "<br>Gaze segment: " + (target[1]+1);
 
-
+    // Add to results: [timestamp, detected, target
+    console.log("debug: added to results");
+    addToStorageArray("results", [Date.now(), detected, target]);
 }
 
 /////////////////////////////////////// Accelerometer gesture detection
@@ -345,8 +349,6 @@ function headsizeToGesture(head_hist, threshold){
 }
 
 
-
-
 divColors = [
     "#ef90c1",
     "#ef9186",
@@ -357,3 +359,96 @@ divColors = [
     "#801e48",
     "#9c2517"
 ]
+
+
+
+
+
+
+document.addEventListener("DOMContentLoaded", function(event) {
+    var storageKey = 'results';
+    if (!localStorage.getItem(storageKey)){
+        tmp = document.createElement("div");
+        tmp.innerHTML = "No evaluation results to show.";
+        document.body.append(tmp);
+        return;
+    }
+
+    var average = (array) => array.reduce((a, b) => a + b) / array.length;
+    var divideAll = (array, divisor) => array.map((elem) => elem/divisor);
+
+    var evalResults = JSON.parse(localStorage[storageKey]);
+
+
+    evalResults = [[0,[0,2], [1,0]]];
+
+    // Generate div and table for results
+        // Header
+    let resultsDiv = document.createElement("div");
+    resultsDiv.innerHTML += "<h2>Gaze+Accel Evaluation Results</h2>";
+    resultsDiv.innerHTML += "<span style='color:blue;'>Blue</span> is matched, <span style='color:red;'>Red</span> is mismatched";
+    resultsDiv.innerHTML += "<hr><br>";
+
+        // Table and Table header
+    resultsTable = document.createElement("table");
+    resultsTable.style.border = "1px solid black";
+    let thead = resultsTable.createTHead();
+    let row = thead.insertRow()
+    for (let header of ["Timestamp", "Gesture", "Screen section"]){
+        let th = document.createElement("th");
+        th.style.border = "1px double black";
+        th.innerHTML = header;
+        row.appendChild(th);
+    }
+
+//    document.body.append(resultsTable); // debug
+
+    // Populate results table
+    let correctGest = 0;
+    let correctSeg = 0;
+    let totals = evalResults.length;
+    evalResults.forEach((elem, ind) => {
+        // elem format is [d.getTime(), [detectedgesture, detectedsegment], [targetgesture, targetsegment]]
+        // Get the numbers out
+        let dateInMillis = elem[0];
+        let detected = elem[1];
+        let target = elem[2];
+        console.log("parsed", elem);
+
+        // Add to results
+        if (detected[0] == target[0]){correctGest += 1;}
+        if (detected[1] == target[1]){correctSeg += 1;}
+
+        // Create new row and add three cells
+        let row = resultsTable.insertRow();
+
+            // Date
+        cell = row.insertCell();
+        cell.innerHTML = new Date(dateInMillis);
+            // Gesture and segment
+        for (i in [0,1]){
+            cell = row.insertCell();
+            tmpspan = document.createElement("span");
+            if (target[i] == detected[i]){
+                tmpspan.style.color = "blue";
+            } else{
+                tmpspan.style.color = "red";
+            }
+            tmpspan.innerText = target[i], detected[i]
+            cell.append(tmpspan)
+        }
+//
+//            // Gesture
+//
+//            // Segment
+//        cell = row.insertCell();
+//        cell.innerHTML = "<span style='color:blue;'>" + target[1] + "</span> <span style='color:red;'>" + detected[1] + "</span>"
+    });
+
+
+    // Add results to document body
+    resultsDiv.append(resultsTable);
+    document.body.append(resultsDiv);
+});
+
+
