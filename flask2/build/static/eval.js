@@ -98,12 +98,6 @@ function draw(){
                 errX_avg, width/2, height/2);
         text("\n\nerrorY: " +
                 errY_avg, width/2, height/2);
-//        text("\n\n\n\ncm X: " +
-//                6.3*errX_avg, width/2, height/2);
-//        text("\n\n\n\n\n\ncm Y: " +
-//                14.4*errY_avg, width/2, height/2);
-//        text("\n\n\n\n\n\n\n\ncm combined: " +
-//                nf(Math.sqrt(14.4*errY_avg*14.4*errY_avg + 6.3*errX_avg*6.3*errX_avg), 1, 2), width/2, height/2);
 
         // Each time eval is executed in full, store:
             // - Date/time
@@ -198,18 +192,6 @@ function draw(){
             } else if (stillsTaken >= num_ims_still){
                 fill( 0, 121, 20 ); // Green circle if all images taken
                 ellipse( X, Y, radius, radius );
-//                if (!errorsAdded){
-//                    // Accumulate errors and reset the tmpErr tracking
-//                    errorsX.push(average(tmpErrorX));
-//                    errorsY.push(average(tmpErrorY));
-//                    errorsAdded = true;
-//
-//                    tmpErrorX = [];
-//                    tmpErrorY = [];
-//
-//                    // Remember the location
-//                    locations_acc.push([X,Y])
-//                }
             }
         }
         }

@@ -8,20 +8,20 @@ var y_vect;
 var embeddings_data = new Object();
 
 window.onload = function yea() {
-    //FileReader reads data from Blob or File
-    var textFile = null;
-    var makeTextFile = function (text) {
-        var data = new Blob([text], {type: 'application/json'});
-
-        // If we are replacing a previously generated file we need to
-        // manually revoke the object URL to avoid memory leaks.
-        if (textFile !== null) { window.URL.revokeObjectURL(textFile);}
-
-        textFile = window.URL.createObjectURL(data);
-
-        // returns a URL you can use as a href
-        return textFile;
-    };
+//    //FileReader reads data from Blob or File
+//    var textFile = null;
+//    var makeTextFile = function (text) {
+//        var data = new Blob([text], {type: 'application/json'});
+//
+//        // If we are replacing a previously generated file we need to
+//        // manually revoke the object URL to avoid memory leaks.
+//        if (textFile !== null) { window.URL.revokeObjectURL(textFile);}
+//
+//        textFile = window.URL.createObjectURL(data);
+//
+//        // returns a URL you can use as a href
+//        return textFile;
+//    };
 
     var eyeDataDownloadButton = document.getElementById('eyeDataFile');
     if (eyeDataDownloadButton != null){
@@ -82,19 +82,20 @@ function openFile(event) {
 
 
 function addToStorageArray(key, arr){
-    if (localStorage[key] == undefined){
-        localStorage[key] = JSON.stringify([])
+    if (!localStorage.getItem(key)){ // Populate if empty
+        localStorage[key] = JSON.stringify([]);
     }
 
     try{
-        tmp = JSON.parse(localStorage[key])
+        tmp = JSON.parse(localStorage.getItem(key))
     } catch{
         tmp = []
     }
+
     tmp.push(arr);
     localStorage[key] = JSON.stringify(tmp);
-    console.log("after storage:", localStorage[key])
 }
+//    console.log("after storage:", localStorage[key])
 
 
 
@@ -143,7 +144,7 @@ function saveRegressionModels(){
 }
 
 function downloadResults(){
-    resultsStr = localStorage.getItem("eval");
+    resultsStr = localStorage.getItem("results");
 
     var link = document.createElement('a');
     link.href = makeTextFile(resultsStr);
