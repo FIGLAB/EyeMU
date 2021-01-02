@@ -1,6 +1,8 @@
-// Zoo #3, one-handed photo editing
-// 12/7 CLARIFICATION: I'm setting all the style in javascript so I can edit it more easily on my end. Should probably move to a CSS global, but this will never see the light of the public so w/e
+// New eval that tests both gestures and eye tracking
+
 var gestureNames = ["Forward flick", "Right flick", "Right tilt", "Left flick", "Left tilt", "Pull", "Pull close, then push back"];
+var trialStarted
+
 
 function createGalleryElems(){
     // Create the container that holds all the elements
@@ -41,7 +43,7 @@ var cur;
 var origScroll;
 var heightBounds;
 function newEvalGrid(){
-    if (curPred == undefined || !AccelStarted){
+    if (typeof(curPred) == 'undefined' || !AccelStarted){
         console.log("curPred undefined or accel no started, image gallery restarting")
         setTimeout(newEvalGrid, 500);
         return;
@@ -98,19 +100,21 @@ function gaze2Section(gaze_pred){
 
 // Function that starts trials from clean slate, and resets variables
 function startTrial(){
-    console.log("start trial called");
     // Set up trial time variables
-    trial_time = 10000; // timeout variable
+    trial_time = 10000; // timeout variable in ms
     trial_delay = 100
-    num_repeats = trial_time*(1000/trial_delay);
+    lastsecHistoryLen = 1000/trial_delay;
+    num_repeats = trial_time*(lastsecHistoryLen);
     repeat_counter = 0;
 
 
-//    TODO: clear the accel history and gyro history before starting. But not clear clear, just duplicate the last reading 60 times
+//    TODO: clear the accel history and gyro history before starting.
+    // But not clear clear, just duplicate the last reading length times
     head_size_history = [];
     localPreds = [];
+//    orient_short_history[0] and [1]
 
-    // TODO: Generate which trial is next, display it in trialdisplay
+    // Generate which trial is next, display it in trialdisplay
     textElem = document.getElementById("trialdisplay");
     textElem.hidden = false;
     targetGesture = Math.trunc(Math.random()*7)
@@ -145,7 +149,7 @@ function trialLoop(max_repeats, targets){
         let cur_head_size = faceGeom.getGeom()[3];
 
         head_size_history.push(Math.sqrt(cur_head_size))
-        if (head_size_history.length > 1000/trial_delay){
+        if (head_size_history.length > lastsecHistoryLen){
             head_size_history.shift();
         }
 
@@ -157,19 +161,24 @@ function trialLoop(max_repeats, targets){
     if (gyro_steady && head_steady){
         eye_segment = gaze2Section(curPred);
         localPreds.push(eye_segment);
-        if (localPreds.length > 1000/trial_delay){
+        if (localPreds.length > lastsecHistoryLen){
             localPreds.shift();
         }
+
+        console.log(localPreds); // debugging eye tracking as phone moves
+    } else{
+        console.log("not steady");
     }
 
 
     all_gestures = [leftrightgesture, bfgesture, pushpullgesture];
-    if (!all_gestures.every(elem => elem == 0)){ // if a gesture is detected
+    // If all gestures is not all 0 and has no 99s (unsteady), a gesture is detected
+    if (!all_gestures.every(elem => elem == 0) && all_gestures.every(elem => elem != 99)){
         console.log("all eyes:")
-        console.log(localPreds);
-        segmentPrediction = getModeEyeSegment(localPreds)
-        console.log("all gestures + eyes", all_gestures,localPreds[7]); // take not most recent, but a few ago.
-        trialEndHandler([all_gestures, localPreds[7]], targets);
+        console.log(localPreds.slice(3));
+        segmentPrediction = getModeEyeSegment(localPreds.slice(3))
+        console.log("all gestures + eyes", all_gestures,segmentPrediction); // take not most recent, but a few ago.
+        trialEndHandler([all_gestures, segmentPrediction], targets);
     } else{
         repeat_counter += 1;
         if (repeat_counter < max_repeats){
@@ -182,17 +191,6 @@ function trialLoop(max_repeats, targets){
         }
     }
 }
-
-function getModeEyeSegment(arr){
-    let hist = Array(8).fill(0);
-    arr.forEach((elem) => {
-        hist[elem-1] += 1;
-    });
-
-    mode = hist.map((x, i) => [x, i]).reduce((r, a) => (a[0] > r[0] ? a : r))[1] + 1;
-    return mode;
-}
-
 
 //function trialEndHandler(gestures, segment){
 function trialEndHandler(actual, target){ // Both in [gestures, segment] format
@@ -224,13 +222,13 @@ function trialEndHandler(actual, target){ // Both in [gestures, segment] format
     }
     textElem.innerHTML = "";
     textElem.innerHTML += "Detected gesture and gaze location:</h5>"
-    textElem.innerHTML += "Gesture: " + displayText;
+    textElem.innerHTML += "<br>Gesture: " + displayText;
     textElem.innerHTML += "<br>Gaze segment: " + segment;
 
     // Show target text
     textElem.innerHTML += "<br><br>";
-    textElem.innerHTML += "<h5>Target gesture and segment:</h5>"
-    textElem.innerHTML += "Gesture: " + gestureNames[target[0]]
+    textElem.innerHTML += "Target gesture and segment:"
+    textElem.innerHTML += "<br>Gesture: " + gestureNames[target[0]]
     textElem.innerHTML += "<br>Gaze segment: " + (target[1]+1);
 
 
@@ -246,6 +244,17 @@ function arrayCondenser(arr){
         }
     }
     return newArr;
+}
+
+// Find mode of the segments history
+function getModeEyeSegment(arr){
+    let hist = Array(8).fill(0);
+    arr.forEach((elem) => {
+        hist[elem-1] += 1;
+    });
+
+    mode = hist.map((x, i) => [x, i]).reduce((r, a) => (a[0] > r[0] ? a : r))[1] + 1;
+    return mode;
 }
 
     // find the angle difference w/r/t the first element and remove duplicates
@@ -288,8 +297,12 @@ function classify_leftright(condensed){
     lef_flick = tmp == "[0,1,0]";
     right_flick = tmp == "[0,-1,0]";
     right_tilt = tmp == "[-1]";
+     // If no normal gestures, make sure it's steady before returning 0
+    if ((lef_tilt + lef_flick + right_flick + right_tilt) == 0){
+        return (tmp != "[0]")*99
+    }
 
-    return lef_tilt*-2 + lef_flick*-1 + right_flick*1 + right_tilt*2
+    return lef_tilt*-2 + lef_flick*-1 + right_flick*1 + right_tilt*2;
 }
 
 function classify_backfront(condensed){
@@ -298,7 +311,11 @@ function classify_backfront(condensed){
     front_dip = tmp == "[0,1,0]";
     back_dip = tmp == "[0,-1,0]";
 
-    return front_dip*1 + back_dip*-1;
+    // If no normal gestures, make sure it's steady before returning 0
+    if ((front_dip + back_dip) == 0){
+        return (tmp != "[0]")*99
+    }
+    return front_dip*1 + back_dip*-1 ;
 }
 
 /////////////////////////////////////// Push pull gesture detection
@@ -321,7 +338,12 @@ function headsizeToGesture(head_hist, threshold){
     let tmp = JSON.stringify(condensed);
     pull = (tmp == "[1]");
     pullpush = (tmp == "[0,1,0]");
-    return pull*1 + pullpush*-1
+
+    // If no normal gestures, make sure it's steady before returning 0
+    if ((pull + pullpush) == 0){
+        return (tmp != "[0]")*99
+    }
+    return pull*1 + pullpush*-1;
 }
 
 
