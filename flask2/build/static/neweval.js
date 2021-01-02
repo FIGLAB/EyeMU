@@ -1,6 +1,6 @@
 // Zoo #3, one-handed photo editing
 // 12/7 CLARIFICATION: I'm setting all the style in javascript so I can edit it more easily on my end. Should probably move to a CSS global, but this will never see the light of the public so w/e
-
+var gestureNames = ["Forward flick", "Right flick", "Right tilt", "Left flick", "Left tilt", "Pull", "Pull close, then push back"];
 
 function createGalleryElems(){
     // Create the container that holds all the elements
@@ -56,20 +56,18 @@ function newEvalGrid(){
     window.focus();
     window.scrollTo(0,1);
 
+    // Set up trial starting condition (click)
     document.body.onclick = () => {
         if (rBB != undefined && AccelStarted){
             startTrial();
         }
     };
 
-
-
     // Populate the screen with the boxes, and hide them
     createGalleryElems();
     toggleHide();
 
-
-    cur = galleryElements[0];
+    cur = galleryElements[0]; // debuggery
 }
 
 
@@ -101,23 +99,126 @@ function gaze2Section(gaze_pred){
 // Function that starts trials from clean slate, and resets variables
 function startTrial(){
     // Set up trial time variables
-    trial_time = 10000;
+    trial_time = 10000; // timeout variable
     trial_delay = 100
     num_repeats = trial_time*(1000/trial_delay);
     repeat_counter = 0;
 
 
-//    TODO: clear the accel history and gyro history before starting
+//    TODO: clear the accel history and gyro history before starting. But not clear clear, just duplicate the last reading 60 times
     head_size_history = [];
     localPreds = [];
 
-    // Call the trial handler
+    // TODO: Generate which trial is next, display it in trialdisplay
+    targetGesture = Math.trunc(Math.random()*7)
+    targetSquare = Math.trunc(Math.random()*8)
+
     textElem = document.getElementById("trialdisplay");
-    textElem.hidden = true;
-    toggleHide();
-    trialLoop(num_repeats);
+    textElem.innerHTML = "";
+    textElem.innerHTML += "Next trial:";
+    textElem.innerHTML += "<br>Target gesture: " + gestureNames[targetGesture];
+    textElem.innerHTML += "<br>Target square: " + (targetSquare+1);
+
+        // Start the trial after showing user target info
+    setTimeout(() => {
+        textElem.hidden = true;
+        toggleHide();
+        trialLoop(num_repeats, [targetGesture, targetSquare]);
+    }, 3000);
 }
 
+// Main loop of the trial running gesture detection and eye segmentation
+function trialLoop(max_repeats, targets){
+   // Accel gesture detection
+    condensed_arrays = accelArrayHandler(orient_short_history);
+    leftrightgesture = classify_leftright(condensed_arrays[0]);
+    bfgesture = classify_backfront(condensed_arrays[1]);
+    gyro_steady = (leftrightgesture == 0) && (bfgesture == 0);
+
+    // head pose gesture detection
+    let pushpullgesture = 0;
+    if (gyro_steady && prediction.faceInViewConfidence > .85){
+//        let cur_face_geom = faceGeom.getGeom();
+        let cur_head_size = faceGeom.getGeom()[3];
+
+        head_size_history.push(Math.sqrt(cur_head_size))
+        if (head_size_history.length > 1000/trial_delay){
+            head_size_history.shift();
+        }
+
+        pushpullgesture = headsizeToGesture(head_size_history, 1.15);
+    }
+    head_steady = (pushpullgesture == 0);
+
+    // Update eye tracking only when stable -- there's a little steady delay though
+    if (gyro_steady && head_steady){
+        eye_segment = gaze2Section(curPred);
+        localPreds.push(eye_segment);
+        if (localPreds.length > 1000/trial_delay){
+            localPreds.shift();
+        }
+    }
+
+
+    all_gestures = [leftrightgesture, bfgesture, pushpullgesture];
+    if (!all_gestures.every(elem => elem == 0)){ // if a gesture is detected
+        console.log(all_gestures,localPreds[7]); // take not most recent, but a few ago.
+        trialEndHandler([all_gestures, localPreds[7]], targets);
+    } else{
+        repeat_counter += 1;
+        if (repeat_counter < max_repeats){
+            setTimeout(() => trialLoop(max_repeats), trial_delay);
+        } else{
+            // Reset the counter, hide all the squares
+            repeat_counter = 0;
+            toggleHide();
+            return;
+        }
+    }
+}
+
+
+//function trialEndHandler(gestures, segment){
+function trialEndHandler(actual, target){ // Both in [gestures, segment] format
+
+    // Show text box
+    toggleHide();
+    textElem = document.getElementById("trialdisplay");
+    textElem.hidden = false;
+
+    // Show actual text
+    gestures = actual[0];
+    target = actual[1];
+    let displayText = "";
+
+    if (gestures[1] == 1){ // forward flick
+        displayText = "Forward flick";
+    } else if (gestures[0] == 1){ // right flick
+        displayText = "Right flick";
+    } else if (gestures[0] == 2){ // right tilt
+        displayText = "Right tilt";
+    } else if (gestures[0] == -1){ // left flick
+        displayText = "Left flick";
+    } else if (gestures[0] == -2){ // left tilt
+        displayText = "Left tilt";
+    } else if (gestures[2] == 1){ // Pull
+        displayText = "Pull";
+    } else if (gestures[2] == -1){ // pull, then push
+        displayText = "Pull close, then push back";
+    }
+    textElem.innerHTML = "";
+    textElem.innerHTML += "<h5>Detected gesture and gaze location:</h5>"
+    textElem.innerHTML += "<br>Gesture: " + displayText;
+    textElem.innerHTML += "<br>Gaze segment: " + segment;
+
+    // Show target text
+    textElem.innerHTML += "<br><br>";
+    textElem.innerHTML += "<h5>Target gesture and segment:</h5>"
+    textElem.innerHTML += "<br>Gesture: " + gestureNames[target[0]]
+    textElem.innerHTML += "<br>Gaze segment: " + target[1]+1;
+
+
+}
 
 /////////////////////////////////////// Accelerometer gesture detection
 // remove duplicate elements from array
@@ -207,87 +308,7 @@ function headsizeToGesture(head_hist, threshold){
     return pull*1 + pullpush*-1
 }
 
-// Main loop of the trial running gesture detection and eye segmentation
-function trialLoop(max_repeats){
-   // Accel gesture detection
-    condensed_arrays = accelArrayHandler(orient_short_history);
 
-    leftrightgesture = classify_leftright(condensed_arrays[0]);
-    bfgesture = classify_backfront(condensed_arrays[1]);
-
-    gyro_steady = (leftrightgesture == 0) && (bfgesture == 0);
-
-    // head pose gesture detection
-    let pushpullgesture = 0;
-    if (gyro_steady && prediction.faceInViewConfidence > .85){
-        let cur_face_geom = faceGeom.getGeom();
-        let cur_head_size = cur_face_geom[3];
-
-        head_size_history.push(Math.sqrt(cur_head_size))
-        if (head_size_history.length > 1000/trial_delay){
-            head_size_history.shift();
-        }
-
-        pushpullgesture = headsizeToGesture(head_size_history, 1.15);
-    }
-    head_steady = (pushpullgesture == 0);
-
-    // Update eye tracking only when stable -- maybe only when headsteady?
-    if (gyro_steady && head_steady){
-        eye_segment = gaze2Section(curPred);
-        localPreds.push(eye_segment);
-        if (localPreds.length > 1000/trial_delay){
-            localPreds.shift();
-        }
-    }
-
-
-    all_gestures = [leftrightgesture, bfgesture, pushpullgesture];
-    if (!all_gestures.every(elem => elem == 0)){
-        console.log(all_gestures,localPreds[7]); // take not most recent, but a few ago.
-        trialEndHandler(all_gestures, localPreds[7]);
-    } else{
-        repeat_counter += 1;
-        if (repeat_counter < max_repeats){
-            setTimeout(() => trialLoop(max_repeats), trial_delay);
-        } else{
-            // Reset the counter, hide all the squares
-            repeat_counter = 0;
-            toggleHide();
-            return;
-        }
-    }
-}
-
-
-function trialEndHandler(gestures, segment){
-
-    toggleHide();
-    textElem = document.getElementById("trialdisplay");
-    textElem.hidden = false;
-
-    let displayText = "";
-    if (gestures[1] == 1){ // forward flick
-        displayText = "Forward flick";
-    } else if (gestures[0] == 1){ // right flick
-        displayText = "Right flick";
-    } else if (gestures[0] == 2){ // right tilt
-        displayText = "Right tilt";
-    } else if (gestures[0] == -1){ // left flick
-        displayText = "Left flick";
-    } else if (gestures[0] == -2){ // left tilt
-        displayText = "Left tilt";
-    } else if (gestures[2] == 1){ // Pull
-        displayText = "Pull";
-    } else if (gestures[2] == -1){ // pull, then push
-        displayText = "Pull, push";
-    }
-    textElem.innerHTML = "Gesture: " + displayText;
-    textElem.innerHTML += "<br>Gaze segment: " + segment;
-
-
-
-}
 
 
 divColors = [
