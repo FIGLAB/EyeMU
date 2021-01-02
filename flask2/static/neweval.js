@@ -167,6 +167,7 @@ function trialLoop(max_repeats, targets){
     if (!all_gestures.every(elem => elem == 0)){ // if a gesture is detected
         console.log("all eyes:")
         console.log(localPreds);
+        segmentPrediction = getModeEyeSegment(localPreds)
         console.log("all gestures + eyes", all_gestures,localPreds[7]); // take not most recent, but a few ago.
         trialEndHandler([all_gestures, localPreds[7]], targets);
     } else{
@@ -180,6 +181,16 @@ function trialLoop(max_repeats, targets){
             return;
         }
     }
+}
+
+function getModeEyeSegment(arr){
+    let hist = Array(8).fill(0);
+    arr.forEach((elem) => {
+        hist[elem-1] += 1;
+    });
+
+    mode = hist.map((x, i) => [x, i]).reduce((r, a) => (a[0] > r[0] ? a : r))[1] + 1;
+    return mode;
 }
 
 
