@@ -57,10 +57,23 @@ function newEvalGrid(){
     window.focus();
     window.scrollTo(0,1);
 
-    // Set up trial starting condition (click)
+
+    let instructions = document.getElementById('evalinstructions');
+    instructions.innerHTML = "Done loading, tap to begin";
+
+
+    // Set up trial starting condition (click) and removal of the button and instructions
     document.body.onclick = () => {
         if (typeof(curPred) != 'undefined' && AccelStarted && !trialStarted){
+            document.getElementById('accelbuttonholder').remove();
+            document.getElementById('evalinstructions').remove();
+
             startTrial();
+            document.body.onclick = () => {
+                if (typeof(curPred) != 'undefined' && AccelStarted && !trialStarted){
+                    startTrial();
+                }
+            };
         }
     };
 
@@ -68,7 +81,8 @@ function newEvalGrid(){
     createGalleryElems();
     toggleHide();
 
-    startTrial();
+//    startTrial();
+    accelbuttonholder
     cur = galleryElements[0]; // debuggery
 }
 

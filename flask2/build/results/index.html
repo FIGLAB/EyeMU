@@ -73,81 +73,118 @@
 
     
 
-<script src="/static/fileIO.js"></script>
 <script>
     function clearResults(){
         a = confirm("Clicking OK will clear ALL trials of your evaluation data! Only do this if there's been an error or you've already exported the data.");
         if (a){
-            console.log("cleared eval from localstorage");
-            localStorage['eval'] = undefined;
+            console.log("cleared results from localstorage");
+            localStorage.removeItem('results');
             location.reload();
         }
     }
 
     function checkDownloadResults(){
-        if (localStorage['eval'] == "undefined"){
-             alert("No eval results to download");
+        if (!localStorage.getItem('results')){
+             alert("No results to download");
         } else {
             downloadResults()
         }
     }
 
     document.addEventListener("DOMContentLoaded", function(event) {
-        if (localStorage['eval'] == undefined){
-            tmp = document.createElement("div");
-            tmp.innerHTML = "No evaluation results to show.";
-            document.body.append(tmp);
-        }
+    var storageKey = 'results';
+    if (!localStorage.getItem(storageKey)){
+        tmp = document.createElement("div");
+        tmp.innerHTML = "No evaluation results to show.";
+        document.body.append(tmp);
+        return;
+    }
 
-        var average = (array) => array.reduce((a, b) => a + b) / array.length;
-        var divideAll = (array, divisor) => array.map((elem) => elem/divisor);
+    var average = (array) => array.reduce((a, b) => a + b) / array.length;
+    var divideAll = (array, divisor) => array.map((elem) => elem/divisor);
 
+    var evalResults = JSON.parse(localStorage[storageKey]);
 
-        var evalResults = JSON.parse(localStorage['eval']);
-        // Format is [d.getTime(), [initial_width, initial_height], errorsX, errorsY, locations_acc]
+    // Generate div and table for results
+        // Header
+    let resultsDiv = document.createElement("div");
+    resultsDiv.innerHTML += "<h2>Gaze+Accel Evaluation Results</h2>";
+    resultsDiv.innerHTML += "<span style='color:blue;'>Blue</span> is matched, <span style='color:red;'>Red</span> is mismatched";
+    resultsDiv.innerHTML += "<hr>";
 
-        evalResults.forEach((elem, ind) => {
-            let dateInMillis = elem[0];
-            console.log(dateInMillis);
-            console.log(Date(dateInMillis));
-            let screenW = elem[1][0];
-            let screenH = elem[1][1];
-            let errsX = elem[2];
-            let errsY = elem[3];
-            let locs = elem[4];
+        // Table and Table header
+    resultsTable = document.createElement("table");
+    resultsTable.style.border = "1px solid black";
+    let thead = resultsTable.createTHead();
+    let row = thead.insertRow()
+    for (let header of ["Timestamp", "Gesture", "Screen section"]){
+        let th = document.createElement("th");
+        th.style.border = "1px double black";
+        th.innerHTML = header;
+        row.appendChild(th);
+    }
 
-            tmp = document.createElement("div");
+//    document.body.append(resultsTable); // debug
 
-            // Header
-            tmp.innerHTML += "<h2>GAZEL Evaluation Trial #" + (ind+1) + "</h2>";
+    // Populate results table
+    let correctGest = 0;
+    let correctSeg = 0;
+    let totals = evalResults.length;
+    evalResults.forEach((elem, ind) => {
+        // elem format is [d.getTime(), [detectedgesture, detectedsegment], [targetgesture, targetsegment]]
+        // Get the numbers out
+        let dateInMillis = elem[0];
+        let detected = elem[1];
+        let target = elem[2];
+        console.log("parsed", elem);
+
+        // Add to results
+        if (detected[0] == target[0]){correctGest += 1;}
+        if (detected[1] == target[1]){correctSeg += 1;}
+
+        // Create new row and add three cells
+        let row = resultsTable.insertRow();
 
             // Date
-            tmp.innerHTML += "Time Captured: &emsp;" + new Date(dateInMillis) + "<br>"
-
-            // Display dimensions
-            tmp.innerHTML += "Screen dimensions WxH: &emsp;" + screenW + "x" + screenH + "<br>"
-
-            // Errors
-            // let normedErrs = getNormedErrorXY(errsX, errsY, locs, screenW, screenH);
-
-            norm_errsX = errsX;
-            norm_errsY = errsY;
-
-
-            // tmp.innerHTML += "Errors X: &emsp;" + norm_errsX + "<br>";
-            // tmp.innerHTML += "Errors Y: &emsp;" + norm_errsY + "<br>";
-
-            roundedNormedErrors = [Number(average(norm_errsX).toFixed(2)), Number(average(norm_errsY).toFixed(2))]
-
-            tmp.innerHTML += "Average normalized X error: &emsp;" + roundedNormedErrors[0] + "<br>";
-            tmp.innerHTML += "Average normalized Y error: &emsp;" + roundedNormedErrors[1] + "<br>";
-
-            tmp.innerHTML += "<hr>"
-
-            document.body.append(tmp);
-        });
+        cell = row.insertCell();
+        date = new Date(dateInMillis);
+        cell.innerHTML = date.toLocaleTimeString() + ", " + date.toDateString();
+            // Gesture and Segment
+        for (i in [0,1]){
+            cell = row.insertCell();
+            tmpspan = document.createElement("span");
+            if (target[i] == detected[i]){
+                tmpspan.style.color = "blue";
+            } else{
+                tmpspan.style.color = "red";
+            }
+            tmpspan.innerText = target[i] + ", " + detected[i];
+            cell.append(tmpspan)
+        }
     });
+
+    // Add statistics to bottom, after table
+    finalStats = document.createElement("p");
+    finalStats.innerHTML += "Gestures correct: " + correctGest + "/" + totals + " = " + (100*correctGest/totals).toFixed(1) + "%";
+    finalStats.innerHTML += "<br>Screen sections correct: " + correctSeg + "/" + totals + " = " + (100*correctSeg/totals).toFixed(1) + "%";
+    finalStats.innerHTML += "<br>Overall: " + (correctSeg+correctGest) + "/" + (2*totals) + " = " + (50*(correctGest+correctSeg)/totals).toFixed(1) + "%";
+
+
+
+    // Add results to document body
+    resultsDiv.append(finalStats);
+    resultsDiv.append(resultsTable);
+    document.body.append(resultsDiv);
+});
 </script>
+<script src="/static/fileIO.js"></script>
+
+<style>
+    table,td {
+        border: 1px solid black;
+    }
+
+</style>
 
 
 </head>

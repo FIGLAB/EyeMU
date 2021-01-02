@@ -57,10 +57,25 @@ function newEvalGrid(){
     window.focus();
     window.scrollTo(0,1);
 
+
+    let instructions = document.getElementById('evalinstructions');
+    instructions.innerHTML = "Done loading, tap to begin";
+
+
     // Set up trial starting condition (click)
     document.body.onclick = () => {
         if (typeof(curPred) != 'undefined' && AccelStarted && !trialStarted){
+            let btndiv = document.getElementById('accelbuttonholder');
+            btndiv.remove()
+            document.getElementById('evalinstructions').remove();
+            console.log("button holder VANISHED")
+
             startTrial();
+            document.body.onclick = () => {
+                if (typeof(curPred) != 'undefined' && AccelStarted && !trialStarted){
+                    startTrial();
+                }
+            };
         }
     };
 
@@ -68,7 +83,8 @@ function newEvalGrid(){
     createGalleryElems();
     toggleHide();
 
-    startTrial();
+//    startTrial();
+    accelbuttonholder
     cur = galleryElements[0]; // debuggery
 }
 
