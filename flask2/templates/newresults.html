@@ -94,9 +94,9 @@
 
     // Add statistics to bottom, after table
     finalStats = document.createElement("p");
-    finalStats.innerHTML += "Gestures correct: " + correctGest + "/" + totals + " = " + (correctGest/totals).toFixed(1) + "%";
-    finalStats.innerHTML += "<br>Screen sections correct: " + correctSeg + "/" + totals + " = " + (correctSeg/totals).toFixed(1) + "%";
-    finalStats.innerHTML += "<br>Overall: " + (correctSeg+correctGest) + "/" + (2*totals) + " = " + ((correctGest+correctSeg)/totals).toFixed(1) + "%";
+    finalStats.innerHTML += "Gestures correct: " + correctGest + "/" + totals + " = " + (100*correctGest/totals).toFixed(1) + "%";
+    finalStats.innerHTML += "<br>Screen sections correct: " + correctSeg + "/" + totals + " = " + (100*correctSeg/totals).toFixed(1) + "%";
+    finalStats.innerHTML += "<br>Overall: " + (correctSeg+correctGest) + "/" + (2*totals) + " = " + (50*(correctGest+correctSeg)/totals).toFixed(1) + "%";
 
 
 

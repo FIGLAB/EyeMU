@@ -1,7 +1,7 @@
 // New eval that tests both gestures and eye tracking
 
 var gestureNames = ["Forward flick", "Right flick", "Right tilt", "Left flick", "Left tilt", "Pull", "Pull close, then push back"];
-var trialStarted
+var trialStarted = false; // concurrency
 
 
 function createGalleryElems(){
@@ -59,7 +59,7 @@ function newEvalGrid(){
 
     // Set up trial starting condition (click)
     document.body.onclick = () => {
-        if (curPred != undefined && AccelStarted){
+        if (typeof(curPred) != 'undefined' && AccelStarted && !trialStarted){
             startTrial();
         }
     };
@@ -100,6 +100,9 @@ function gaze2Section(gaze_pred){
 
 // Function that starts trials from clean slate, and resets variables
 function startTrial(){
+    // Make sure we don't start multiple trials
+    trialStarted = true;
+
     // Set up trial time variables
     trial_time = 10000; // timeout variable in ms
     trial_delay = 100
@@ -118,16 +121,16 @@ function startTrial(){
     textElem = document.getElementById("trialdisplay");
     textElem.hidden = false;
     targetGesture = Math.trunc(Math.random()*7)
-    targetSquare = Math.trunc(Math.random()*8)
+    targetSquare = Math.trunc(Math.random()*8+1);
 
     textElem.innerHTML = "";
     textElem.innerHTML += "Next trial:";
     textElem.innerHTML += "<br>Target gesture: " + gestureNames[targetGesture];
-    textElem.innerHTML += "<br>Target square: " + (targetSquare+1);
+    textElem.innerHTML += "<br>Target square: " + (targetSquare);
 
         // Start the trial after showing user target info
     setTimeout(() => {
-        console.log("Trial started, targets:", gestureNames[targetGesture], (targetSquare+1));
+        console.log("Trial started, targets:", gestureNames[targetGesture], (targetSquare));
         textElem.hidden = true;
         toggleHide();
         trialLoop(num_repeats, [targetGesture, targetSquare]);
@@ -205,20 +208,29 @@ function trialEndHandler(detected, target){ // Both in [gestures, segment] forma
     segment = detected[1];
     let displayText = "";
 
+    detectedGesture = -1;
+
     if (gestures[1] == -1){ // forward flick
         displayText = "Forward flick";
+        detectedGesture = 0;
     } else if (gestures[0] == 1){ // right flick
         displayText = "Right flick";
+        detectedGesture = 1;
     } else if (gestures[0] == 2){ // right tilt
         displayText = "Right tilt";
+        detectedGesture = 2;
     } else if (gestures[0] == -1){ // left flick
         displayText = "Left flick";
+        detectedGesture = 3;
     } else if (gestures[0] == -2){ // left tilt
         displayText = "Left tilt";
+        detectedGesture = 4;
     } else if (gestures[2] == 1){ // Pull
         displayText = "Pull";
+        detectedGesture = 5;
     } else if (gestures[2] == -1){ // pull, then push
         displayText = "Pull close, then push back";
+        detectedGesture = 6;
     }
     textElem.innerHTML = "";
     textElem.innerHTML += "Detected gesture and gaze location:</h5>"
@@ -229,11 +241,14 @@ function trialEndHandler(detected, target){ // Both in [gestures, segment] forma
     textElem.innerHTML += "<br><br>";
     textElem.innerHTML += "Target gesture and segment:"
     textElem.innerHTML += "<br>Gesture: " + gestureNames[target[0]]
-    textElem.innerHTML += "<br>Gaze segment: " + (target[1]+1);
+    textElem.innerHTML += "<br>Gaze segment: " + (target[1]);
 
-    // Add to results: [timestamp, detected, target
-    console.log("debug: added to results");
-    addToStorageArray("results", [Date.now(), detected, target]);
+    // Add to results: [timestamp, detected, target]
+        // Goes [gest, segment]
+//    console.log("debug: added to results");
+    // for target, gest is 0-6 and seg is 0-7. Need to match detected to that
+    addToStorageArray("results", [Date.now(), [detectedGesture, segment], target]);
+    trialStarted = false;
 }
 
 /////////////////////////////////////// Accelerometer gesture detection
@@ -360,95 +375,5 @@ divColors = [
     "#9c2517"
 ]
 
-
-
-
-
-
-document.addEventListener("DOMContentLoaded", function(event) {
-    var storageKey = 'results';
-    if (!localStorage.getItem(storageKey)){
-        tmp = document.createElement("div");
-        tmp.innerHTML = "No evaluation results to show.";
-        document.body.append(tmp);
-        return;
-    }
-
-    var average = (array) => array.reduce((a, b) => a + b) / array.length;
-    var divideAll = (array, divisor) => array.map((elem) => elem/divisor);
-
-    var evalResults = JSON.parse(localStorage[storageKey]);
-
-
-    evalResults = [[0,[0,2], [1,0]]];
-
-    // Generate div and table for results
-        // Header
-    let resultsDiv = document.createElement("div");
-    resultsDiv.innerHTML += "<h2>Gaze+Accel Evaluation Results</h2>";
-    resultsDiv.innerHTML += "<span style='color:blue;'>Blue</span> is matched, <span style='color:red;'>Red</span> is mismatched";
-    resultsDiv.innerHTML += "<hr><br>";
-
-        // Table and Table header
-    resultsTable = document.createElement("table");
-    resultsTable.style.border = "1px solid black";
-    let thead = resultsTable.createTHead();
-    let row = thead.insertRow()
-    for (let header of ["Timestamp", "Gesture", "Screen section"]){
-        let th = document.createElement("th");
-        th.style.border = "1px double black";
-        th.innerHTML = header;
-        row.appendChild(th);
-    }
-
-//    document.body.append(resultsTable); // debug
-
-    // Populate results table
-    let correctGest = 0;
-    let correctSeg = 0;
-    let totals = evalResults.length;
-    evalResults.forEach((elem, ind) => {
-        // elem format is [d.getTime(), [detectedgesture, detectedsegment], [targetgesture, targetsegment]]
-        // Get the numbers out
-        let dateInMillis = elem[0];
-        let detected = elem[1];
-        let target = elem[2];
-        console.log("parsed", elem);
-
-        // Add to results
-        if (detected[0] == target[0]){correctGest += 1;}
-        if (detected[1] == target[1]){correctSeg += 1;}
-
-        // Create new row and add three cells
-        let row = resultsTable.insertRow();
-
-            // Date
-        cell = row.insertCell();
-        cell.innerHTML = new Date(dateInMillis);
-            // Gesture and segment
-        for (i in [0,1]){
-            cell = row.insertCell();
-            tmpspan = document.createElement("span");
-            if (target[i] == detected[i]){
-                tmpspan.style.color = "blue";
-            } else{
-                tmpspan.style.color = "red";
-            }
-            tmpspan.innerText = target[i], detected[i]
-            cell.append(tmpspan)
-        }
-//
-//            // Gesture
-//
-//            // Segment
-//        cell = row.insertCell();
-//        cell.innerHTML = "<span style='color:blue;'>" + target[1] + "</span> <span style='color:red;'>" + detected[1] + "</span>"
-    });
-
-
-    // Add results to document body
-    resultsDiv.append(resultsTable);
-    document.body.append(resultsDiv);
-});
 
 
