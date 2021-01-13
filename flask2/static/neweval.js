@@ -3,6 +3,23 @@
 var gestureNames = ["Forward flick", "Right flick", "Right tilt", "Left flick", "Left tilt", "Pull", "Pull close, then push back"];
 var trialStarted = false; // concurrency
 
+// Square grid variables
+var galleryNumbers = [];
+var galleryElements = [];
+
+// Trial nonrandom variables
+var trialList;
+// Set up trial time variables
+var trial_time = 10000; // timeout variable in ms
+var trial_delay = 100
+var lastsecHistoryLen = 1000/trial_delay;
+var num_repeats = trial_time*(lastsecHistoryLen);
+
+//TODO Jan 6:
+        // DONE 1. Add indicator of trial number to the new trial instructions
+// 2. Add button to cancel trial
+    // 3. Reduce wait time after a few trials
+    // 4. Fix trial generation to not be truly random
 
 function createGalleryElems(){
     // Create the container that holds all the elements
@@ -23,6 +40,7 @@ function createGalleryElems(){
         a = document.createElement('div')
         a.classList.toggle("wackdivtext");
         a.innerText = (i%2)*4 + Math.trunc(i/2) + 1;
+        galleryNumbers.push(a)
         im_container.append(a)
 
         galleryDiv.append(im_container);
@@ -34,6 +52,18 @@ function createGalleryElems(){
     // debug variables
     a = galleryDiv
 }
+
+function resetTextColors(){
+    for (let div of galleryNumbers){
+        div.style.color = "black";
+    }
+}
+function setTextColor(square_num){
+    lookup = [1, 3, 5, 7, 2, 4, 6, 8]
+    ind = lookup[square_num-1]
+    galleryNumbers[ind-1].style.color = "white";
+}
+
 
 function toggleHide(){
     galleryDiv.hidden = !galleryDiv.hidden;
@@ -59,7 +89,8 @@ function newEvalGrid(){
 
 
     let instructions = document.getElementById('evalinstructions');
-    instructions.innerHTML = "Done loading, tap to begin";
+    instructions.innerHTML = "You will be shown a 4x2 grid of numbered, colored squares. For each trial, you will be given a square to look at and a gesture to perform."
+    instructions.innerHTML += "<br><br>Done loading, tap to begin";
 
 
     // Set up trial starting condition (click) and removal of the button and instructions
@@ -80,6 +111,28 @@ function newEvalGrid(){
     // Populate the screen with the boxes, and hide them
     createGalleryElems();
     toggleHide();
+
+    // Create trialList if it doesn't exist yet
+    if (!localStorage.getItem('trial_list')){
+//        targetGesture = Math.trunc(Math.random()*7)
+//    targetSquare = Math.trunc(Math.random()*8+1);
+
+        // Construct the trials, shuffle them, then store them.
+        let arr = [];
+        for (let i = 0; i < 7; i++){ // Gestures
+            for(let j = 1; j <= 8; j++){ // "Quadrant"
+                for (let k = 0; k < 2; k++){
+                    arr.push([i,j]);
+                }
+            }
+        }
+        arr = shuffleArr(arr);
+
+        localStorage.setItem('trial_list', arr)
+        trialList = arr;
+    } else{
+        trialList = localStorage.getItem('trial_list');
+    }
 
 //    startTrial();
     accelbuttonholder
@@ -117,11 +170,7 @@ function startTrial(){
     // Make sure we don't start multiple trials
     trialStarted = true;
 
-    // Set up trial time variables
-    trial_time = 10000; // timeout variable in ms
-    trial_delay = 100
-    lastsecHistoryLen = 1000/trial_delay;
-    num_repeats = trial_time*(lastsecHistoryLen);
+    // reset repeat counter
     repeat_counter = 0;
 
 
@@ -129,26 +178,42 @@ function startTrial(){
     // But not clear clear, just duplicate the last reading length times
     head_size_history = [];
     localPreds = [];
-//    orient_short_history[0] and [1]
 
     // Generate which trial is next, display it in trialdisplay
     textElem = document.getElementById("trialdisplay");
     textElem.hidden = false;
-    targetGesture = Math.trunc(Math.random()*7)
-    targetSquare = Math.trunc(Math.random()*8+1);
+    trialNum = (getLength('results') + 1) % trialList.length;
+    targetGesture = trialList[trialNum][0];
+    targetSquare = trialList[trialNum][1];
+//    targetGesture = Math.trunc(Math.random()*7)
+//    targetSquare = Math.trunc(Math.random()*8+1);
 
     textElem.innerHTML = "";
-    textElem.innerHTML += "Next trial:";
+    textElem.innerHTML += "Trial " + trialNum + ":";
     textElem.innerHTML += "<br>Target gesture: " + gestureNames[targetGesture];
     textElem.innerHTML += "<br>Target square: " + (targetSquare);
 
         // Start the trial after showing user target info
+    // Delay start by less after a few trials
+    if (trialNum > 20){
+        delayedStart = 2000;
+    } else{
+        delayedStart = 3000;
+    }
     setTimeout(() => {
+        // Hide trial instructions
         console.log("Trial started, targets:", gestureNames[targetGesture], (targetSquare));
         textElem.hidden = true;
+
+        // Show grid
         toggleHide();
+            // highlight one number
+        resetTextColors();
+        setTextColor(targetSquare);
+
+        // Start trial loop
         trialLoop(num_repeats, [targetGesture, targetSquare]);
-    }, 3000);
+    }, delayedStart);
 }
 
 // Main loop of the trial running gesture detection and eye segmentation
@@ -275,6 +340,26 @@ function arrayCondenser(arr){
         }
     }
     return newArr;
+}
+
+// Shuffle an array
+function shuffleArr(array) {
+  var currentIndex = array.length, temporaryValue, randomIndex;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
 }
 
 // Find mode of the segments history
