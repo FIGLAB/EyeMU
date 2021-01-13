@@ -128,10 +128,12 @@ function newEvalGrid(){
         }
         arr = shuffleArr(arr);
 
-        localStorage.setItem('trial_list', arr)
+        strArr = JSON.stringify(arr);
+        localStorage.setItem('trial_list', strArr)
         trialList = arr;
     } else{
-        trialList = localStorage.getItem('trial_list');
+        tmp = localStorage.getItem('trial_list');
+        trialList = JSON.parse(tmp);
     }
 
 //    startTrial();
@@ -189,7 +191,7 @@ function startTrial(){
 //    targetSquare = Math.trunc(Math.random()*8+1);
 
     textElem.innerHTML = "";
-    textElem.innerHTML += "Trial " + trialNum + ":";
+    textElem.innerHTML += "Trial #" + trialNum + "/" + trialList.length + ":";
     textElem.innerHTML += "<br>Target gesture: " + gestureNames[targetGesture];
     textElem.innerHTML += "<br>Target square: " + (targetSquare);
 
@@ -311,14 +313,14 @@ function trialEndHandler(detected, target){ // Both in [gestures, segment] forma
         displayText = "Pull close, then push back";
         detectedGesture = 6;
     }
-    textElem.innerHTML = "";
-    textElem.innerHTML += "Detected gesture and gaze location:</h5>"
+    textElem.innerHTML = "Trial #" + trialNum + " Results<br><hr>";
+    textElem.innerHTML += "Detected gesture and gaze:</h5>"
     textElem.innerHTML += "<br>Gesture: " + displayText;
     textElem.innerHTML += "<br>Gaze segment: " + segment;
 
     // Show target text
     textElem.innerHTML += "<br><br>";
-    textElem.innerHTML += "Target gesture and segment:"
+    textElem.innerHTML += "Target gesture and gaze:"
     textElem.innerHTML += "<br>Gesture: " + gestureNames[target[0]]
     textElem.innerHTML += "<br>Gaze segment: " + (target[1]);
 
