@@ -80,6 +80,19 @@ function openFile(event) {
     });
 }
 
+function getLength(key){
+    if (!localStorage.getItem(key)){ // Populate if empty
+        return -1;
+    }
+
+    try{
+        tmp = JSON.parse(localStorage.getItem(key))
+    } catch{
+        return -1;
+    }
+
+    return tmp.length;
+}
 
 function addToStorageArray(key, arr){
     if (!localStorage.getItem(key)){ // Populate if empty
