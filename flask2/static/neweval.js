@@ -17,7 +17,9 @@ var num_repeats = trial_time*(lastsecHistoryLen);
 
 //TODO Jan 6:
         // DONE 1. Add indicator of trial number to the new trial instructions
-// 2. Add button to cancel trial
+// 2. Make tap on screen during trial go back to instructions
+// 3. Fix trial end handler on timeout to handle properly
+
     // 3. Reduce wait time after a few trials
     // 4. Fix trial generation to not be truly random
 
@@ -53,17 +55,24 @@ function createGalleryElems(){
     a = galleryDiv
 }
 
-function resetTextColors(){
+function resetGridColors(){
+    i = 0;
     for (let div of galleryNumbers){
         div.style.color = "black";
+//        div.style.backgroundColor = divColors[i];
+        div.style.backgroundColor = "grey";
+        div.style.innerText = (i%2)*4 + Math.trunc(i/2) + 1;
+        i++;
     }
 }
-function setTextColor(square_num){
+
+function setGridColorAndText(square_num, text){
     lookup = [1, 3, 5, 7, 2, 4, 6, 8]
     ind = lookup[square_num-1]
     galleryNumbers[ind-1].style.color = "white";
+    galleryNumbers[ind-1].style.backgroundColor = divColors[i]
+    galleryNumbers[ind-1].style.innerText = text;
 }
-
 
 function toggleHide(){
     galleryDiv.hidden = !galleryDiv.hidden;
@@ -103,6 +112,8 @@ function newEvalGrid(){
             document.body.onclick = () => {
                 if (typeof(curPred) != 'undefined' && AccelStarted && !trialStarted){
                     startTrial();
+                } else if ((typeof(curPred) != 'undefined' && AccelStarted && trialStarted)){
+
                 }
             };
         }
@@ -210,8 +221,8 @@ function startTrial(){
         // Show grid
         toggleHide();
             // highlight one number
-        resetTextColors();
-        setTextColor(targetSquare);
+        resetGridColors();
+        setGridColorAndText(targetSquare, gestureNames[targetGesture]);
 
         // Start trial loop
         trialLoop(num_repeats, [targetGesture, targetSquare]);
@@ -271,6 +282,7 @@ function trialLoop(max_repeats, targets){
             // Reset the counter, hide all the squares
             repeat_counter = 0;
             toggleHide();
+//            trialEndHandler([-1, -1], targets);
             return;
         }
     }
