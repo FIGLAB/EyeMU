@@ -178,6 +178,33 @@ function gaze2Section(gaze_pred){
     return section
 }
 
+
+// Find mode of the segments history
+function getModeEyeSegment(arr){
+    let hist = Array(8).fill(0);
+    arr.forEach((elem) => {
+        hist[elem-1] += 1;
+    });
+
+    mode = hist.map((x, i) => [x, i]).reduce((r, a) => (a[0] > r[0] ? a : r))[1] + 1;
+    return mode;
+}
+
+// Get average of all recent eye positions then threshold it
+function getMeanEyeSegment(arr){
+    acc = [0,0]
+    arr.forEach((elem) =>{
+        acc[0] += elem[0];
+        acc[1] += elem[1];
+    });
+    acc[0] /= arr.length;
+    acc[1] /= arr.length;
+
+    section = gaze2Section(acc)
+    return section;
+}
+
+
 // Function that starts trials from clean slate, and resets variables
 function startTrial(){
     // Make sure we don't start multiple trials
@@ -254,8 +281,9 @@ function trialLoop(max_repeats, targets){
 
     // Update eye tracking only when stable -- there's a little steady delay though
     if (gyro_steady && head_steady){
-        eye_segment = gaze2Section(curPred);
-        localPreds.push(eye_segment);
+//        eye_segment = gaze2Section(curPred);
+//        localPreds.push(eye_segment);
+        localPreds.push(curPred);
         if (localPreds.length > lastsecHistoryLen){
             localPreds.shift();
         }
@@ -271,7 +299,8 @@ function trialLoop(max_repeats, targets){
     if (!all_gestures.every(elem => elem == 0) && all_gestures.every(elem => elem != 99)){
         console.log("all eyes:")
         console.log(localPreds.slice(3));
-        segmentPrediction = getModeEyeSegment(localPreds.slice(3))
+//        segmentPrediction = getModeEyeSegment(localPreds.slice(3))
+        segmentPrediction = getMeanEyeSegment(localPreds.slice(3))
         console.log("all gestures + eyes", all_gestures,segmentPrediction); // take not most recent, but a few ago.
         trialEndHandler([all_gestures, segmentPrediction], targets);
     } else{
@@ -374,17 +403,6 @@ function shuffleArr(array) {
   }
 
   return array;
-}
-
-// Find mode of the segments history
-function getModeEyeSegment(arr){
-    let hist = Array(8).fill(0);
-    arr.forEach((elem) => {
-        hist[elem-1] += 1;
-    });
-
-    mode = hist.map((x, i) => [x, i]).reduce((r, a) => (a[0] > r[0] ? a : r))[1] + 1;
-    return mode;
 }
 
     // find the angle difference w/r/t the first element and remove duplicates
