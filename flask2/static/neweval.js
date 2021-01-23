@@ -302,7 +302,8 @@ function trialLoop(max_repeats, targets){
 //        segmentPrediction = getModeEyeSegment(localPreds.slice(3))
         segmentPrediction = getMeanEyeSegment(localPreds.slice(3))
         console.log("all gestures + eyes", all_gestures,segmentPrediction); // take not most recent, but a few ago.
-        trialEndHandler([all_gestures, segmentPrediction], targets);
+        hist = [localPreds, orient_short_history, head_size_history];
+        trialEndHandler([all_gestures, segmentPrediction], targets, hist);
     } else{
         repeat_counter += 1;
         if (repeat_counter < max_repeats){
@@ -318,7 +319,7 @@ function trialLoop(max_repeats, targets){
 }
 
 //function trialEndHandler(gestures, segment){
-function trialEndHandler(detected, target){ // Both in [gestures, segment] format
+function trialEndHandler(detected, target, histories){ // Both in [gestures, segment] format
 
     // Show text box
     toggleHide();
@@ -369,7 +370,7 @@ function trialEndHandler(detected, target){ // Both in [gestures, segment] forma
         // Goes [gest, segment]
 //    console.log("debug: added to results");
     // for target, gest is 0-6 and seg is 0-7. Need to match detected to that
-    addToStorageArray("results", [Date.now(), [detectedGesture, segment], target]);
+    addToStorageArray("results", [Date.now(), [detectedGesture, segment], target, ]);
     trialStarted = false;
 }
 
