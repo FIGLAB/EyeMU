@@ -280,10 +280,8 @@ function trialLoop(max_repeats, targets){
 
     // Update eye tracking only when stable -- there's a little steady delay though
     if (gyro_steady && head_steady){
-        console.log(curPred);
-        console.log(localPreds);
+        localPreds.push([...curPred]);
 
-        localPreds.push(curPred);
         if (localPreds.length > lastsecHistoryLen){
             localPreds.shift();
         }
