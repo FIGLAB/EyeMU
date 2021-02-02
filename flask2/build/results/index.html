@@ -79,6 +79,7 @@
         if (a){
             console.log("cleared results from localstorage");
             localStorage.removeItem('results');
+            localStorage.removeItem('trial_list');
             location.reload();
         }
     }
@@ -117,7 +118,7 @@
     resultsTable.style.border = "1px solid black";
     let thead = resultsTable.createTHead();
     let row = thead.insertRow()
-    for (let header of ["Timestamp", "Gesture", "Screen section"]){
+    for (let header of ["Timestamp", "Gesture (target, predicted)", "Screen section (target, predicted)"]){
         let th = document.createElement("th");
         th.style.border = "1px double black";
         th.innerHTML = header;

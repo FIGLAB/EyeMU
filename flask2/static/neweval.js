@@ -1,6 +1,6 @@
 // New eval that tests both gestures and eye tracking
 
-var gestureNames = ["Forward flick", "Right flick", "Right tilt", "Left flick", "Left tilt", "Pull", "Pull close, then push back"];
+var gestureNames = ["Forward flick", "Right flick", "Right tilt", "Left flick", "Left tilt", "Pull close", "Push away"];
 var trialStarted = false; // concurrency
 
 // Square grid variables
@@ -10,10 +10,11 @@ var galleryElements = [];
 // Trial nonrandom variables
 var trialList;
 // Set up trial time variables
-var trial_time = 10000; // timeout variable in ms
-var trial_delay = 100
+var trial_time = 5; // timeout variable in seconds
+var trial_delay = 100 // loop delay in ms
 var lastsecHistoryLen = 1000/trial_delay;
-var num_repeats = trial_time*(lastsecHistoryLen);
+//var num_repeats = trial_time*(lastsecHistoryLen);
+var num_repeats = trial_time*1000 / trial_delay;
 
 //TODO Jan 6:
         // DONE 1. Add indicator of trial number to the new trial instructions
@@ -125,8 +126,6 @@ function newEvalGrid(){
 
     // Create trialList if it doesn't exist yet
     if (!localStorage.getItem('trial_list')){
-//        targetGesture = Math.trunc(Math.random()*7)
-//    targetSquare = Math.trunc(Math.random()*8+1);
 
         // Construct the trials, shuffle them, then store them.
         let arr = [];
@@ -281,38 +280,39 @@ function trialLoop(max_repeats, targets){
 
     // Update eye tracking only when stable -- there's a little steady delay though
     if (gyro_steady && head_steady){
-//        eye_segment = gaze2Section(curPred);
-//        localPreds.push(eye_segment);
+        console.log(curPred);
+        console.log(localPreds);
+
         localPreds.push(curPred);
         if (localPreds.length > lastsecHistoryLen){
             localPreds.shift();
         }
-
-        console.log(localPreds); // debugging eye tracking as phone moves
-    } else{
-        console.log("not steady");
     }
+//    else{
+//        console.log("not steady");
+//    }
 
 
     all_gestures = [leftrightgesture, bfgesture, pushpullgesture];
     // If all gestures is not all 0 and has no 99s (unsteady), a gesture is detected
     if (!all_gestures.every(elem => elem == 0) && all_gestures.every(elem => elem != 99)){
-        console.log("all eyes:")
-        console.log(localPreds.slice(3));
-//        segmentPrediction = getModeEyeSegment(localPreds.slice(3))
+//        console.log("all eyes:")
+//        console.log(localPreds.slice(3));
+//        segmentPrediction = getModeEyeSegment(localPreds.slice(3)) // averaging thresholded pieces
         segmentPrediction = getMeanEyeSegment(localPreds.slice(3))
-        console.log("all gestures + eyes", all_gestures,segmentPrediction); // take not most recent, but a few ago.
+//        console.log("all gestures + eyes", all_gestures,segmentPrediction); // take not most recent, but a few ago.
         hist = [localPreds, orient_short_history, head_size_history];
         trialEndHandler([all_gestures, segmentPrediction], targets, hist);
     } else{
         repeat_counter += 1;
         if (repeat_counter < max_repeats){
             setTimeout(() => trialLoop(max_repeats, targets), trial_delay);
-        } else{
-            // Reset the counter, hide all the squares
-            repeat_counter = 0;
-            toggleHide();
-//            trialEndHandler([-1, -1], targets);
+        } else{ // Timeout condition
+            // Gesture detect failed, but save eye position anyway
+            segmentPrediction = getMeanEyeSegment(localPreds.slice(3))
+
+            hist = [localPreds, orient_short_history, head_size_history];
+            trialEndHandler([-1, segmentPrediction], targets, hist);
             return;
         }
     }
@@ -326,51 +326,62 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
     textElem = document.getElementById("trialdisplay");
     textElem.hidden = false;
 
-    // Show detected text
-    gestures = detected[0];
-    segment = detected[1];
-    let displayText = "";
+    if (detected[0] == -1){ // If no gesture triggered (timed out)
+        textElem.innerHTML = "Trial #" + trialNum + " Results<br><hr>";
+        textElem.innerHTML += "Timed out";
 
-    detectedGesture = -1;
+        addToStorageArray("results", [Date.now(), [-1, -1], target, histories]);
+    } else{
+        // Show detected text
+        gestures = detected[0];
+        segment = detected[1];
+        let displayText = "";
 
-    if (gestures[1] == -1){ // forward flick
-        displayText = "Forward flick";
-        detectedGesture = 0;
-    } else if (gestures[0] == 1){ // right flick
-        displayText = "Right flick";
-        detectedGesture = 1;
-    } else if (gestures[0] == 2){ // right tilt
-        displayText = "Right tilt";
-        detectedGesture = 2;
-    } else if (gestures[0] == -1){ // left flick
-        displayText = "Left flick";
-        detectedGesture = 3;
-    } else if (gestures[0] == -2){ // left tilt
-        displayText = "Left tilt";
-        detectedGesture = 4;
-    } else if (gestures[2] == 1){ // Pull
-        displayText = "Pull";
-        detectedGesture = 5;
-    } else if (gestures[2] == -1){ // pull, then push
-        displayText = "Pull close, then push back";
-        detectedGesture = 6;
+        detectedGesture = -1;
+
+        if (gestures[1] == -1){ // forward flick
+//            displayText = "Forward flick";
+            detectedGesture = 0;
+        } else if (gestures[0] == 1){ // right flick
+//            displayText = "Right flick";
+            detectedGesture = 1;
+        } else if (gestures[0] == 2){ // right tilt
+//            displayText = "Right tilt";
+            detectedGesture = 2;
+        } else if (gestures[0] == -1){ // left flick
+//            displayText = "Left flick";
+            detectedGesture = 3;
+        } else if (gestures[0] == -2){ // left tilt
+//            displayText = "Left tilt";
+            detectedGesture = 4;
+        } else if (gestures[2] == 1){ // Pull
+//            displayText = "Pull close";
+            detectedGesture = 5;
+        } else if (gestures[2] == -1){ // pull, then push
+//            displayText = "Pull close, then push back";
+            detectedGesture = 6;
+        }
+        displayText = gestureNames[detectedGesture];
+
+        textElem.innerHTML = "Trial #" + trialNum + " Results<br><hr>";
+        textElem.innerHTML += "Detected gesture and gaze:</h5>"
+        textElem.innerHTML += "<br>Gesture: " + displayText;
+        textElem.innerHTML += "<br>Gaze segment: " + segment;
+
+        // Show target text
+        textElem.innerHTML += "<br><br>";
+        textElem.innerHTML += "Target gesture and gaze:"
+        textElem.innerHTML += "<br>Gesture: " + gestureNames[target[0]]
+        textElem.innerHTML += "<br>Gaze segment: " + (target[1]);
+
+        // Add to results: [timestamp, detected, target, [gyro history, face dist history, and gaze history]]
+            // Goes [gest, segment]
+    //    console.log("debug: added to results");
+        // for target, gest is 0-6 and seg is 0-7. Need to match detected to that
+        addToStorageArray("results", [Date.now(), [detectedGesture, segment], target, histories]);
     }
-    textElem.innerHTML = "Trial #" + trialNum + " Results<br><hr>";
-    textElem.innerHTML += "Detected gesture and gaze:</h5>"
-    textElem.innerHTML += "<br>Gesture: " + displayText;
-    textElem.innerHTML += "<br>Gaze segment: " + segment;
 
-    // Show target text
-    textElem.innerHTML += "<br><br>";
-    textElem.innerHTML += "Target gesture and gaze:"
-    textElem.innerHTML += "<br>Gesture: " + gestureNames[target[0]]
-    textElem.innerHTML += "<br>Gaze segment: " + (target[1]);
 
-    // Add to results: [timestamp, detected, target]
-        // Goes [gest, segment]
-//    console.log("debug: added to results");
-    // for target, gest is 0-6 and seg is 0-7. Need to match detected to that
-    addToStorageArray("results", [Date.now(), [detectedGesture, segment], target, ]);
     trialStarted = false;
 }
 
@@ -486,13 +497,14 @@ function headsizeToGesture(head_hist, threshold){
     // classify the head gesture
     let tmp = JSON.stringify(condensed);
     pull = (tmp == "[1]");
-    pullpush = (tmp == "[0,1,0]");
+//    pullpush = (tmp == "[0,1,0]");
+    push = (tmp == "[-1]");
 
     // If no normal gestures, make sure it's steady before returning 0
-    if ((pull + pullpush) == 0){
+    if ((pull + push) == 0){
         return (tmp != "[0]")*99
     }
-    return pull*1 + pullpush*-1;
+    return pull*1 + push*-1;
 }
 
 
