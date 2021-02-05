@@ -10,7 +10,7 @@ var galleryElements = [];
 // Trial nonrandom variables
 var trialList;
 // Set up trial time variables
-var trial_time = 5; // timeout variable in seconds
+var trial_time = 10; // timeout variable in seconds
 var trial_delay = 100 // loop delay in ms
 var lastsecHistoryLen = 1000/trial_delay;
 //var num_repeats = trial_time*(lastsecHistoryLen);
@@ -62,8 +62,9 @@ function resetGridColors(){
         div.style.color = "black";
 //        div.style.backgroundColor = divColors[i];
         div.style.backgroundColor = "grey";
-        div.style.innerText = (i%2)*4 + Math.trunc(i/2) + 1;
-        i++;
+//        div.style.innerText = (i%2)*4 + Math.trunc(i/2) + 1;
+//        i++;
+        div.innerText = ""; // Don't show numbers
     }
 }
 
@@ -72,7 +73,7 @@ function setGridColorAndText(square_num, text){
     ind = lookup[square_num-1]
     galleryNumbers[ind-1].style.color = "white";
     galleryNumbers[ind-1].style.backgroundColor = divColors[i]
-    galleryNumbers[ind-1].style.innerText = text;
+    galleryNumbers[ind-1].innerText = text;
 }
 
 function toggleHide(){
@@ -212,7 +213,6 @@ function startTrial(){
     // reset repeat counter
     repeat_counter = 0;
 
-
 //    TODO: clear the accel history and gyro history before starting.
     // But not clear clear, just duplicate the last reading length times
     head_size_history = [];
@@ -224,8 +224,6 @@ function startTrial(){
     trialNum = (getLength('results') + 1) % trialList.length;
     targetGesture = trialList[trialNum][0];
     targetSquare = trialList[trialNum][1];
-//    targetGesture = Math.trunc(Math.random()*7)
-//    targetSquare = Math.trunc(Math.random()*8+1);
 
     textElem.innerHTML = "";
     textElem.innerHTML += "Trial #" + trialNum + "/" + trialList.length + ":";
@@ -235,9 +233,9 @@ function startTrial(){
         // Start the trial after showing user target info
     // Delay start by less after a few trials
     if (trialNum > 20){
-        delayedStart = 2000;
+        delayedStart = 1000;
     } else{
-        delayedStart = 3000;
+        delayedStart = 1500;
     }
     setTimeout(() => {
         // Hide trial instructions
@@ -266,7 +264,6 @@ function trialLoop(max_repeats, targets){
     // head pose gesture detection
     let pushpullgesture = 0;
     if (gyro_steady && prediction.faceInViewConfidence > .85){
-//        let cur_face_geom = faceGeom.getGeom();
         let cur_head_size = faceGeom.getGeom()[3];
 
         head_size_history.push(Math.sqrt(cur_head_size))
@@ -294,10 +291,8 @@ function trialLoop(max_repeats, targets){
     all_gestures = [leftrightgesture, bfgesture, pushpullgesture];
     // If all gestures is not all 0 and has no 99s (unsteady), a gesture is detected
     if (!all_gestures.every(elem => elem == 0) && all_gestures.every(elem => elem != 99)){
-//        console.log("all eyes:")
-//        console.log(localPreds.slice(3));
 //        segmentPrediction = getModeEyeSegment(localPreds.slice(3)) // averaging thresholded pieces
-        segmentPrediction = getMeanEyeSegment(localPreds.slice(3))
+        segmentPrediction = getMeanEyeSegment(localPreds.slice(3)) // Averaging predicted gaze XYs
 //        console.log("all gestures + eyes", all_gestures,segmentPrediction); // take not most recent, but a few ago.
         hist = [localPreds, orient_short_history, head_size_history];
         trialEndHandler([all_gestures, segmentPrediction], targets, hist);
@@ -323,10 +318,11 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
     toggleHide();
     textElem = document.getElementById("trialdisplay");
     textElem.hidden = false;
+    textElem.innerHTML = "Trial #" + trialNum + " Over<br><hr>";
 
     if (detected[0] == -1){ // If no gesture triggered (timed out)
-        textElem.innerHTML = "Trial #" + trialNum + " Results<br><hr>";
-        textElem.innerHTML += "Timed out";
+//        textElem.innerHTML = "Trial #" + trialNum + " Results<br><hr>";
+//        textElem.innerHTML += "Timed out";
 
         addToStorageArray("results", [Date.now(), [-1, -1], target, histories]);
     } else{
@@ -361,21 +357,19 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
         }
         displayText = gestureNames[detectedGesture];
 
-        textElem.innerHTML = "Trial #" + trialNum + " Results<br><hr>";
-        textElem.innerHTML += "Detected gesture and gaze:</h5>"
-        textElem.innerHTML += "<br>Gesture: " + displayText;
-        textElem.innerHTML += "<br>Gaze segment: " + segment;
-
-        // Show target text
-        textElem.innerHTML += "<br><br>";
-        textElem.innerHTML += "Target gesture and gaze:"
-        textElem.innerHTML += "<br>Gesture: " + gestureNames[target[0]]
-        textElem.innerHTML += "<br>Gaze segment: " + (target[1]);
+//        textElem.innerHTML = "Trial #" + trialNum + " Results<br><hr>";
+//        textElem.innerHTML += "Detected gesture and gaze:</h5>"
+//        textElem.innerHTML += "<br>Gesture: " + displayText;
+//        textElem.innerHTML += "<br>Gaze segment: " + segment;
+//
+//        // Show target text
+//        textElem.innerHTML += "<br><br>";
+//        textElem.innerHTML += "Target gesture and gaze:"
+//        textElem.innerHTML += "<br>Gesture: " + gestureNames[target[0]]
+//        textElem.innerHTML += "<br>Gaze segment: " + (target[1]);
 
         // Add to results: [timestamp, detected, target, [gyro history, face dist history, and gaze history]]
-            // Goes [gest, segment]
-    //    console.log("debug: added to results");
-        // for target, gest is 0-6 and seg is 0-7. Need to match detected to that
+        // Goes [gest, segment]          // for target, gest is 0-6 and seg is 0-7. Need to match detected to that
         addToStorageArray("results", [Date.now(), [detectedGesture, segment], target, histories]);
     }
 
