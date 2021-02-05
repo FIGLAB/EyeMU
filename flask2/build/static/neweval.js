@@ -61,10 +61,11 @@ function resetGridColors(){
     for (let div of galleryNumbers){
         div.style.color = "black";
 //        div.style.backgroundColor = divColors[i];
-        div.style.backgroundColor = "grey";
+        galleryElements[i].style.backgroundColor = "grey";
+        i++;
+//        div.style.backgroundColor = "grey";
 //        div.style.innerText = (i%2)*4 + Math.trunc(i/2) + 1;
-//        i++;
-        div.innerText = ""; // Don't show numbers
+        div.innerText = "_"; // Don't show numbers
     }
 }
 
@@ -72,8 +73,10 @@ function setGridColorAndText(square_num, text){
     lookup = [1, 3, 5, 7, 2, 4, 6, 8]
     ind = lookup[square_num-1]
     galleryNumbers[ind-1].style.color = "white";
-    galleryNumbers[ind-1].style.backgroundColor = divColors[i]
-    galleryNumbers[ind-1].innerText = text;
+//    galleryNumbers[ind-1].style.backgroundColor = divColors[i]
+    galleryElements[ind-1].style.backgroundColor = divColors[ind-1];
+//    galleryNumbers[ind-1].innerText = text;
+    galleryNumbers[ind-1].innerText = square_num;
 }
 
 function toggleHide(){
@@ -318,10 +321,11 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
     toggleHide();
     textElem = document.getElementById("trialdisplay");
     textElem.hidden = false;
+    textElem.innerHTML = "Trial #" + trialNum + " Complete<br><hr>";
 
     if (detected[0] == -1){ // If no gesture triggered (timed out)
-        textElem.innerHTML = "Trial #" + trialNum + " Results<br><hr>";
-        textElem.innerHTML += "Timed out";
+//        textElem.innerHTML = "Trial #" + trialNum + " Results<br><hr>";
+//        textElem.innerHTML += "Timed out";
 
         addToStorageArray("results", [Date.now(), [-1, -1], target, histories]);
     } else{
@@ -356,21 +360,19 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
         }
         displayText = gestureNames[detectedGesture];
 
-        textElem.innerHTML = "Trial #" + trialNum + " Results<br><hr>";
-        textElem.innerHTML += "Detected gesture and gaze:</h5>"
-        textElem.innerHTML += "<br>Gesture: " + displayText;
-        textElem.innerHTML += "<br>Gaze segment: " + segment;
-
-        // Show target text
-        textElem.innerHTML += "<br><br>";
-        textElem.innerHTML += "Target gesture and gaze:"
-        textElem.innerHTML += "<br>Gesture: " + gestureNames[target[0]]
-        textElem.innerHTML += "<br>Gaze segment: " + (target[1]);
+//        textElem.innerHTML = "Trial #" + trialNum + " Results<br><hr>";
+//        textElem.innerHTML += "Detected gesture and gaze:</h5>"
+//        textElem.innerHTML += "<br>Gesture: " + displayText;
+//        textElem.innerHTML += "<br>Gaze segment: " + segment;
+//
+//        // Show target text
+//        textElem.innerHTML += "<br><br>";
+//        textElem.innerHTML += "Target gesture and gaze:"
+//        textElem.innerHTML += "<br>Gesture: " + gestureNames[target[0]]
+//        textElem.innerHTML += "<br>Gaze segment: " + (target[1]);
 
         // Add to results: [timestamp, detected, target, [gyro history, face dist history, and gaze history]]
-            // Goes [gest, segment]
-    //    console.log("debug: added to results");
-        // for target, gest is 0-6 and seg is 0-7. Need to match detected to that
+        // Goes [gest, segment]          // for target, gest is 0-6 and seg is 0-7. Need to match detected to that
         addToStorageArray("results", [Date.now(), [detectedGesture, segment], target, histories]);
     }
 
