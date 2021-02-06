@@ -25,18 +25,6 @@ def index():
 def datacollect():
     return render_template("datacollection.html")
 
-# Testing if I could import a tf-lite model into tfjs
-@app.route('/tfimporttest/')
-def tfimporttest():
-    response = render_template("tfimporttest.html")
-    # response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
-
-# Fine-tuning original model, doesn't work on mobile due to RAM restrictions (?)
-@app.route('/transfer/')
-def transfer():
-    return render_template("transfer.html")
-
 # Tests the original model in real-time
 @app.route('/test/')
 def test():
@@ -73,14 +61,26 @@ def acceldemo():
 def faceangle():
     return render_template("faceangle.html")
 
-@app.route("/results/")
-def results():
-    # return render_template("results.html")
-    return render_template("newresults.html")
+# Testing if I could import a tf-lite model into tfjs
+@app.route('/tfimporttest/')
+def tfimporttest():
+    response = render_template("tfimporttest.html")
+    # response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
+# Fine-tuning original model, doesn't work on mobile due to RAM restrictions (?)
+@app.route('/transfer/')
+def transfer():
+    return render_template("transfer.html")
 
 # @app.route("/newresults/")
 # def newresults():
 #     pass
+
+@app.route("/results/")
+def results():
+    # return render_template("results.html")
+    return render_template("newresults.html")
 
 @app.route("/showresults/")
 def showresults():

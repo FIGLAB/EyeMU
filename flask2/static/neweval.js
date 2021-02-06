@@ -14,6 +14,7 @@ var trial_time = 10; // timeout variable in seconds
 var trial_delay = 100 // loop delay in ms
 var lastsecHistoryLen = 1000/trial_delay;
 //var num_repeats = trial_time*(lastsecHistoryLen);
+var trialStartTime;
 var num_repeats = trial_time*1000 / trial_delay;
 
 //TODO Jan 6:
@@ -63,9 +64,7 @@ function resetGridColors(){
 //        div.style.backgroundColor = divColors[i];
         galleryElements[i].style.backgroundColor = "grey";
         i++;
-//        div.style.backgroundColor = "grey";
-//        div.style.innerText = (i%2)*4 + Math.trunc(i/2) + 1;
-        div.innerText = "_"; // Don't show numbers
+        div.innerText = "_";
     }
 }
 
@@ -210,16 +209,15 @@ function getMeanEyeSegment(arr){
 
 // Function that starts trials from clean slate, and resets variables
 function startTrial(){
-    // Make sure we don't start multiple trials
-    trialStarted = true;
-
-    // reset repeat counter
-    repeat_counter = 0;
+    trialStarted = true; // Make sure we don't start multiple trials
 
 //    TODO: clear the accel history and gyro history before starting.
     // But not clear clear, just duplicate the last reading length times
     head_size_history = [];
     localPreds = [];
+
+    // reset trial loop repeat counter
+//    repeat_counter = 0;
 
     // Generate which trial is next, display it in trialdisplay
     textElem = document.getElementById("trialdisplay");
@@ -261,18 +259,19 @@ function startTrial(){
         setGridColorAndText(targetSquare, gestureNames[targetGesture]);
 
         // Start trial loop
-        trialLoop(num_repeats, [targetGesture, targetSquare]);
+        trialStartTime = Date.now()
+        trialLoop([targetGesture, targetSquare]);
     }, delayedStart);
 }
 
 // Main loop of the trial running gesture detection and eye segmentation
-function trialLoop(max_repeats, targets){
+function trialLoop(targets){
+    /////////////////////////////// Accel, head, and eye tracking
    // Accel gesture detection
     condensed_arrays = accelArrayHandler(orient_short_history);
     leftrightgesture = classify_leftright(condensed_arrays[0]);
     bfgesture = classify_backfront(condensed_arrays[1]);
     gyro_steady = (leftrightgesture == 0) && (bfgesture == 0);
-
     // head pose gesture detection
     let pushpullgesture = 0;
     if (gyro_steady && prediction.faceInViewConfidence > .85){
@@ -286,7 +285,6 @@ function trialLoop(max_repeats, targets){
         pushpullgesture = headsizeToGesture(head_size_history, 1.15);
     }
     head_steady = (pushpullgesture == 0);
-
     // Update eye tracking only when stable -- there's a little steady delay though
     if (gyro_steady && head_steady){
         localPreds.push([...curPred]);
@@ -295,30 +293,25 @@ function trialLoop(max_repeats, targets){
             localPreds.shift();
         }
     }
-//    else{
-//        console.log("not steady");
-//    }
 
-
+    /////////////////////////////// Gesture detection
     all_gestures = [leftrightgesture, bfgesture, pushpullgesture];
-    // If all gestures is not all 0 and has no 99s (unsteady), a gesture is detected
+    // If all gestures is not all 0 and has no 99s (unsteady), a gesture is detected. Log it
     if (!all_gestures.every(elem => elem == 0) && all_gestures.every(elem => elem != 99)){
-//        segmentPrediction = getModeEyeSegment(localPreds.slice(3)) // averaging thresholded pieces
         segmentPrediction = getMeanEyeSegment(localPreds.slice(3)) // Averaging predicted gaze XYs
-//        console.log("all gestures + eyes", all_gestures,segmentPrediction); // take not most recent, but a few ago.
         hist = [localPreds, orient_short_history, head_size_history];
         trialEndHandler([all_gestures, segmentPrediction], targets, hist);
     } else{
-        repeat_counter += 1;
-        if (repeat_counter < max_repeats){
-            setTimeout(() => trialLoop(max_repeats, targets), trial_delay);
-        } else{ // Timeout condition
-            // Gesture detect failed, but save eye position anyway
+
+        if ((Date.now() - trialStartTime) > trial_time*1000){ // Timeout
+            // Failed to detect gesture, but save eye position anyway
             segmentPrediction = getMeanEyeSegment(localPreds.slice(3))
 
             hist = [localPreds, orient_short_history, head_size_history];
             trialEndHandler([-1, segmentPrediction], targets, hist);
             return;
+        } else{ // Otherwise, run the loop again
+            setTimeout(() => trialLoop(targets), trial_delay);
         }
     }
 }
@@ -338,39 +331,28 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
         // Show detected text
         gestures = detected[0];
         segment = detected[1];
-        let displayText = "";
-
         detectedGesture = -1;
 
         if (gestures[1] == -1){ // forward flick
-//            displayText = "Forward flick";
             detectedGesture = 0;
         } else if (gestures[0] == 1){ // right flick
-//            displayText = "Right flick";
             detectedGesture = 1;
         } else if (gestures[0] == 2){ // right tilt
-//            displayText = "Right tilt";
             detectedGesture = 2;
         } else if (gestures[0] == -1){ // left flick
-//            displayText = "Left flick";
             detectedGesture = 3;
         } else if (gestures[0] == -2){ // left tilt
-//            displayText = "Left tilt";
             detectedGesture = 4;
         } else if (gestures[2] == 1){ // Pull
-//            displayText = "Pull close";
             detectedGesture = 5;
         } else if (gestures[2] == -1){ // pull, then push
-//            displayText = "Pull close, then push back";
             detectedGesture = 6;
         }
-        displayText = gestureNames[detectedGesture];
 
         // Add to results: [timestamp, detected, target, [gyro history, face dist history, and gaze history]]
         // Goes [gest, segment]          // for target, gest is 0-6 and seg is 0-7. Need to match detected to that
         addToStorageArray("results", [Date.now(), [detectedGesture, segment], target, histories]);
     }
-
     trialStarted = false;
 }
 
