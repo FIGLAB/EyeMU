@@ -116,7 +116,7 @@ const s = ( p ) => {
         p.fill( 0, 60, 90 );
         p.stroke(255);
 
-//        window.scrollBy(0,-1000); // Keep phone scrolled to bottom of page.
+        window.scrollBy(0,-1000); // Keep phone scrolled to bottom of page.
 
         if (done_with_training){
             p.textSize(30);
