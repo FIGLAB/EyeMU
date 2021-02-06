@@ -68,13 +68,16 @@ function resetGridColors(){
     }
 }
 
-function setGridColorAndText(square_num, text){
-    lookup = [1, 3, 5, 7, 2, 4, 6, 8]
-    ind = lookup[square_num-1]
+var lookup = [1, 3, 5, 7, 2, 4, 6, 8];
+function setGridTextColorWhite(square_num){
+    ind = lookup[square_num-1];
     galleryNumbers[ind-1].style.color = "white";
+}
+
+function setGridColorAndText(square_num, text){
+    ind = lookup[square_num-1];
     galleryElements[ind-1].style.backgroundColor = divColors[ind-1];
     galleryNumbers[ind-1].innerText = text;
-//    galleryNumbers[ind-1].innerText = square_num;
 }
 
 function toggleHide(){
@@ -287,9 +290,9 @@ function trialLoop(targets){
     // Update eye tracking only when stable -- there's a little steady delay though
     if (gyro_steady && head_steady){
         localPreds.push([...curPred]);
-
         if (localPreds.length > lastsecHistoryLen){
             localPreds.shift();
+            setGridTextColorWhite(targets[1]);
         }
     }
 
@@ -299,9 +302,11 @@ function trialLoop(targets){
     if (!all_gestures.every(elem => elem == 0) && all_gestures.every(elem => elem != 99)){
         segmentPrediction = getMeanEyeSegment(localPreds.slice(3)) // Averaging predicted gaze XYs
         hist = [localPreds, orient_short_history, head_size_history];
+
+        console.log("Gaze Prediction: ", segmentPrediction);
+
         trialEndHandler([all_gestures, segmentPrediction], targets, hist);
     } else{
-
         if ((Date.now() - trialStartTime) > trial_time*1000){ // Timeout
             // Failed to detect gesture, but save eye position anyway
             segmentPrediction = getMeanEyeSegment(localPreds.slice(3))
