@@ -64,7 +64,7 @@ function resetGridColors(){
 //        div.style.backgroundColor = divColors[i];
         galleryElements[i].style.backgroundColor = "grey";
         i++;
-        div.innerText = "_";
+        div.innerHTML = "&nbsp";
     }
 }
 
@@ -72,10 +72,9 @@ function setGridColorAndText(square_num, text){
     lookup = [1, 3, 5, 7, 2, 4, 6, 8]
     ind = lookup[square_num-1]
     galleryNumbers[ind-1].style.color = "white";
-//    galleryNumbers[ind-1].style.backgroundColor = divColors[i]
     galleryElements[ind-1].style.backgroundColor = divColors[ind-1];
-//    galleryNumbers[ind-1].innerText = text;
-    galleryNumbers[ind-1].innerText = square_num;
+    galleryNumbers[ind-1].innerText = text;
+//    galleryNumbers[ind-1].innerText = square_num;
 }
 
 function toggleHide(){
