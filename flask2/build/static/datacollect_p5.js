@@ -62,9 +62,10 @@ var windowHeight;
 const s = ( p ) => {
     // Setup the Processing Canvas
     windowWidth = p.windowWidth;
-    let width = p.windowWidth;
-    windowHeight = p.windowHeight;
-    let height = p.windowHeight;
+    windowHeight = p.windowHeight*.95;
+
+    let width = windowWidth;
+    let height = windowHeight;
 
     var instr_w = width/2
     var instr_h = height/5
@@ -115,7 +116,7 @@ const s = ( p ) => {
         p.fill( 0, 60, 90 );
         p.stroke(255);
 
-        window.scrollBy(0,-1000); // Keep phone scrolled to bottom of page.
+//        window.scrollBy(0,-1000); // Keep phone scrolled to bottom of page.
 
         if (done_with_training){
             p.textSize(30);

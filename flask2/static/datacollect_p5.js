@@ -62,9 +62,10 @@ var windowHeight;
 const s = ( p ) => {
     // Setup the Processing Canvas
     windowWidth = p.windowWidth;
-    let width = p.windowWidth;
-    windowHeight = p.windowHeight;
-    let height = p.windowHeight;
+    windowHeight = p.windowHeight*.95;
+
+    let width = windowWidth;
+    let height = windowHeight;
 
     var instr_w = width/2
     var instr_h = height/5
