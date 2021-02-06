@@ -10,7 +10,7 @@ var nX, nY;
 
 // Timing of steps
 var stopped = false;
-var numSteps = 40;
+var numSteps = 60;
 var stepsTaken = 0;
 
 // equal collection ims along each line
@@ -74,17 +74,15 @@ const s = ( p ) => {
  // text drawn at width/2, 2*height/5
 
     p.setup = function (){
-        p.createCanvas(windowWidth, windowHeight);
+        var canv = p.createCanvas(windowWidth, windowHeight);
+        canv.parent("p5jscanvasholder");
+
         p.strokeWeight( 1 );
         p.frameRate(60);
 
                     // Create the waypoints for the target dot to follow
         let w_op = [width/10, width/2, width*9/10];
         let h_op = [height/20, height/2, height*19/20];
-        //            // center,mid-right,topright,topleft, midleft, botleft, botright, mid-right again
-        //    nx_arr = [w_op[1], w_op[2], w_op[2], w_op[0], w_op[0], w_op[0], w_op[2], w_op[2]]
-        //    ny_arr = [h_op[1], h_op[1], h_op[0], h_op[0], h_op[1], h_op[2], h_op[2], h_op[1]];
-
                 //center   botmid, botleft, mid left, topleft, topright, midright, botright
         nx_arr = [w_op[1], w_op[1], w_op[0], w_op[0], w_op[0],  w_op[2], w_op[2], w_op[2]]
         ny_arr = [h_op[1], h_op[2], h_op[2], h_op[1], h_op[0], h_op[0], h_op[1], h_op[2]]
@@ -112,10 +110,12 @@ const s = ( p ) => {
 
     // Main draw loop
     p.draw = function (){
-        // Fill canvas grey, Set fill-color to blue, and make stroke-color white
-        p.background( 150 );
-        p.fill( 0, 121, 184 );
+        // Fill canvas same as background, Set fill-color to blue, and make stroke-color white
+        p.background(240, 248, 255);
+        p.fill( 0, 60, 90 );
         p.stroke(255);
+
+        window.scrollBy(0,-1000); // Keep phone scrolled to bottom of page.
 
         if (done_with_training){
             p.textSize(30);
@@ -230,15 +230,6 @@ const s = ( p ) => {
                             console.log("saving last set of embeddings in localstorage, calib_rounds is n", calib_rounds);
                             saveNthRoundinLS(calib_rounds - 1);
                         }
-
-//                                leftEyes_x.push(left);
-//                                rightEyes_x.push(right);
-//                                eyeCorners_x.push(tmpEyeCorn);
-//                                faceGeom_x.push(faceGeom.getGeom());
-//
-//                                // Add y vars
-//                                const nowVals = [X/windowWidth, Y/windowHeight];
-//                                screenXYs_y.push(nowVals);
                     }
                 } else if (stillsTaken >= num_ims_still){
                     p.fill(0, 121, 184); // Blue circle if all images taken (because of color blindness

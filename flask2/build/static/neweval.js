@@ -224,7 +224,16 @@ function startTrial(){
     // Generate which trial is next, display it in trialdisplay
     textElem = document.getElementById("trialdisplay");
     textElem.hidden = false;
+
+    // Figure out which trial is next, check url and then go off the results.
+//    const queryString = window.location.search; // TODO: pre-initialize results1 to 4 with the full list so we can just index in and take them out.
+//    const urlParams = new URLSearchParams(queryString);
+//    if (urlParams.has("trialnum")){
+//        trialNum = parseInt(urlParams.get("trialnum"))
+//    } else{
     trialNum = (getLength('results') + 1) % trialList.length;
+//    }
+
     targetGesture = trialList[trialNum][0];
     targetSquare = trialList[trialNum][1];
 
@@ -321,12 +330,9 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
     toggleHide();
     textElem = document.getElementById("trialdisplay");
     textElem.hidden = false;
-    textElem.innerHTML = "Trial #" + trialNum + " Complete<br><hr>";
+    textElem.innerHTML = "Trial #" + trialNum + " Complete<br><hr><br>Tap to continue";
 
     if (detected[0] == -1){ // If no gesture triggered (timed out)
-//        textElem.innerHTML = "Trial #" + trialNum + " Results<br><hr>";
-//        textElem.innerHTML += "Timed out";
-
         addToStorageArray("results", [Date.now(), [-1, -1], target, histories]);
     } else{
         // Show detected text
@@ -360,22 +366,10 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
         }
         displayText = gestureNames[detectedGesture];
 
-//        textElem.innerHTML = "Trial #" + trialNum + " Results<br><hr>";
-//        textElem.innerHTML += "Detected gesture and gaze:</h5>"
-//        textElem.innerHTML += "<br>Gesture: " + displayText;
-//        textElem.innerHTML += "<br>Gaze segment: " + segment;
-//
-//        // Show target text
-//        textElem.innerHTML += "<br><br>";
-//        textElem.innerHTML += "Target gesture and gaze:"
-//        textElem.innerHTML += "<br>Gesture: " + gestureNames[target[0]]
-//        textElem.innerHTML += "<br>Gaze segment: " + (target[1]);
-
         // Add to results: [timestamp, detected, target, [gyro history, face dist history, and gaze history]]
         // Goes [gest, segment]          // for target, gest is 0-6 and seg is 0-7. Need to match detected to that
         addToStorageArray("results", [Date.now(), [detectedGesture, segment], target, histories]);
     }
-
 
     trialStarted = false;
 }

@@ -1,7 +1,7 @@
 from flask import Flask, render_template
 from flask_flatpages import FlatPages
 from flask_frozen import Freezer
-import os, sys
+import os, sys, datetime
 
 from flask_cors import CORS
 
@@ -126,6 +126,7 @@ if __name__ == "__main__":
             app.config["FREEZER_DESTINATION"] = "/firebase/public"
             freezer.freeze()
         else:
+            print("Built at " + datetime.datetime.now().ctime())
             freezer.freeze()
     else:
         app.run(port=8000)

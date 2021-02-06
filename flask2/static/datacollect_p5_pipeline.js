@@ -78,22 +78,6 @@ async function eyeSelfie(continuous){
 async function trainNatureRegHead(){
     stopFacemesh = true;
 
-//    x_vect = await tf.tidy(() => {
-//            // TODO: Check if new model's embeddings need to be regularized at all
-//            // First embeds, range up to 300
-//            // 2nd embeds, range up to 50~
-//            embeds0 = tf.concat(embeddings_x.map(x => x[0])).div(100)
-//            embeds1 = tf.concat(embeddings_x.map(x => x[1])).div(10)
-//            embeds2 = tf.concat(embeddings_x.map(x => x[2]))
-//
-//            // Combine the embeddings horizontally, turn 8,4,2 into 14
-//            embeds = tf.concat([embeds0, embeds1, embeds2], 1);
-//            return tf.concat([embeds, tf.stack(eyeCorners_x), tf.stack(faceGeom_x)],1);
-//    });
-//
-//    console.log("embeddings extracted, x_vect shape: ", x_vect.shape)
-//    y_vect = tf.tensor(screenXYs_y, [screenXYs_y.length, 2])
-
     dataVecs = retrieveRoundsAsArrays()
 
     // Offer to save the embeddings data
@@ -107,9 +91,6 @@ async function trainNatureRegHead(){
     ground_x = array2mat(dataVecs[1])
     ground_y = array2mat(dataVecs[2])
     console.log("y_vects assembled")
-
-
-
 
     // Model init and training
     svr_x = newModel();
