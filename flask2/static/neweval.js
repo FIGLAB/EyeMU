@@ -1,4 +1,4 @@
-// New eval that tests both gestures and eye tracking
+// Grid eval that tests both gestures and eye tracking
 
 var gestureNames = ["Forward flick", "Right flick", "Right tilt", "Left flick", "Left tilt", "Pull close", "Push away"];
 var trialStarted = false; // concurrency
@@ -9,13 +9,21 @@ var galleryElements = [];
 
 // Trial nonrandom variables
 var trialList;
+var trialName;
+var trialResultsKey;
+var trialBlocksKey;
+var trialBlock;
+var currentBlockTrialNum;
+var currentBlockOrder = [];
+
 // Set up trial time variables
 var trial_time = 10; // timeout variable in seconds
 var trial_delay = 100 // loop delay in ms
 var lastsecHistoryLen = 1000/trial_delay;
-//var num_repeats = trial_time*(lastsecHistoryLen);
 var trialStartTime;
 var num_repeats = trial_time*1000 / trial_delay;
+
+
 
 //TODO Jan 6:
         // DONE 1. Add indicator of trial number to the new trial instructions
@@ -129,29 +137,28 @@ function newEvalGrid(){
     createGalleryElems();
     toggleHide();
 
-    // Create trialList if it doesn't exist yet
-    if (!localStorage.getItem('trial_list')){
+//    // Create trialList if it doesn't exist yet
+//    if (!localStorage.getItem('trial_list')){
+//
+//        // Construct the trials, shuffle them, then store them.
+//        let arr = [];
+//        for (let i = 0; i < 7; i++){ // Gestures
+//            for(let j = 1; j <= 8; j++){ // "Quadrant"
+//                for (let k = 0; k < 2; k++){
+//                    arr.push([i,j]);
+//                }
+//            }
+//        }
+//        arr = shuffleArr(arr);
+//
+//        strArr = JSON.stringify(arr);
+//        localStorage.setItem('trial_list', strArr)
+//        trialList = arr;
+//    } else{
+//        tmp = localStorage.getItem('trial_list');
+//        trialList = JSON.parse(tmp);
+//    }
 
-        // Construct the trials, shuffle them, then store them.
-        let arr = [];
-        for (let i = 0; i < 7; i++){ // Gestures
-            for(let j = 1; j <= 8; j++){ // "Quadrant"
-                for (let k = 0; k < 2; k++){
-                    arr.push([i,j]);
-                }
-            }
-        }
-        arr = shuffleArr(arr);
-
-        strArr = JSON.stringify(arr);
-        localStorage.setItem('trial_list', strArr)
-        trialList = arr;
-    } else{
-        tmp = localStorage.getItem('trial_list');
-        trialList = JSON.parse(tmp);
-    }
-
-//    startTrial();
     accelbuttonholder
     cur = galleryElements[0]; // debuggery
 }
@@ -209,6 +216,17 @@ function getMeanEyeSegment(arr){
 }
 
 
+function setURLParam(key, val){
+    var url = new URL(window.location);
+    url.searchParams.set(key, val);
+    history.pushState({}, null, url);
+}
+
+function getURLParam(key){
+    var url = new URL(window.location);
+    let paramVal = url.searchParams.get(key);
+}
+
 // Function that starts trials from clean slate, and resets variables
 function startTrial(){
     trialStarted = true; // Make sure we don't start multiple trials
@@ -228,11 +246,54 @@ function startTrial(){
     // Figure out which trial is next, check url and then go off the results.
 //    const queryString = window.location.search; // TODO: pre-initialize results1 to 4 with the full list so we can just index in and take them out.
 //    const urlParams = new URLSearchParams(queryString);
+//    console.log("url params has trial?", urlParams.has("trial"), urlParams.get("trial"));
 //    if (urlParams.has("trialnum")){
 //        trialNum = parseInt(urlParams.get("trialnum"))
 //    } else{
-    trialNum = (getLength('results') + 1) % trialList.length;
+//    trialNum = (getLength('results') + 1) % trialList.length;
 //    }
+
+    // Figure out next trial from URL params: "name" and "block"
+//    const queryString = window.location.search;
+//    const urlParams = new URLSearchParams(queryString);
+//    console.log("url params has trial?", urlParams.has("trial"), urlParams.get("trial"));
+//    urlParams.set("yea", 5);
+
+    // Get trial name from the URL. If there isn't one, make it grid1 by default
+    let tmpname = getURLParam("name")
+    if (tmpname == null){
+        tmpname = "grid1"
+    }
+    tmpname
+    trialName = tmpname;
+
+    // Get trial block order from the name. If there isn't one, make it
+    trialBlocksKey = trialName + "_blockorder";
+    let tmpblock = getURLParam("block")
+
+
+
+
+
+//var trialList;
+    //var trialName;
+//var trialResultsKey;
+    //var trialBlocksKey;
+//var trialBlock;
+//var currentBlockTrialNum;
+//var currentBlockOrder = [];
+
+
+    // Setting params in the url
+
+
+
+
+
+
+
+
+
 
     targetGesture = trialList[trialNum][0];
     targetSquare = trialList[trialNum][1];

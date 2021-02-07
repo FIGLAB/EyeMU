@@ -79,9 +79,7 @@ async function trainNatureRegHead(){
     stopFacemesh = true;
 
     dataVecs = retrieveRoundsAsArrays()
-
-    // Offer to save the embeddings data
-//    saveTensors(x_vect, y_vect);
+    // Offer to save the embeddings data  //    saveTensors(x_vect, y_vect);
 
     // Assemble the data into mlweb's format
     x_vect_as_array = dataVecs[0]
@@ -103,9 +101,6 @@ async function trainNatureRegHead(){
     // Save model into localstorage
     exportWEBML()
     console.log("x and y regression are exported")
-
-    // Restart the p5js canvas just to show that the training is done.
-//    loop();
 }
 
 
@@ -141,8 +136,5 @@ async function main(){
     // Set up the camera and facemesh loop
     collectmain();
 
-    // Move the window scroll down
-    window.scrollTo(0,10000);
-
-    console.log("data collection pipeline set up");
+    console.log("data collection pipeline started");
 }

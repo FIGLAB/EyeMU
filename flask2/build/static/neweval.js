@@ -1,4 +1,4 @@
-// New eval that tests both gestures and eye tracking
+// Grid eval that tests both gestures and eye tracking
 
 var gestureNames = ["Forward flick", "Right flick", "Right tilt", "Left flick", "Left tilt", "Pull close", "Push away"];
 var trialStarted = false; // concurrency
@@ -13,7 +13,6 @@ var trialList;
 var trial_time = 10; // timeout variable in seconds
 var trial_delay = 100 // loop delay in ms
 var lastsecHistoryLen = 1000/trial_delay;
-//var num_repeats = trial_time*(lastsecHistoryLen);
 var trialStartTime;
 var num_repeats = trial_time*1000 / trial_delay;
 
@@ -226,8 +225,9 @@ function startTrial(){
     textElem.hidden = false;
 
     // Figure out which trial is next, check url and then go off the results.
-//    const queryString = window.location.search; // TODO: pre-initialize results1 to 4 with the full list so we can just index in and take them out.
-//    const urlParams = new URLSearchParams(queryString);
+    const queryString = window.location.search; // TODO: pre-initialize results1 to 4 with the full list so we can just index in and take them out.
+    const urlParams = new URLSearchParams(queryString);
+    console.log("url params has trial?", urlParams.has("trial"), urlParams.get("trial"));
 //    if (urlParams.has("trialnum")){
 //        trialNum = parseInt(urlParams.get("trialnum"))
 //    } else{

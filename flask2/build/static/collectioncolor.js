@@ -233,7 +233,6 @@ async function drawCache(){
         // Draw face onto reduced canvas
         videoCtx.drawImage(video, 0, 0, videoCanvas.width, videoCanvas.height);
 
-
         // Get eye images from the video stream directly
         if (typeof(lBB) != 'undefined'){
             ctx.drawImage(video, lBB[0], lBB[2], lBB[4], lBB[5], // Source x,y,w,h
