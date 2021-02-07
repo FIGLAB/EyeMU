@@ -8,16 +8,16 @@ var galleryNumbers = [];
 var galleryElements = [];
 
 // Trial nonrandom variables
-var trialList;
+var trialBlockOrder;
 var trialName;
 var trialResultsKey;
 var trialBlocksKey;
-var trialBlock;
+var trialBlockNum;
 var currentBlockTrialNum;
-var currentBlockOrder = [];
+var currentSegmentOrder = null;
 
 // Set up trial time variables
-var trial_time = 10; // timeout variable in seconds
+var trial_time = 200; // timeout variable in seconds
 var trial_delay = 100 // loop delay in ms
 var lastsecHistoryLen = 1000/trial_delay;
 var trialStartTime;
@@ -78,14 +78,20 @@ function resetGridColors(){
 
 var lookup = [1, 3, 5, 7, 2, 4, 6, 8];
 function setGridTextColorWhite(square_num){
-    ind = lookup[square_num-1];
+//    ind = lookup[square_num-1];
+//    galleryNumbers[ind-1].style.color = "white";
+    ind = lookup[square_num];
     galleryNumbers[ind-1].style.color = "white";
 }
 
 function setGridColorAndText(square_num, text){
-    ind = lookup[square_num-1];
+    ind = lookup[square_num];
     galleryElements[ind-1].style.backgroundColor = divColors[ind-1];
     galleryNumbers[ind-1].innerText = text;
+
+//    ind = lookup[square_num-1];
+//    galleryElements[ind-1].style.backgroundColor = divColors[ind-1];
+//    galleryNumbers[ind-1].innerText = text;
 }
 
 function toggleHide(){
@@ -164,55 +170,10 @@ function newEvalGrid(){
 }
 
 
-/////////////////////////////////////// Eye tracking
-function gaze2Section(gaze_pred){
-    actualX = window.scrollX + gaze_pred[0]*innerWidth;
-    actualY = window.scrollY + gaze_pred[1]*innerHeight;
-
-    // Generate the top and bottom bounds of one elem in each row
-    heightBounds = [0.0];
-    for (let i = 2; i < galleryElements.length; i += 2){
-        heightBounds.push(galleryElements[i].offsetTop);
-    }
-
-    let row;
-    heightBounds.forEach((elem, ind) => {
-        if (actualY > elem){
-            row = ind;
-        }
-    });
-
-    let col = actualX < Math.trunc(window.innerWidth/2) ? 0 : 1
-
-    // Calculate the section number and return it
-    let section = col*4 + row + 1
-    return section
-}
-
-
-// Find mode of the segments history
-function getModeEyeSegment(arr){
-    let hist = Array(8).fill(0);
-    arr.forEach((elem) => {
-        hist[elem-1] += 1;
-    });
-
-    mode = hist.map((x, i) => [x, i]).reduce((r, a) => (a[0] > r[0] ? a : r))[1] + 1;
-    return mode;
-}
-
-// Get average of all recent eye positions then threshold it
-function getMeanEyeSegment(arr){
-    acc = [0,0]
-    arr.forEach((elem) =>{
-        acc[0] += elem[0];
-        acc[1] += elem[1];
-    });
-    acc[0] /= arr.length;
-    acc[1] /= arr.length;
-
-    section = gaze2Section(acc)
-    return section;
+function makeRandomArrayOfLen(n){
+    let seglist = [...Array(n).keys()];
+    shuffleArr(seglist);
+    return seglist;
 }
 
 
@@ -246,70 +207,115 @@ function startTrial(){
     // Figure out which trial is next, check url and then go off the results.
 //    const queryString = window.location.search; // TODO: pre-initialize results1 to 4 with the full list so we can just index in and take them out.
 //    const urlParams = new URLSearchParams(queryString);
-//    console.log("url params has trial?", urlParams.has("trial"), urlParams.get("trial"));
-//    if (urlParams.has("trialnum")){
-//        trialNum = parseInt(urlParams.get("trialnum"))
-//    } else{
-//    trialNum = (getLength('results') + 1) % trialList.length;
-//    }
+
 
     // Figure out next trial from URL params: "name" and "block"
-//    const queryString = window.location.search;
-//    const urlParams = new URLSearchParams(queryString);
-//    console.log("url params has trial?", urlParams.has("trial"), urlParams.get("trial"));
-//    urlParams.set("yea", 5);
 
     // Get trial name from the URL. If there isn't one, make it grid1 by default
     let tmpname = getURLParam("name")
     if (tmpname == null){
         tmpname = "grid1"
+        setURLParam("name", tmpname);
     }
-    tmpname
     trialName = tmpname;
 
-    // Get trial block order from the name. If there isn't one, make it
+    // Get type of eval, grid or list
+    let numTrialsPerBlock;
+    if (trialName.slice(0,4) == "grid"){ // Grid has len 8
+        numTrialsPerBlock = 8;
+    } else{ // List has len 6
+        numTrialsPerBlock = 6;
+    }
+
+
+    // Initialize results in localstorage if it doesn't exist.
+    trialResultsKey = trialName + "_results";
+    tmpres = localStorage.getItem(trialResultsKey);
+    if (tmpres == null){
+        let reslist = [];
+        for (let i = 0; i < 7; i++){
+            reslist.push(makeRandomArrayOfLen(numTrialsPerBlock))
+        }
+        localStorage.setItem(trialResultsKey, JSON.stringify(reslist));
+    }
+
+
+    // Get trial block list. If there isn't one, make it
     trialBlocksKey = trialName + "_blockorder";
-    let tmpblock = getURLParam("block")
+    tmplist = localStorage.getItem(trialBlocksKey);
+    if (tmplist == null){
+        let blocklist;
+        blocklist = [...Array(7).keys()]; // 7 gestures
+        shuffleArr(blocklist);
+        localStorage.setItem(trialBlocksKey, JSON.stringify(blocklist));
+
+        tmplist = localStorage.getItem(trialBlocksKey);
+    }
+    trialBlockOrder = JSON.parse(tmplist);
+
+    // Get trial's current block from the url
+    let tmpblock = parseInt(getURLParam("block"));
+    if (isNaN(tmpblock)){
+        tmpblock = 0;
+        setURLParam("block", tmpblock);
+    }
+    trialBlockNum = tmpblock;
+
+    // Get current block's grid num from url, or start it at 0 and re-generate if nonexistent
+    let tmptrialnum = parseInt(getURLParam("trialnum"));
+    if (isNaN(tmptrialnum)){
+        tmptrialnum = 0;
+        setURLParam("trialnum", tmptrialnum);
+    }
+    currentBlockTrialNum = tmptrialnum;
+
+    // Index into randomly ordered list of squares to look at, or create it
+    // We need to make a new one if it's empty, or
+    if (currentSegmentOrder == null){
+        currentSegmentOrder = makeRandomArrayOfLen(numTrialsPerBlock);
+    } else if (currentBlockTrialNum == currentSegmentOrder.length){ // Also create new segment list if trialnum has finished this block.
+        trialBlockNum += 1;
+        setURLParam("block", trialBlockNum);
+        currentBlockTrialNum = 0;
+        setURLParam("trialnum", currentBlockTrialNum);
+
+        currentSegmentOrder = makeRandomArrayOfLen(numTrialsPerBlock);
+    }
+
+    // Redirect to main page if this eval set is done.
+    if (trialBlockNum == 7){
+        window.location.href = "/results";
+    }
+
+
+    console.log(trialName);
+    console.log("trialBlockNum and currentBlockTrialNum");
+    console.log(trialBlockNum, currentBlockTrialNum);
+    console.log("current gaze target: ", currentSegmentOrder[currentBlockTrialNum]);
+    console.log("current gesture target: ", trialBlockOrder[trialBlockNum]);
+    console.log(gestureNames);
+
+    targetGesture = trialBlockOrder[trialBlockNum];
+    targetSquare = currentSegmentOrder[currentBlockTrialNum];
+
+//    targetGesture = trialList[trialNum][0];
+//    targetSquare = trialList[trialNum][1];
 
 
 
-
-
-//var trialList;
-    //var trialName;
-//var trialResultsKey;
-    //var trialBlocksKey;
-//var trialBlock;
-//var currentBlockTrialNum;
-//var currentBlockOrder = [];
-
-
-    // Setting params in the url
-
-
-
-
-
-
-
-
-
-
-    targetGesture = trialList[trialNum][0];
-    targetSquare = trialList[trialNum][1];
-
-    textElem.innerHTML = "";
-    textElem.innerHTML += "Trial #" + trialNum + "/" + trialList.length + ":";
-    textElem.innerHTML += "<br>Target gesture: " + gestureNames[targetGesture];
-    textElem.innerHTML += "<br>Target square: " + (targetSquare);
+//    textElem.innerHTML = "";
+//    textElem.innerHTML += "Trial #" + currentBlockTrialNum + "/" + trialList.length + ":";
+//    textElem.innerHTML += "<br>Target gesture: " + gestureNames[targetGesture];
+//    textElem.innerHTML += "<br>Target square: " + (targetSquare);
 
         // Start the trial after showing user target info
     // Delay start by less after a few trials
-    if (trialNum > 20){
-        delayedStart = 1000;
-    } else{
-        delayedStart = 1500;
-    }
+    delayedStart = 1000;
+//    if (trialNum > 20){
+//        delayedStart = 1000;
+//    } else{
+//        delayedStart = 1500;
+//    }
     setTimeout(() => {
         // Hide trial instructions
         console.log("Trial started, targets:", gestureNames[targetGesture], (targetSquare));
@@ -388,10 +394,13 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
     toggleHide();
     textElem = document.getElementById("trialdisplay");
     textElem.hidden = false;
-    textElem.innerHTML = "Trial #" + trialNum + " Complete<br><hr><br>Tap to continue";
+//    textElem.innerHTML = "Trial #" + trialNum + " Complete<br><hr><br>Tap to continue";
+    textElem.innerHTML = "Block #" + trialBlockNum + ", Trial #" + currentBlockTrialNum +  " Complete<br><hr><br>Tap to continue";
+
 
     if (detected[0] == -1){ // If no gesture triggered (timed out)
-        addToStorageArray("results", [Date.now(), [-1, -1], target, histories]);
+//        addToStorageArray("results", [Date.now(), [-1, -1], target, histories]);
+        addToEvalResults(trialResultsKey, trialBlockNum, currentBlockTrialNum, [Date.now(), [-1, detected[1]], target, histories]);
     } else{
         // Show detected text
         gestures = detected[0];
@@ -416,9 +425,30 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
 
         // Add to results: [timestamp, detected, target, [gyro history, face dist history, and gaze history]]
         // Goes [gest, segment]          // for target, gest is 0-6 and seg is 0-7. Need to match detected to that
-        addToStorageArray("results", [Date.now(), [detectedGesture, segment], target, histories]);
+//        addToStorageArray("results", [Date.now(), [detectedGesture, segment], target, histories]);
+        addToEvalResults(trialResultsKey, trialBlockNum, currentBlockTrialNum, [Date.now(), [detectedGesture, segment], target, histories]);
     }
+
+    console.log("current block trial num at end of trialendhandler", currentBlockTrialNum);
+    setURLParam("trialnum", currentBlockTrialNum + 1);
     trialStarted = false;
+}
+
+
+////////////////////////////////////// Block based saving
+function addToEvalResults(resultsKey, blocknum, trialnum, resultsArr){
+    if (!localStorage.getItem(resultsKey)){ // Populate if empty
+        console.log("adding to eval broken, key \"" + resultsKey + "\" is empty");
+    }
+
+    try{
+        tmp = JSON.parse(localStorage.getItem(resultsKey))
+    } catch{
+        console.log("adding to eval broken, key \"" + resultsKey + "\" is not parseable");
+    }
+
+    tmp[blocknum][trialnum] = resultsArr;
+    localStorage[resultsKey] = JSON.stringify(tmp);
 }
 
 /////////////////////////////////////// Accelerometer gesture detection
@@ -542,6 +572,59 @@ function headsizeToGesture(head_hist, threshold){
     }
     return pull*1 + push*-1;
 }
+
+
+/////////////////////////////////////// Eye tracking
+function gaze2Section(gaze_pred){
+    actualX = window.scrollX + gaze_pred[0]*innerWidth;
+    actualY = window.scrollY + gaze_pred[1]*innerHeight;
+
+    // Generate the top and bottom bounds of one elem in each row
+    heightBounds = [0.0];
+    for (let i = 2; i < galleryElements.length; i += 2){
+        heightBounds.push(galleryElements[i].offsetTop);
+    }
+
+    let row;
+    heightBounds.forEach((elem, ind) => {
+        if (actualY > elem){
+            row = ind;
+        }
+    });
+
+    let col = actualX < Math.trunc(window.innerWidth/2) ? 0 : 1
+
+    // Calculate the section number and return it
+    let section = col*4 + row + 1
+    return section
+}
+
+
+// Find mode of the segments history
+function getModeEyeSegment(arr){
+    let hist = Array(8).fill(0);
+    arr.forEach((elem) => {
+        hist[elem-1] += 1;
+    });
+
+    mode = hist.map((x, i) => [x, i]).reduce((r, a) => (a[0] > r[0] ? a : r))[1] + 1;
+    return mode;
+}
+
+// Get average of all recent eye positions then threshold it
+function getMeanEyeSegment(arr){
+    acc = [0,0]
+    arr.forEach((elem) =>{
+        acc[0] += elem[0];
+        acc[1] += elem[1];
+    });
+    acc[0] /= arr.length;
+    acc[1] /= arr.length;
+
+    section = gaze2Section(acc)
+    return section;
+}
+
 
 
 divColors = [
