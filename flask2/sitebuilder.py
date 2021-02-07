@@ -85,6 +85,10 @@ def results():
 def showresults():
     return render_template("showresults.html")
 
+@app.route("/blockresults/")
+def blockresults():
+    return render_template("blockresults.html")
+
 @app.route("/testing/")
 def testing():
     return render_template("mainTesting.html")

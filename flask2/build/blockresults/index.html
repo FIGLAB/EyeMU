@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+
+
+    <title>GAZEL</title>
+
+<!-- For drawing the predicted output directly onto the HTML page with an icon-->
+<!-- CSS comments are not //, and if you put them in the <style> header they break it -->
+    <style>
+    .placeholderdot{
+        width: 30px;
+        height: 30px;
+        background-color: #ffab56;
+        border-radius: 50%;
+        position:fixed;
+    }
+
+    .targetdot{
+        width: 60px;
+        height: 60px;
+        background-color: #0e5cab;
+        border-radius: 50%;
+        position:fixed;
+    }
+
+    .predicdot{
+        width: 30px;
+        height: 30px;
+        background-color: #ffab56;
+        border-radius: 50%;
+        position:fixed;
+    }
+
+    .predicdot2{
+        width: 30px;
+        height: 30px;
+        background-color: #e84338bb;
+        border-radius: 50%;
+        position:fixed;
+    }
+
+    .onscreenregion{
+        position:fixed;
+        background-color:#00003010;
+        left: 0px;
+        top: 0px;
+        right:100px;
+        bottom:100px;
+    }
+
+
+    .widebutton {
+        display: block;
+        width: 100%;
+        border: none;
+        background-color: #CCC;
+        padding: 14px 28px;
+        font-size: 16px;
+        cursor: pointer;
+        text-align: center;
+    }
+
+    hr {
+        background-color:#ccc;
+        height:1px;
+        border:none;
+    }
+
+    </style>
+
+    
+
+<script src="/static/fileIO.js"></script>
+<script>
+
+    function clearResults(resKey){
+        a = confirm("Clicking OK will clear ALL trials of your evaluation data! Only do this if there's been an error or you've already exported the data.");
+        if (a){
+            console.log("cleared evaluation results of " + resKey + " from localstorage");
+            localStorage[resKey] = undefined;
+            location.reload();
+        }
+    }
+
+    function checkDownloadResults(resKey){
+        if (localStorage[resKey] == "undefined"){
+             alert("No eval results to download");
+        } else {
+            downloadResults()
+        }
+    }
+
+    var average = (array) => array.reduce((a, b) => a + b) / array.length;
+    var divideAll = (array, divisor) => array.map((elem) => elem/divisor);
+
+
+    document.addEventListener("DOMContentLoaded", function(event) {
+        keys = ["grid1_results", "yes", "np", "maybe"];
+        for (let i = 0; i < 4; i++){
+            resultsKey = keys[i];
+
+            if (localStorage[resultsKey] == undefined){
+                tmp = document.createElement("div");
+                tmp.innerHTML = "No evaluation results to show for key " + resultsKey;
+                document.body.append(tmp);
+            } else{
+
+                var evalResults = JSON.parse(localStorage[resultsKey]);
+
+                // Generate div and table for results Header
+                let resultsDiv = document.createElement("div");
+                resultsDiv.innerHTML += "<h2>Gaze+Accel Evaluation Results</h2>";
+                resultsDiv.innerHTML += "<span style='color:blue;'>Blue</span> is matched, <span style='color:red;'>Red</span> is mismatched";
+                resultsDiv.innerHTML += "<hr>";
+
+                    // Table and Table header
+                resultsTable = document.createElement("table");
+                resultsTable.style.border = "1px solid black";
+                let thead = resultsTable.createTHead();
+                let row = thead.insertRow()
+                for (let header of ["Timestamp", "Gesture (target, predicted)", "Screen section (target, predicted)"]){
+                    let th = document.createElement("th");
+                    th.style.border = "1px double black";
+                    th.innerHTML = header;
+                    row.appendChild(th);
+                }
+
+            //    document.body.append(resultsTable); // debug
+
+                // Populate results table
+                let correctGest = 0;
+                let correctSeg = 0;
+                let totals = evalResults.length;
+                evalResults.forEach((elem, ind) => {
+                    // elem format is [d.getTime(), [detectedgesture, detectedsegment], [targetgesture, targetsegment]]
+                    // Get the numbers out
+                    let dateInMillis = elem[0];
+                    let detected = elem[1];
+                    let target = elem[2];
+                    console.log("parsed", elem);
+
+                    // Add to results
+                    if (detected[0] == target[0]){correctGest += 1;}
+                    if (detected[1] == target[1]){correctSeg += 1;}
+
+                    // Create new row and add three cells
+                    let row = resultsTable.insertRow();
+
+                        // Date
+                    cell = row.insertCell();
+                    date = new Date(dateInMillis);
+                    cell.innerHTML = date.toLocaleTimeString() + ", " + date.toDateString();
+                        // Gesture and Segment
+                    for (i in [0,1]){
+                        cell = row.insertCell();
+                        tmpspan = document.createElement("span");
+                        if (target[i] == detected[i]){
+                            tmpspan.style.color = "blue";
+                        } else{
+                            tmpspan.style.color = "red";
+                        }
+                        tmpspan.innerText = target[i] + ", " + detected[i];
+                        cell.append(tmpspan)
+                    }
+                });
+
+                // Add statistics to bottom, after table
+                finalStats = document.createElement("p");
+                finalStats.innerHTML += "Gestures correct: " + correctGest + "/" + totals + " = " + (100*correctGest/totals).toFixed(1) + "%";
+                finalStats.innerHTML += "<br>Screen sections correct: " + correctSeg + "/" + totals + " = " + (100*correctSeg/totals).toFixed(1) + "%";
+                finalStats.innerHTML += "<br>Overall: " + (correctSeg+correctGest) + "/" + (2*totals) + " = " + (50*(correctGest+correctSeg)/totals).toFixed(1) + "%";
+
+                // Add results to document body
+                resultsDiv.append(finalStats);
+                resultsDiv.append(resultsTable);
+                document.body.append(resultsDiv);
+            }
+        }
+    });
+</script>
+
+
+</head>
+<body style="background-color:aliceblue; font-family: Verdana, sans-serif;">
+
+<div>
+<!--    <button onclick="checkDownloadResults()" style="height:40px;">Download results</button>-->
+    <button onclick="location.href='../'" style="height:40px;">Back to GAZEL Home</button>
+    <button onclick="checkDownloadResults()" style="height:40px;">Download results</button>
+    &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+    <button onclick="clearResults()" style="height:20px;background-color:lightcoral;">Clear results</button>
+</div>
+
+</body>
+</html>
