@@ -80,12 +80,12 @@ var lookup = [1, 3, 5, 7, 2, 4, 6, 8];
 function setGridTextColorWhite(square_num){
 //    ind = lookup[square_num-1];
 //    galleryNumbers[ind-1].style.color = "white";
-    ind = lookup[square_num];
+    ind = lookup[square_num-1];
     galleryNumbers[ind-1].style.color = "white";
 }
 
 function setGridColorAndText(square_num, text){
-    ind = lookup[square_num];
+    ind = lookup[square_num-1];
     galleryElements[ind-1].style.backgroundColor = divColors[ind-1];
     galleryNumbers[ind-1].innerText = text;
 
@@ -185,7 +185,7 @@ function setURLParam(key, val){
 
 function getURLParam(key){
     var url = new URL(window.location);
-    let paramVal = url.searchParams.get(key);
+    return url.searchParams.get(key);
 }
 
 // Function that starts trials from clean slate, and resets variables
@@ -262,12 +262,15 @@ function startTrial(){
     trialBlockNum = tmpblock;
 
     // Get current block's grid num from url, or start it at 0 and re-generate if nonexistent
+//    console.log("currentBlockTrialNum before setting frmo url param", currentBlockTrialNum);
     let tmptrialnum = parseInt(getURLParam("trialnum"));
     if (isNaN(tmptrialnum)){
         tmptrialnum = 0;
         setURLParam("trialnum", tmptrialnum);
     }
     currentBlockTrialNum = tmptrialnum;
+//    console.log("currentBlockTrialNum after setting frmo url param", currentBlockTrialNum);
+
 
     // Index into randomly ordered list of squares to look at, or create it
     // We need to make a new one if it's empty, or
@@ -291,22 +294,23 @@ function startTrial(){
     console.log(trialName);
     console.log("trialBlockNum and currentBlockTrialNum");
     console.log(trialBlockNum, currentBlockTrialNum);
-    console.log("current gaze target: ", currentSegmentOrder[currentBlockTrialNum]);
+    console.log("current gaze target: ", currentSegmentOrder[currentBlockTrialNum] + 1);
     console.log("current gesture target: ", trialBlockOrder[trialBlockNum]);
     console.log(gestureNames);
 
     targetGesture = trialBlockOrder[trialBlockNum];
-    targetSquare = currentSegmentOrder[currentBlockTrialNum];
+    targetSquare = currentSegmentOrder[currentBlockTrialNum]+1;
 
 //    targetGesture = trialList[trialNum][0];
 //    targetSquare = trialList[trialNum][1];
 
 
 
-//    textElem.innerHTML = "";
-//    textElem.innerHTML += "Trial #" + currentBlockTrialNum + "/" + trialList.length + ":";
-//    textElem.innerHTML += "<br>Target gesture: " + gestureNames[targetGesture];
-//    textElem.innerHTML += "<br>Target square: " + (targetSquare);
+    textElem.innerHTML = "";
+    textElem.innerHTML += "Block #" + (1+trialBlockNum) + ", ";
+    textElem.innerHTML += "Trial #" + (1+currentBlockTrialNum) + "/" + currentSegmentOrder.length + ":";
+    textElem.innerHTML += "<br>Target gesture: " + gestureNames[targetGesture];
+    textElem.innerHTML += "<br>Target square: " + (targetSquare);
 
         // Start the trial after showing user target info
     // Delay start by less after a few trials
@@ -395,7 +399,7 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
     textElem = document.getElementById("trialdisplay");
     textElem.hidden = false;
 //    textElem.innerHTML = "Trial #" + trialNum + " Complete<br><hr><br>Tap to continue";
-    textElem.innerHTML = "Block #" + trialBlockNum + ", Trial #" + currentBlockTrialNum +  " Complete<br><hr><br>Tap to continue";
+    textElem.innerHTML = "Block #" + (trialBlockNum+1) + ", Trial #" + (currentBlockTrialNum+1) +  " Complete<br><hr><br>Tap to continue";
 
 
     if (detected[0] == -1){ // If no gesture triggered (timed out)
@@ -429,8 +433,8 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
         addToEvalResults(trialResultsKey, trialBlockNum, currentBlockTrialNum, [Date.now(), [detectedGesture, segment], target, histories]);
     }
 
-    console.log("current block trial num at end of trialendhandler", currentBlockTrialNum);
-    setURLParam("trialnum", currentBlockTrialNum + 1);
+//    console.log("current block trial num at end of trialendhandler", currentBlockTrialNum);
+    setURLParam("trialnum", (currentBlockTrialNum + 1));
     trialStarted = false;
 }
 
