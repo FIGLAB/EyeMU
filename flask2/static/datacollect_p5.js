@@ -70,7 +70,7 @@ const s = ( p ) => {
     var instr_w = width/2
     var instr_h = height/5
     var instr_x = windowWidth/2 - instr_w/2;
-    var instr_y = 4*windowHeight/5 - instr_h/2;
+    var instr_y = 7*windowHeight/10 - instr_h/2;
 
  // text drawn at width/2, 2*height/5
 
@@ -143,7 +143,7 @@ const s = ( p ) => {
             p.text("Personalization Wizard\nInstructions: Track the ball with your eyes. \nWhen it turns blue, you're safe to blink.", width/2, height/5)
             p.text("Round: " + (calib_rounds+1) + "/" + n_calib_rounds + "\nTap to advance",
                         width/2,
-                        height - (height - (instr_y + instr_h))/2)
+                        height - (height - (instr_y + instr_h))/2 - 100)
         } else {
             // Start training automatically
             if (stillsDone){

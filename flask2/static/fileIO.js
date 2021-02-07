@@ -156,12 +156,12 @@ function saveRegressionModels(){
     link.click();
 }
 
-function downloadResults(){
-    resultsStr = localStorage.getItem("results");
+function downloadResults(resKey){
+    resultsStr = localStorage.getItem(resKey);
 
     var link = document.createElement('a');
     link.href = makeTextFile(resultsStr);
     link.target = '_blank';
-    link.download = "GAZEL_results.json";
+    link.download = resKey + "_gazel_results.json";
     link.click();
 }
