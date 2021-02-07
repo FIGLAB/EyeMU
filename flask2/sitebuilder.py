@@ -39,7 +39,6 @@ def svrtest():
 @app.route('/eval/')
 def eval():
     return render_template("neweval.html")
-    # return render_template("eval.html")
 
 # # new eval, combined gaze + gesture
 # @app.route('/neweval/')
