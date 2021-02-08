@@ -27,17 +27,18 @@
 
 
     document.addEventListener("DOMContentLoaded", function(event) {
-        keys = ["grid1_results", "yes", "np", "maybe"];
-        for (let i = 0; i < 4; i++){
-            resultsKey = keys[i];
+        keys = ["grid1_results", "grid2_results", "list1_results", "list2_results"];
+        for (let j = 0; j < 4; j++){
+            resultsKey = keys[j];
+            console.log("showing results for ", resultsKey)
 
-            if (localStorage[resultsKey] == undefined){
+            if (typeof(localStorage[resultsKey]) == "undefined"){
                 tmp = document.createElement("div");
                 tmp.innerHTML = "No evaluation results to show for key " + resultsKey;
                 document.body.append(tmp);
             } else{
-
                 var evalResults = JSON.parse(localStorage[resultsKey]);
+                evalResults = evalResults.flat();
 
                 // Generate div and table for results Header
                 let resultsDiv = document.createElement("div");
@@ -64,40 +65,45 @@
                 let correctSeg = 0;
                 let totals = evalResults.length;
                 evalResults.forEach((elem, ind) => {
-                    // elem format is [d.getTime(), [detectedgesture, detectedsegment], [targetgesture, targetsegment]]
-                    // Get the numbers out
-                    let dateInMillis = elem[0];
-                    let detected = elem[1];
-                    let target = elem[2];
-                    console.log("parsed", elem);
+                    if (Array.isArray(elem)){
+                        // elem format is [d.getTime(), [detectedgesture, detectedsegment], [targetgesture, targetsegment]]
+                        // Get the numbers out
+                        let dateInMillis = elem[0];
+                        let detected = elem[1];
+                        let target = elem[2];
+                        console.log("parsed", elem);
 
-                    // Add to results
-                    if (detected[0] == target[0]){correctGest += 1;}
-                    if (detected[1] == target[1]){correctSeg += 1;}
+                        // Add to results
+                        if (detected[0] == target[0]){correctGest += 1;}
+                        if (detected[1] == target[1]){correctSeg += 1;}
 
-                    // Create new row and add three cells
-                    let row = resultsTable.insertRow();
+                        // Create new row and add three cells
+                        let row = resultsTable.insertRow();
 
-                        // Date
-                    cell = row.insertCell();
-                    date = new Date(dateInMillis);
-                    cell.innerHTML = date.toLocaleTimeString() + ", " + date.toDateString();
-                        // Gesture and Segment
-                    for (i in [0,1]){
+                            // Date
                         cell = row.insertCell();
-                        tmpspan = document.createElement("span");
-                        if (target[i] == detected[i]){
-                            tmpspan.style.color = "blue";
-                        } else{
-                            tmpspan.style.color = "red";
+                        date = new Date(dateInMillis);
+                        cell.innerHTML = date.toLocaleTimeString() + ", " + date.toDateString();
+                            // Gesture and Segment
+                        for (i in [0,1]){
+                            cell = row.insertCell();
+                            tmpspan = document.createElement("span");
+                            if (target[i] == detected[i]){
+                                tmpspan.style.color = "blue";
+                            } else{
+                                tmpspan.style.color = "red";
+                            }
+                            tmpspan.innerText = target[i] + ", " + detected[i];
+                            cell.append(tmpspan)
                         }
-                        tmpspan.innerText = target[i] + ", " + detected[i];
-                        cell.append(tmpspan)
+                    } else{
+
                     }
                 });
 
                 // Add statistics to bottom, after table
                 finalStats = document.createElement("p");
+                finalStats.innerHTML += "<h2>Results for " + resultsKey + "</h2>";
                 finalStats.innerHTML += "Gestures correct: " + correctGest + "/" + totals + " = " + (100*correctGest/totals).toFixed(1) + "%";
                 finalStats.innerHTML += "<br>Screen sections correct: " + correctSeg + "/" + totals + " = " + (100*correctSeg/totals).toFixed(1) + "%";
                 finalStats.innerHTML += "<br>Overall: " + (correctSeg+correctGest) + "/" + (2*totals) + " = " + (50*(correctGest+correctSeg)/totals).toFixed(1) + "%";
