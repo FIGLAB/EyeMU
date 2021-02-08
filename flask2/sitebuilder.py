@@ -38,12 +38,7 @@ def svrtest():
 # Evaluates performance of the regression model, then prints output.
 @app.route('/eval/')
 def eval():
-    return render_template("neweval.html")
-
-# # new eval, combined gaze + gesture
-# @app.route('/neweval/')
-# def neweval():
-#     pass
+    return render_template("evalgrid.html")
 
 # Just shows facemesh and yaw/pitch/roll calculations
 @app.route('/facemeshdemo/')

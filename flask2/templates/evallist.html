@@ -19,7 +19,10 @@
 <script src="{{url_for('static', filename='accel.js')}}"></script>
 <script src="{{url_for('static', filename='svr.js')}}"></script>
 <script src="{{url_for('static', filename='collectioncolor.js')}}"></script>
-<script src="{{url_for('static', filename='neweval.js')}}"></script>
+
+<script src="{{url_for('static', filename='listeval.js')}}"></script>
+<script src="{{url_for('static', filename='evalbackend.js')}}"></script>
+
 
 
 <!--Other ML library-->
@@ -31,7 +34,7 @@
 
     // Wait until after the body loads before adding elements to it.
     document.addEventListener("DOMContentLoaded", function(event) {
-        newEvalGrid();
+        blockedEval();
     })
 
 </script>
@@ -43,34 +46,6 @@
         height: 100%;
         width: 100%;
         margin: 0px;
-    }
-
-    .wackdiv {
-        width: 49%;
-        height: 24%;
-        margin:0.5%;
-        align-items: center;
-
-        display: inline-block;
-
-    }
-
-    .wackdivtext{
-        text-align: center;
-        line-height: 100%;
-
-        top: 45%;
-        position: relative;
-    }
-
-    .galleryContainer {
-        height:100%;
-        width: 100%;
-        line-height: 0px;
-        align-item: center;
-        position: relative;
-
-        overflow: hidden;
     }
 </style>
 
