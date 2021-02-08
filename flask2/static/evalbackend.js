@@ -22,7 +22,8 @@ var lastsecHistoryLen = 1000/trial_delay;
 var trialStartTime;
 var num_repeats = trial_time*1000 / trial_delay;
 
-
+// gaze target labelling
+var lookup;
 
 var cur;
 var origScroll;
@@ -65,6 +66,13 @@ function blockedEval(){
         }
     };
 
+    // Fill out the lookup table.
+    if (evalType == "list"){
+        lookup = [1, 2, 3, 4, 5, 6];
+    } else{
+        lookup = [1, 3, 5, 7, 2, 4, 6, 8];
+    }
+
     // Populate the screen with the boxes, and hide them
     createGalleryElems();
     toggleHide();
@@ -82,11 +90,14 @@ function resetGridColors(){
 //        div.style.backgroundColor = divColors[i];
         galleryElements[i].style.backgroundColor = "grey";
         i++;
-        div.innerHTML = "&nbsp<br>&nbsp";
+        if (evalType == "grid"){
+            div.innerHTML = "&nbsp<br>&nbsp";
+        } else{
+            div.innerHTML = "&nbsp";
+        }
     }
 }
 
-var lookup = [1, 3, 5, 7, 2, 4, 6, 8];
 function setGridTextColorWhite(square_num){
 //    ind = lookup[square_num-1];
 //    galleryNumbers[ind-1].style.color = "white";
@@ -97,7 +108,12 @@ function setGridTextColorWhite(square_num){
 function setGridColorAndText(square_num, text){
     ind = lookup[square_num-1];
     galleryElements[ind-1].style.backgroundColor = divColors[ind-1];
-    galleryNumbers[ind-1].innerHTML = text;
+
+    if (evalType == "grid"){
+        galleryNumbers[ind-1].innerHTML = text.replace(" ", "<br>");
+    } else{
+        galleryNumbers[ind-1].innerHTML = text;
+    }
 }
 
 function toggleHide(){
@@ -146,10 +162,10 @@ function startTrial(){
 
     // Figure out next trial from URL params: "name" and "block"
 
-    // Get trial name from the URL. If there isn't one, make it grid1 by default
+    // Get trial name from the URL. If there isn't one, make it evalType + "1" by default
     let tmpname = getURLParam("name")
     if (tmpname == null){
-        tmpname = "grid1"
+        tmpname = evalType + "1";
         setURLParam("name", tmpname);
     }
     trialName = tmpname;
@@ -265,7 +281,7 @@ function startTrial(){
         toggleHide();
             // highlight one number
         resetGridColors();
-        setGridColorAndText(targetSquare, gestureNames[targetGesture].replace(" ", "<br>"));
+        setGridColorAndText(targetSquare, gestureNames[targetGesture]);
 
         // Start trial loop
         trialStartTime = Date.now()
@@ -519,30 +535,46 @@ function gaze2Section(gaze_pred){
     actualX = window.scrollX + gaze_pred[0]*innerWidth;
     actualY = window.scrollY + gaze_pred[1]*innerHeight;
 
-    // Generate the top and bottom bounds of one elem in each row
-    heightBounds = [0.0];
-    for (let i = 2; i < galleryElements.length; i += 2){
-        heightBounds.push(galleryElements[i].offsetTop);
-    }
-
-    let row;
-    heightBounds.forEach((elem, ind) => {
-        if (actualY > elem){
-            row = ind;
+    if (evalType == "grid"){
+        // Generate the top and bottom bounds of one elem in each row
+        heightBounds = [0.0];
+        for (let i = 2; i < galleryElements.length; i += 2){
+            heightBounds.push(galleryElements[i].offsetTop);
         }
-    });
 
-    let col = actualX < Math.trunc(window.innerWidth/2) ? 0 : 1
+        let row;
+        heightBounds.forEach((elem, ind) => {
+            if (actualY > elem){
+                row = ind;
+            }
+        });
 
-    // Calculate the section number and return it
-    let section = col*4 + row + 1
-    return section
+        let col = actualX < Math.trunc(window.innerWidth/2) ? 0 : 1
+
+        // Calculate the section number and return it
+        let section = col*4 + row + 1
+        return section
+    } else{
+        heightBounds = [0.0];
+        for (let i = 1; i < galleryElements.length; i += 1){
+            heightBounds.push(galleryElements[i].offsetTop);
+        }
+
+        let row;
+        heightBounds.forEach((elem, ind) => {
+            if (actualY > elem){
+                row = ind;
+            }
+        });
+
+        return row + 1;
+    }
 }
 
 
 // Find mode of the segments history
 function getModeEyeSegment(arr){
-    let hist = Array(8).fill(0);
+    let hist = Array(galleryElements.length).fill(0);
     arr.forEach((elem) => {
         hist[elem-1] += 1;
     });

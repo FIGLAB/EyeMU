@@ -36,9 +36,14 @@ def svrtest():
     return render_template("svr.html")
 
 # Evaluates performance of the regression model, then prints output.
-@app.route('/eval/')
-def eval():
+@app.route('/grideval/')
+def grideval():
     return render_template("evalgrid.html")
+
+@app.route('/listeval/')
+def listeval():
+    return render_template("evallist.html")
+
 
 # Just shows facemesh and yaw/pitch/roll calculations
 @app.route('/facemeshdemo/')

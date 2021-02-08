@@ -1,5 +1,8 @@
-// Grid eval that tests both gestures and eye tracking
+// List eval that tests both gestures and eye tracking
 
+var evalType = "list";
+//var linebreakBetweenGestureName = false;
+//var segmentsLabeledLinearly = true;
 
 function createGalleryElems(){
     // Create the container that holds all the elements
@@ -12,14 +15,14 @@ function createGalleryElems(){
     elemsClicked = [];
     elemsFilters = [];
 
-    for (let i = 0; i<8; i++){
+    for (let i = 0; i<6; i++){
         im_container = document.createElement("div");
-        im_container.classList.toggle("wackdiv");
+        im_container.classList.toggle("listdiv");
         im_container.style.backgroundColor = divColors[i];
 
         a = document.createElement('div')
-        a.classList.toggle("wackdivtext");
-        a.innerText = (i%2)*4 + Math.trunc(i/2) + 1;
+        a.classList.toggle("listdivtext");
+        a.innerText = i;
         galleryNumbers.push(a)
         im_container.append(a)
 
