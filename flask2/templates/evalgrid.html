@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block headextra %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
+<!--<meta name="viewport" content="initial-scale=1.0, user-scalable=0">-->
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<!-- Tensorflow core, model, and backend-->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.7.0/dist/tf.min.js"></script>-->
+<!-- TFjs version 2.7 local-->
+<!--<script src="{{url_for('static', filename='tf.min.js')}}"></script>-->
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
+
+<!-- Javascript specific to this page -->
+<script src="{{url_for('static', filename='ML.js')}}"></script>
+<script src="{{url_for('static', filename='fileIO.js')}}"></script>
+<script src="{{url_for('static', filename='accel.js')}}"></script>
+<script src="{{url_for('static', filename='svr.js')}}"></script>
+<script src="{{url_for('static', filename='collectioncolor.js')}}"></script>
+
+<script src="{{url_for('static', filename='grideval.js')}}"></script>
+<script src="{{url_for('static', filename='evalbackend.js')}}"></script>
+
+
+<!--Other ML library-->
+<script src="{{url_for('static', filename='mlweb.js')}}"></script>
+
+<script>
+    main();
+    showPredictDot = false;
+
+    // Wait until after the body loads before adding elements to it.
+    document.addEventListener("DOMContentLoaded", function(event) {
+        blockedEval();
+    })
+
+</script>
+
+<!--width: 100vw; height: 100vh; -->
+<!--body {height100%; width:100%; padding: 0; margin: 0; }-->
+<style>
+    html, body {
+        height: 100%;
+        width: 100%;
+        margin: 0px;
+    }
+</style>
+
+{% endblock %}
+
+
+{% block body %}
+<p id="evalinstructions" style="text-align:center">
+        Loading...
+        <br><br>
+        Please press "Allow" for for both Device Accelerometer and Webcam access to begin.
+</p>
+
+<div id="accelbuttonholder" style="width:100%; height:100%; display: flex; justify-content: center; align-items: center;">
+
+    <br>
+
+    <button id="accelPermsButton" onclick="getAccel()">Get Accel</button>
+</div>
+
+<h3 hidden id="trialdisplay" style="text-align:center;"></h3>
+
+<div id="main">
+    <canvas hidden id="eyecache"></canvas>
+    <video hidden autoplay muted playsinline id="video"  style="
+              -webkit-transform: scaleX(-1);
+              transform: scaleX(-1);
+              visibility: hidden;
+              width: auto;
+              height: auto;
+              "></video>
+</div>
+{% endblock %}
