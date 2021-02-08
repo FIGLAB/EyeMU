@@ -28,6 +28,14 @@
 
     document.addEventListener("DOMContentLoaded", function(event) {
         keys = ["grid1_results", "grid2_results", "list1_results", "list2_results"];
+
+
+        // Generate div and table for results Header
+        let resultsDiv = document.createElement("div");
+        resultsDiv.innerHTML += "<h2>Gaze+Accel Evaluation Results</h2>";
+        resultsDiv.innerHTML += "<span style='color:blue;'>Blue</span> is matched, <span style='color:red;'>Red</span> is mismatched";
+        resultsDiv.innerHTML += "<hr>";
+
         for (let j = 0; j < 4; j++){
             resultsKey = keys[j];
             console.log("showing results for ", resultsKey)
@@ -40,12 +48,6 @@
                 var evalResults = JSON.parse(localStorage[resultsKey]);
                 evalResults = evalResults.flat();
 
-                // Generate div and table for results Header
-                let resultsDiv = document.createElement("div");
-                resultsDiv.innerHTML += "<h2>Gaze+Accel Evaluation Results</h2>";
-                resultsDiv.innerHTML += "<span style='color:blue;'>Blue</span> is matched, <span style='color:red;'>Red</span> is mismatched";
-                resultsDiv.innerHTML += "<hr>";
-
                     // Table and Table header
                 resultsTable = document.createElement("table");
                 resultsTable.style.border = "1px solid black";
@@ -53,7 +55,7 @@
                 let row = thead.insertRow()
                 for (let header of ["Timestamp", "Gesture (target, predicted)", "Screen section (target, predicted)"]){
                     let th = document.createElement("th");
-                    th.style.border = "1px double black";
+                    th.style.border = "1px solid black";
                     th.innerHTML = header;
                     row.appendChild(th);
                 }

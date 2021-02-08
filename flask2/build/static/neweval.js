@@ -72,7 +72,7 @@ function resetGridColors(){
 //        div.style.backgroundColor = divColors[i];
         galleryElements[i].style.backgroundColor = "grey";
         i++;
-        div.innerHTML = "&nbsp";
+        div.innerHTML = "&nbsp<br>&nbsp";
     }
 }
 
@@ -87,7 +87,7 @@ function setGridTextColorWhite(square_num){
 function setGridColorAndText(square_num, text){
     ind = lookup[square_num-1];
     galleryElements[ind-1].style.backgroundColor = divColors[ind-1];
-    galleryNumbers[ind-1].innerText = text;
+    galleryNumbers[ind-1].innerHTML = text;
 
 //    ind = lookup[square_num-1];
 //    galleryElements[ind-1].style.backgroundColor = divColors[ind-1];
@@ -329,7 +329,7 @@ function startTrial(){
         toggleHide();
             // highlight one number
         resetGridColors();
-        setGridColorAndText(targetSquare, gestureNames[targetGesture]);
+        setGridColorAndText(targetSquare, gestureNames[targetGesture].replace(" ", "<br>"));
 
         // Start trial loop
         trialStartTime = Date.now()
