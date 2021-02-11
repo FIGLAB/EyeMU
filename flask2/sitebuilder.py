@@ -44,7 +44,6 @@ def grideval():
 def listeval():
     return render_template("evallist.html")
 
-
 # Just shows facemesh and yaw/pitch/roll calculations
 @app.route('/facemeshdemo/')
 def facemeshdemo():

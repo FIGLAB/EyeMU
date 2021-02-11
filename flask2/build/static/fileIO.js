@@ -156,7 +156,17 @@ function saveRegressionModels(){
     link.click();
 }
 
-function downloadResults(resKey){
+function downloadResults(){
+    resultsStr = localStorage.getItem("eval");
+
+    var link = document.createElement('a');
+    link.href = makeTextFile(resultsStr);
+    link.target = '_blank';
+    link.download = "eval" + "_gazel_results.json";
+    link.click();
+}
+
+function downloadResultsFromKey(resKey){
     resultsStr = localStorage.getItem(resKey);
 
     var link = document.createElement('a');
@@ -165,3 +175,18 @@ function downloadResults(resKey){
     link.download = resKey + "_gazel_results.json";
     link.click();
 }
+
+function downloadResultsManyKeys(keyList){
+    results = Object();
+    for (let i = 0; i<keyList.length; i++){
+        results[keyList[i]] = localStorage.getItem(keyList[i]);
+    }
+    resultsStr = JSON.stringify(results);
+
+    var link = document.createElement('a');
+    link.href = makeTextFile(resultsStr);
+    link.target = '_blank';
+    link.download = "ALL_gazel.json";
+    link.click();
+}
+
