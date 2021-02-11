@@ -178,6 +178,9 @@
 
         for (let j = 0; j < 4; j++){
             let resultsKey = keys[j];
+            let resultsType = resultsKey.slice(0,4);
+            let resultsName = resultsKey.slice(0,5);
+
             console.log("showing results for ", resultsKey)
 
             if (typeof(localStorage[resultsKey]) == "undefined" || localStorage[resultsKey] == undefined || localStorage[resultsKey] == "undefined"){
@@ -191,10 +194,16 @@
                     // Table and Table header
                 resultsTable = document.createElement("table");
                 resultsTable.style.border = "1px solid black";
+                resultsTable.style.textAlign = "center";
+                resultsTable.style.padding = "0.5em";
+
+                
+
                 let thead = resultsTable.createTHead();
                 let row = thead.insertRow()
-                for (let header of ["Timestamp", "Gesture (target, predicted)", "Screen section (target, predicted)"]){
+                for (let header of ["Timestamp", "Gesture (target, predicted)", "Screen section (target, predicted)", "Redo Block"]){
                     let th = document.createElement("th");
+                    th.style.padding = "0.5em";
                     th.style.border = "1px solid black";
                     th.innerHTML = header;
                     row.appendChild(th);
@@ -206,21 +215,31 @@
                 let correctGest = 0;
                 let correctSeg = 0;
                 let totals = evalResults.length;
+
+                let segmentCount = 0;
+                let segmentsPerBlock;
+                if (resultsType == "grid"){
+                    segmentsPerBlock = 8;
+                } else{
+                    segmentsPerBlock = 6;
+                }
+
+
                 evalResults.forEach((elem, ind) => {
                     if (Array.isArray(elem)){
                         // elem format is [d.getTime(), [detectedgesture, detectedsegment], [targetgesture, targetsegment]]
-                        // Get the numbers out
+                        // Get the numbers out of the elem
                         let dateInMillis = elem[0];
                         let detected = elem[1];
                         let target = elem[2];
-                        console.log("parsed", elem);
+                        // console.log("parsed", elem);
 
                         // Add to results
                         if (detected[0] == target[0]){correctGest += 1;}
                         if (detected[1] == target[1]){correctSeg += 1;}
 
                         // Create new row and add three cells
-                        let row = resultsTable.insertRow();
+                        row = resultsTable.insertRow();
 
                             // Date
                         cell = row.insertCell();
@@ -239,9 +258,29 @@
                             cell.append(tmpspan)
                         }
                     } else{
+                        // Create new row with dummy cells
+                        row = resultsTable.insertRow();
 
+                        for (i in [0,1,2]){
+                            cell = row.insertCell();
+                            cell.innerHTML = "Incomplete"
+                        }
                     }
+                        // Add the side column if we're in a new block
+                    if ((segmentCount % segmentsPerBlock) == 0){
+                        cell = row.insertCell();
+                        cell.rowSpan = segmentsPerBlock;
+                        let blockNum = Math.trunc(segmentCount/segmentsPerBlock);
+                        let tmpLink = document.createElement("a");
+                        tmpLink.target = "_blank"; 
+                        tmpLink.href = "../" + resultsType + "eval/?name=" + resultsName + "&block=" + blockNum;
+                        tmpLink.innerHTML = blockNum + 1;
+                        // cell.innerHTML = blockNum + 1;
+                        cell.append(tmpLink);
+                    }
+                    segmentCount += 1;
                 });
+
                 // Add download and delete buttons to each header
                 let tmpbut1 = document.createElement("button");
                 tmpbut1.addEventListener('click', function(){
