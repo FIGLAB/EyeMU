@@ -16,7 +16,7 @@ var currentBlockTrialNum;
 var currentSegmentOrder = null;
 
 // Set up trial time variables
-var trial_time = 200; // timeout variable in seconds
+var trial_time = 10; // timeout variable in seconds
 var trial_delay = 100 // loop delay in ms
 var lastsecHistoryLen = 1000/trial_delay;
 var trialStartTime;
