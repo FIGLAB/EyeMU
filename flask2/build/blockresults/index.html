@@ -129,21 +129,38 @@
 
 <script src="/static/fileIO.js"></script>
 <script>
+    var keys = ["grid1_results", "grid2_results", "list1_results", "list2_results"];
 
-    function clearResults(resKey){
-        a = confirm("Clicking OK will clear ALL trials of your evaluation data! Only do this if there's been an error or you've already exported the data.");
+    function clearResultsKey(resKey){
+        a = confirm("Clicking OK will clear ALL trials of your evaluation data for this key (" + resKey + ") only! Only do this if there's been an error or you've already exported the data.");
         if (a){
             console.log("cleared evaluation results of " + resKey + " from localstorage");
-            localStorage[resKey] = undefined;
+            localStorage.removeItem(resKey);
             location.reload();
         }
+    }
+
+    function clearResultsALL(){
+        a = confirm("Clicking OK will clear ALL trials of your evaluation data across ALL KEYS! Only do this if there's been an error or you've already exported the data.");
+        if (a){
+            for (let i = 0; i < 4; i++){
+                let tmpkey = keys[i];
+                console.log("cleared evaluation results of " + tmpkey + " from localstorage");
+                localStorage.removeItem(tmpkey);
+            }
+            location.reload();
+        }
+    }
+
+    function checkDownloadResultsALL(){
+        downloadResultsManyKeys(keys);
     }
 
     function checkDownloadResults(resKey){
         if (localStorage[resKey] == "undefined"){
              alert("No eval results to download");
         } else {
-            downloadResults()
+            downloadResultsFromKey(resKey)
         }
     }
 
@@ -152,23 +169,21 @@
 
 
     document.addEventListener("DOMContentLoaded", function(event) {
-        keys = ["grid1_results", "grid2_results", "list1_results", "list2_results"];
-
 
         // Generate div and table for results Header
         let resultsDiv = document.createElement("div");
         resultsDiv.innerHTML += "<h2>Gaze+Accel Evaluation Results</h2>";
         resultsDiv.innerHTML += "<span style='color:blue;'>Blue</span> is matched, <span style='color:red;'>Red</span> is mismatched";
-        resultsDiv.innerHTML += "<hr>";
+        // resultsDiv.innerHTML += "<hr>";
 
         for (let j = 0; j < 4; j++){
-            resultsKey = keys[j];
+            let resultsKey = keys[j];
             console.log("showing results for ", resultsKey)
 
-            if (typeof(localStorage[resultsKey]) == "undefined"){
+            if (typeof(localStorage[resultsKey]) == "undefined" || localStorage[resultsKey] == undefined || localStorage[resultsKey] == "undefined"){
                 tmp = document.createElement("div");
                 tmp.innerHTML = "No evaluation results to show for key " + resultsKey;
-                document.body.append(tmp);
+                resultsDiv.append(tmp);
             } else{
                 var evalResults = JSON.parse(localStorage[resultsKey]);
                 evalResults = evalResults.flat();
@@ -227,20 +242,49 @@
 
                     }
                 });
+                // Add download and delete buttons to each header
+                let tmpbut1 = document.createElement("button");
+                tmpbut1.addEventListener('click', function(){
+                    checkDownloadResults(resultsKey);
+                });
+                tmpbut1.style.height = "40px";
+                tmpbut1.innerHTML = "Download Results";
+
+
+                let tmpbut2 = document.createElement("button")
+                tmpbut2.addEventListener('click', function(){
+                    clearResultsKey(resultsKey);
+                });
+                tmpbut2.style.height = "20px";
+                tmpbut2.style.marginLeft = "50%";
+                tmpbut2.style.backgroundColor = "lightcoral";
+                tmpbut2.innerHTML = "Clear Results";
+
+
+                
 
                 // Add statistics to bottom, after table
                 finalStats = document.createElement("p");
-                finalStats.innerHTML += "<h2>Results for " + resultsKey + "</h2>";
+                finalStats.innerHTML += "<hr><h2>Results for key \"" + resultsKey + "\"</h2>";
+                // finalStats.append(tmpbut1);
+                // finalStats.innerHTML += "&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;"; // Create space between buttons
+                // finalStats.append(tmpbut2);
+                // finalStats.innerHTML += "<br>";
+
+                // Add rest of stats
                 finalStats.innerHTML += "Gestures correct: " + correctGest + "/" + totals + " = " + (100*correctGest/totals).toFixed(1) + "%";
                 finalStats.innerHTML += "<br>Screen sections correct: " + correctSeg + "/" + totals + " = " + (100*correctSeg/totals).toFixed(1) + "%";
                 finalStats.innerHTML += "<br>Overall: " + (correctSeg+correctGest) + "/" + (2*totals) + " = " + (50*(correctGest+correctSeg)/totals).toFixed(1) + "%";
 
                 // Add results to document body
                 resultsDiv.append(finalStats);
+                resultsDiv.append(tmpbut1);
+                resultsDiv.append(tmpbut2);
                 resultsDiv.append(resultsTable);
-                document.body.append(resultsDiv);
+                // document.body.append(resultsDiv);
             }
         }
+        document.body.append(resultsDiv);
     });
 </script>
 
@@ -251,9 +295,9 @@
 <div>
 <!--    <button onclick="checkDownloadResults()" style="height:40px;">Download results</button>-->
     <button onclick="location.href='../'" style="height:40px;">Back to GAZEL Home</button>
-    <button onclick="checkDownloadResults()" style="height:40px;">Download results</button>
+    <button onclick="checkDownloadResultsALL()" style="height:40px;">Download results</button>
     &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
-    <button onclick="clearResults()" style="height:20px;background-color:lightcoral;">Clear results</button>
+    <button onclick="clearResultsALL()" style="height:20px;background-color:lightcoral;">Clear results</button>
 </div>
 
 </body>
