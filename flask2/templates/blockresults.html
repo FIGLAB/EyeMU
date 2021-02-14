@@ -9,8 +9,9 @@
     function clearResultsKey(resKey){
         a = confirm("Clicking OK will clear ALL trials of your evaluation data for this key (" + resKey + ") only! Only do this if there's been an error or you've already exported the data.");
         if (a){
-            console.log("cleared evaluation results of " + resKey + " from localstorage");
+            console.log("cleared evaluation results and block order of " + resKey + " from localstorage");
             localStorage.removeItem(resKey);
+            localStorage.removeItem(resKey.slice(0,5) + "_blockorder");
             location.reload();
         }
     }
@@ -20,8 +21,10 @@
         if (a){
             for (let i = 0; i < 4; i++){
                 let tmpkey = keys[i];
-                console.log("cleared evaluation results of " + tmpkey + " from localstorage");
+                console.log("cleared evaluation results and block order of " + tmpkey + " from localstorage");
                 localStorage.removeItem(tmpkey);
+                localStorage.removeItem(tmpkey.slice(0,5) + "_blockorder");
+
             }
             location.reload();
         }

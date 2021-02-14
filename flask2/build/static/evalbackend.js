@@ -16,7 +16,7 @@ var currentBlockTrialNum;
 var currentSegmentOrder = null;
 
 // Set up trial time variables
-var trial_time = 200; // timeout variable in seconds
+var trial_time = 20; // timeout variable in seconds
 var trial_delay = 100 // loop delay in ms
 var lastsecHistoryLen = 1000/trial_delay;
 var trialStartTime;
@@ -258,9 +258,9 @@ function startTrial(){
 
 
 
-    textElem.innerHTML = "";
+    textElem.innerHTML = "\"" + trialName + "\" Evaluation Trial<br>";
     textElem.innerHTML += "Block #" + (1+trialBlockNum) + ", ";
-    textElem.innerHTML += "Trial #" + (1+currentBlockTrialNum) + "/" + currentSegmentOrder.length + ":";
+    textElem.innerHTML += "Trial #" + (1+currentBlockTrialNum) + "/" + currentSegmentOrder.length;
     textElem.innerHTML += "<br>Target gesture: " + gestureNames[targetGesture];
     textElem.innerHTML += "<br>Target square: " + (targetSquare);
 
@@ -397,11 +397,13 @@ function addToEvalResults(resultsKey, blocknum, trialnum, resultsArr){
         console.log("adding to eval broken, key \"" + resultsKey + "\" is empty");
     }
 
+    let tmp;
     try{
         tmp = JSON.parse(localStorage.getItem(resultsKey))
     } catch{
         console.log("adding to eval broken, key \"" + resultsKey + "\" is not parseable");
     }
+    console.log("parsed eval key " + resultsKey + " as " + tmp)
 
     tmp[blocknum][trialnum] = resultsArr;
     localStorage[resultsKey] = JSON.stringify(tmp);
