@@ -12,22 +12,21 @@ app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 freezer = Freezer(app)
 
 
-# CORS(app)
-
-
 
 @app.route('/')
 def index():
     return render_template("main.html")
 
+################# Data collection and calibration
 # Records the training data and trains the regression models from embeddings
 @app.route('/datacollection/')
 def datacollect():
     return render_template("datacollection.html")
 
+################# Live testing for debugging
 # Tests the original model in real-time
-@app.route('/test/')
-def test():
+@app.route('/uncalibtest/')
+def uncalibtest():
     return render_template("livetest.html")
 
 # Tests the original model, boosted with the regression model in real-time
@@ -35,6 +34,14 @@ def test():
 def svrtest():
     return render_template("svr.html")
 
+################# Prep for evaluating gaze + accel.
+# Gesture detection standalone
+@app.route('/gestures/')
+def gestures():
+    return render_template("gesturepractice.html")
+
+
+################# Evaluation of gaze + acceleration together
 # Evaluates performance of the regression model, then prints output.
 @app.route('/grideval/')
 def grideval():
@@ -43,6 +50,13 @@ def grideval():
 @app.route('/listeval/')
 def listeval():
     return render_template("evallist.html")
+
+################# Show results from the grid and list evaluations
+@app.route("/results/")
+def results():
+    return render_template("blockresults.html")
+
+############################ Misc showcases and debug screens.
 
 # Just shows facemesh and yaw/pitch/roll calculations
 @app.route('/facemeshdemo/')
@@ -59,42 +73,13 @@ def acceldemo():
 def faceangle():
     return render_template("faceangle.html")
 
-# Testing if I could import a tf-lite model into tfjs
-@app.route('/tfimporttest/')
-def tfimporttest():
-    response = render_template("tfimporttest.html")
-    # response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
-
-# Fine-tuning original model, doesn't work on mobile due to RAM restrictions (?)
-@app.route('/transfer/')
-def transfer():
-    return render_template("transfer.html")
-
-# @app.route("/newresults/")
-# def newresults():
-#     pass
-
-@app.route("/results/")
-def results():
-    # return render_template("results.html")
-    return render_template("newresults.html")
-
-@app.route("/showresults/")
-def showresults():
-    return render_template("showresults.html")
-
-@app.route("/blockresults/")
-def blockresults():
-    return render_template("blockresults.html")
-
 @app.route("/testing/")
 def testing():
     return render_template("mainTesting.html")
 
 
 
-# interactions time!
+################### Applications/Interactions
 @app.route('/zoo/1/')
 def zoo1():
     return render_template("zoo.html", zooNum = 1)
