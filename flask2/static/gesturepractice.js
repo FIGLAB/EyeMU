@@ -234,14 +234,14 @@ function startTrial(){
     targetGesture = trialList[trialNum][0];
     targetSquare = trialList[trialNum][1];
 
-//    textElem.innerHTML = "";
+    textElem.innerHTML = "Starting...";
 //    textElem.innerHTML += "Trial #" + trialNum + "/" + trialList.length + ":";
 //    textElem.innerHTML += "<br>Target gesture: " + gestureNames[targetGesture];
 //    textElem.innerHTML += "<br>Target square: " + (targetSquare);
 
         // Start the trial after showing user target info
     // Delay start by less after a few trials
-    delayedStart = 10;
+    delayedStart = 1000;
 
     setTimeout(() => {
         // Hide trial instructions
@@ -423,8 +423,9 @@ function accelArrayHandler(accel_history){
     backfront_hist = accel_history[1].slice();
 
     // threshold and remove duplicates
-    lr_condensed = historyToCondensed(leftright_hist, 30);
-    bf_condensed = historyToCondensed(backfront_hist, 30);
+    let thresh = 30
+    lr_condensed = historyToCondensed(leftright_hist, thresh);
+    bf_condensed = historyToCondensed(backfront_hist, thresh*1.5);
 
     return [lr_condensed, bf_condensed]
 }

@@ -56,7 +56,7 @@ function createGalleryElems(){
     let yea = document.createElement("h1");
     yea.style.textAlign = "center";
     yea.style.lineHeight = "100%";
-    yea.innerHTML = "&nbsp<br>&nbsp<br> Perform a gesture";
+    yea.innerHTML = "&nbsp<br>&nbsp<br> Perform a gesture.";
     galleryDiv.append(yea);
 
     // debug variables
@@ -424,7 +424,7 @@ function accelArrayHandler(accel_history){
 
     // threshold and remove duplicates
     lr_condensed = historyToCondensed(leftright_hist, 30);
-    bf_condensed = historyToCondensed(backfront_hist, 30);
+    bf_condensed = historyToCondensed(backfront_hist, 50);
 
     return [lr_condensed, bf_condensed]
 }
