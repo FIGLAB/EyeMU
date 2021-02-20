@@ -324,8 +324,6 @@ function trialLoop(targets){
     }
 }
 
-
-
 function argMax(array) {
   return array.map((x, i) => [x, i]).reduce((r, a) => (a[0] > r[0] ? a : r))[1];
 }
@@ -408,21 +406,6 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
             }
         }
 
-//        if (gestures[1] == -1){ // forward flick
-//            detectedGesture = 0;
-//        } else if (gestures[0] == 1){ // right flick
-//            detectedGesture = 1;
-//        } else if (gestures[0] == 2){ // right tilt
-//            detectedGesture = 2;
-//        } else if (gestures[0] == -1){ // left flick
-//            detectedGesture = 3;
-//        } else if (gestures[0] == -2){ // left tilt
-//            detectedGesture = 4;
-//        } else if (gestures[2] == 1){ // Pull
-//            detectedGesture = 5;
-//        } else if (gestures[2] == -1){ // Push away
-//            detectedGesture = 6;
-//        }
         displayText = gestureNames[detectedGesture];
 
 //        textElem.innerHTML = "Trial #" + trialNum + " Results<br><hr>";
