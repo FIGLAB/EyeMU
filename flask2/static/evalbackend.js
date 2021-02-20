@@ -1,5 +1,6 @@
 //Backend code that coordinates the trials by block, and does all the timing and gesture detection.
-var gestureNames = ["Forward flick", "Right flick", "Right tilt", "Left flick", "Left tilt", "Pull close", "Push away"];
+//var gestureNames = ["Forward flick", "Right flick", "Right tilt", "Left flick", "Left tilt", "Pull close", "Push away"];
+var gestureNames = ["Forward flick", "Right flick", "Right tilt", "Left flick", "Left tilt", "Pull close", "Push away", "Turn to right", "Turn to left"];
 var trialStarted = false; // concurrency
 
 // Square grid variables
@@ -184,7 +185,7 @@ function startTrial(){
     tmpres = localStorage.getItem(trialResultsKey);
     if (tmpres == null){
         let reslist = [];
-        for (let i = 0; i < 7; i++){
+        for (let i = 0; i < gestureNames.length; i++){
             reslist.push(makeRandomArrayOfLen(numTrialsPerBlock))
         }
         localStorage.setItem(trialResultsKey, JSON.stringify(reslist));
@@ -196,7 +197,7 @@ function startTrial(){
     tmplist = localStorage.getItem(trialBlocksKey);
     if (tmplist == null){
         let blocklist;
-        blocklist = [...Array(7).keys()]; // 7 gestures
+        blocklist = [...Array(gestureNames.length).keys()]; // 7 gestures
         shuffleArr(blocklist);
         localStorage.setItem(trialBlocksKey, JSON.stringify(blocklist));
 
@@ -238,7 +239,7 @@ function startTrial(){
     }
 
     // Redirect to main page if this eval set is done.
-    if (trialBlockNum == 7){
+    if (trialBlockNum == gestureNames.length){
         window.location.href = "/results";
     }
 
@@ -253,10 +254,6 @@ function startTrial(){
     targetGesture = trialBlockOrder[trialBlockNum];
     targetSquare = currentSegmentOrder[currentBlockTrialNum]+1;
 
-//    targetGesture = trialList[trialNum][0];
-//    targetSquare = trialList[trialNum][1];
-
-
 
     textElem.innerHTML = "\"" + trialName + "\" Evaluation Trial<br>";
     textElem.innerHTML += "Block #" + (1+trialBlockNum) + ", ";
@@ -266,7 +263,7 @@ function startTrial(){
 
         // Start the trial after showing user target info
     // Delay start by less after a few trials
-    delayedStart = 1000;
+    delayedStart = 1500;
 //    if (trialNum > 20){
 //        delayedStart = 1000;
 //    } else{
@@ -296,7 +293,9 @@ function trialLoop(targets){
     condensed_arrays = accelArrayHandler(orient_short_history);
     leftrightgesture = classify_leftright(condensed_arrays[0]);
     bfgesture = classify_backfront(condensed_arrays[1]);
-    gyro_steady = (leftrightgesture == 0) && (bfgesture == 0);
+    pageturngesture = classify_pageturn(condensed_arrays[2])
+
+    gyro_steady = (leftrightgesture == 0) && (bfgesture == 0) && (pageturngesture == 0);
     // head pose gesture detection
     let pushpullgesture = 0;
     if (gyro_steady && prediction.faceInViewConfidence > .85){
@@ -320,13 +319,14 @@ function trialLoop(targets){
     }
 
     /////////////////////////////// Gesture detection
-    all_gestures = [leftrightgesture, bfgesture, pushpullgesture];
+    all_gestures = [leftrightgesture, bfgesture, pushpullgesture, pageturngesture];
+    hist = [localPreds, orient_short_history, head_size_history, angaccel_short_history];
     // If all gestures is not all 0 and has no 99s (unsteady), a gesture is detected. Log it
     if (!all_gestures.every(elem => elem == 0) && all_gestures.every(elem => elem != 99)){
         segmentPrediction = getMeanEyeSegment(localPreds.slice(3)) // Averaging predicted gaze XYs
-        hist = [localPreds, orient_short_history, head_size_history];
 
         console.log("Gaze Prediction: ", segmentPrediction);
+
 
         trialEndHandler([all_gestures, segmentPrediction], targets, hist);
     } else{
@@ -334,13 +334,16 @@ function trialLoop(targets){
             // Failed to detect gesture, but save eye position anyway
             segmentPrediction = getMeanEyeSegment(localPreds.slice(3))
 
-            hist = [localPreds, orient_short_history, head_size_history];
             trialEndHandler([-1, segmentPrediction], targets, hist);
             return;
         } else{ // Otherwise, run the loop again
             setTimeout(() => trialLoop(targets), trial_delay);
         }
     }
+}
+
+function argMax(array) {
+  return array.map((x, i) => [x, i]).reduce((r, a) => (a[0] > r[0] ? a : r))[1];
 }
 
 //function trialEndHandler(gestures, segment){
@@ -355,29 +358,73 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
 
 
     if (detected[0] == -1){ // If no gesture triggered (timed out)
-//        addToStorageArray("results", [Date.now(), [-1, -1], target, histories]);
         addToEvalResults(trialResultsKey, trialBlockNum, currentBlockTrialNum, [Date.now(), [-1, detected[1]], target, histories]);
     } else{
         // Show detected text
         gestures = detected[0];
         segment = detected[1];
         detectedGesture = -1;
+        let displayText = "";
 
-        if (gestures[1] == -1){ // forward flick
-            detectedGesture = 0;
-        } else if (gestures[0] == 1){ // right flick
-            detectedGesture = 1;
-        } else if (gestures[0] == 2){ // right tilt
-            detectedGesture = 2;
-        } else if (gestures[0] == -1){ // left flick
-            detectedGesture = 3;
-        } else if (gestures[0] == -2){ // left tilt
+        // Get angular acceleration to case on which flicks gesture is being done
+        angaccel = histories[3].map((arr) => arr.slice());
+        const aa_hist_max = angaccel.map((histArr) => Math.max(...histArr.slice(histArr.length/4)))
+        const aa_hist_min = angaccel.map((histArr) => Math.min(...histArr.slice(histArr.length/4)))
+        const gap = [aa_hist_max[0] - aa_hist_min[0],
+                     aa_hist_max[1] - aa_hist_min[1],
+                     aa_hist_max[2] - aa_hist_min[2]];
+        const gapAbs = [aa_hist_max[0] + aa_hist_min[0],
+                     aa_hist_max[1] + aa_hist_min[1],
+                     aa_hist_max[2] + aa_hist_min[2]];
+
+        // Check for tilts, then for flicks case on which axis had highest angular accel,
+        // then pull and push. Should also add page turn
+        maxAccelAxis = argMax(gap);
+
+        if (gestures[0] == -2){ // left tilt
+            console.log("new left tilt");
             detectedGesture = 4;
+        } else if (gestures[0] == 2){ // right tilt
+            console.log("new right tilt");
+            detectedGesture = 2;
         } else if (gestures[2] == 1){ // Pull
+            console.log("new pull");
             detectedGesture = 5;
-        } else if (gestures[2] == -1){ // pull, then push
+        } else if (gestures[2] == -1){ // Push away
+            console.log("new push");
             detectedGesture = 6;
+        } else { // Flick detection
+            switch(maxAccelAxis){
+                case 0: // Forward
+                    if (gestures[1] == -1){
+                        console.log("forward flick");
+                        detectedGesture = 0;
+                        break;
+                    }
+                case 1: // Page turns
+                    if (gestures[3] == 1){
+                        console.log("page turn to right");
+                        detectedGesture = 7;
+                        break;
+                    } else if (gestures[3] == -1){
+                        console.log("page turn to left");
+                        detectedGesture = 8;
+                        break;
+                    }
+                case 2: // Right and left flick
+                    if (gestures[0] == 1){
+                        console.log("right flick");
+                        detectedGesture = 1;
+                        break;
+                    } else if (gestures[0] == -1){
+                        console.log("left flick");
+                        detectedGesture = 3;
+                        break;
+                    }
+            }
         }
+
+        console.log("Gesture Prediction: ", gestureNames[detectedGesture], detectedGesture);
 
         // Add to results: [timestamp, detected, target, [gyro history, face dist history, and gaze history]]
         // Goes [gest, segment]          // for target, gest is 0-6 and seg is 0-7. Need to match detected to that
@@ -403,22 +450,10 @@ function addToEvalResults(resultsKey, blocknum, trialnum, resultsArr){
     } catch{
         console.log("adding to eval broken, key \"" + resultsKey + "\" is not parseable");
     }
-    console.log("parsed eval key " + resultsKey + " as " + tmp)
+//    console.log("parsed eval key " + resultsKey + " as " + tmp)
 
     tmp[blocknum][trialnum] = resultsArr;
     localStorage[resultsKey] = JSON.stringify(tmp);
-}
-
-/////////////////////////////////////// Accelerometer gesture detection
-// remove duplicate elements from array
-function arrayCondenser(arr){
-    newArr = [arr[0]];
-    for (let i = 1; i < arr.length; i++){
-        if (arr[i] != arr[i-1]){ // If it's different, add it
-            newArr.push(arr[i]);
-        }
-    }
-    return newArr;
 }
 
 // Shuffle an array
@@ -440,68 +475,6 @@ function shuffleArr(array) {
 
   return array;
 }
-
-    // find the angle difference w/r/t the first element and remove duplicates
-function modmod(a, n){ return a - Math.floor(a/n) * n }
-function historyToCondensed(fullhist, threshold){
-    // Find recent difference with past measurement
-    diffs = fullhist.slice(fullhist.length/4);
-    diffs.forEach((elem, i) => {
-//      angle rotation math
-        a = elem - fullhist[0];
-        a = modmod((a + 180), 360) - 180;
-        diffs[i] = a;
-    });
-
-    // "binarize" differences and remove duplicates
-    diff_classes = [];
-    diffs.forEach((elem) => {
-        diff_classes.push(elem > threshold ? 1 : (elem < -threshold ? -1 : 0));
-    });
-    condensed = arrayCondenser(diff_classes);
-    return condensed;
-}
-
-function accelArrayHandler(accel_history){
-    // Make a copy so it won't shift as we're modifying it
-    leftright_hist = accel_history[0].slice();
-    backfront_hist = accel_history[1].slice();
-
-    // threshold and remove duplicates
-    lr_condensed = historyToCondensed(leftright_hist, 30);
-    bf_condensed = historyToCondensed(backfront_hist, 30);
-
-    return [lr_condensed, bf_condensed]
-}
-
-function classify_leftright(condensed){
-    tmp = JSON.stringify(condensed);
-
-    lef_tilt = tmp == "[1]";
-    lef_flick = tmp == "[0,1,0]";
-    right_flick = tmp == "[0,-1,0]";
-    right_tilt = tmp == "[-1]";
-     // If no normal gestures, make sure it's steady before returning 0
-    if ((lef_tilt + lef_flick + right_flick + right_tilt) == 0){
-        return (tmp != "[0]")*99
-    }
-
-    return lef_tilt*-2 + lef_flick*-1 + right_flick*1 + right_tilt*2;
-}
-
-function classify_backfront(condensed){
-    tmp = JSON.stringify(condensed);
-
-    front_dip = tmp == "[0,1,0]";
-    back_dip = tmp == "[0,-1,0]";
-
-    // If no normal gestures, make sure it's steady before returning 0
-    if ((front_dip + back_dip) == 0){
-        return (tmp != "[0]")*99
-    }
-    return front_dip*1 + back_dip*-1 ;
-}
-
 /////////////////////////////////////// Push pull gesture detection
 function headsizeToGesture(head_hist, threshold){
     // Get recent ratios to old head size
@@ -530,7 +503,6 @@ function headsizeToGesture(head_hist, threshold){
     }
     return pull*1 + push*-1;
 }
-
 
 /////////////////////////////////////// Eye tracking
 function gaze2Section(gaze_pred){
@@ -573,7 +545,6 @@ function gaze2Section(gaze_pred){
     }
 }
 
-
 // Find mode of the segments history
 function getModeEyeSegment(arr){
     let hist = Array(galleryElements.length).fill(0);
@@ -613,3 +584,78 @@ divColors = [
 ]
 
 
+
+
+///////////////////////////////////////// Accelerometer gesture detection
+//// remove duplicate elements from array
+//function arrayCondenser(arr){
+//    newArr = [arr[0]];
+//    for (let i = 1; i < arr.length; i++){
+//        if (arr[i] != arr[i-1]){ // If it's different, add it
+//            newArr.push(arr[i]);
+//        }
+//    }
+//    return newArr;
+//}
+//
+//    // find the angle difference w/r/t the first element and remove duplicates
+//function modmod(a, n){ return a - Math.floor(a/n) * n }
+//function historyToCondensed(fullhist, threshold){
+//    // Find recent difference with past measurement
+//    diffs = fullhist.slice(fullhist.length/4);
+//    diffs.forEach((elem, i) => {
+////      angle rotation math
+//        a = elem - fullhist[0];
+//        a = modmod((a + 180), 360) - 180;
+//        diffs[i] = a;
+//    });
+//
+//    // "binarize" differences and remove duplicates
+//    diff_classes = [];
+//    diffs.forEach((elem) => {
+//        diff_classes.push(elem > threshold ? 1 : (elem < -threshold ? -1 : 0));
+//    });
+//    condensed = arrayCondenser(diff_classes);
+//    return condensed;
+//}
+//
+//function accelArrayHandler(accel_history){
+//    // Make a copy so it won't shift as we're modifying it
+//    leftright_hist = accel_history[0].slice();
+//    backfront_hist = accel_history[1].slice();
+//
+//    // threshold and remove duplicates
+//    lr_condensed = historyToCondensed(leftright_hist, 30);
+//    bf_condensed = historyToCondensed(backfront_hist, 30);
+//
+//    return [lr_condensed, bf_condensed]
+//}
+//
+//function classify_leftright(condensed){
+//    tmp = JSON.stringify(condensed);
+//
+//    lef_tilt = tmp == "[1]";
+//    lef_flick = tmp == "[0,1,0]";
+//    right_flick = tmp == "[0,-1,0]";
+//    right_tilt = tmp == "[-1]";
+//     // If no normal gestures, make sure it's steady before returning 0
+//    if ((lef_tilt + lef_flick + right_flick + right_tilt) == 0){
+//        return (tmp != "[0]")*99
+//    }
+//
+//    return lef_tilt*-2 + lef_flick*-1 + right_flick*1 + right_tilt*2;
+//}
+//
+//function classify_backfront(condensed){
+//    tmp = JSON.stringify(condensed);
+//
+//    front_dip = tmp == "[0,1,0]";
+//    back_dip = tmp == "[0,-1,0]";
+//
+//    // If no normal gestures, make sure it's steady before returning 0
+//    if ((front_dip + back_dip) == 0){
+//        return (tmp != "[0]")*99
+//    }
+//    return front_dip*1 + back_dip*-1 ;
+//}
+//
