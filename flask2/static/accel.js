@@ -54,7 +54,7 @@ function getAccel(){
 //            // Accelerometer permissions
             window.addEventListener('devicemotion', (e) => {
                 // do something with e
-                          console.log(e)
+//                          console.log(e)
                 let rot = e.rotationRate
                 updateTextRot(rot.alpha, rot.beta, rot.gamma)
 

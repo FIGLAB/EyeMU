@@ -16,6 +16,7 @@ var thresh = 15;
 // tracking accel over time: Z, FB, LR
 var orient_short_history = [[], [], []];
 var orient_long_history = [[], [], []];
+var angaccel_short_history = [[], [], []];
 
 // Convenience functions for arrays
 var average = (array) => array.reduce((a, b) => a + b) / array.length;
@@ -53,9 +54,18 @@ function getAccel(){
 //            // Accelerometer permissions
             window.addEventListener('devicemotion', (e) => {
                 // do something with e
-                          console.log(e)
+//                          console.log(e)
                 let rot = e.rotationRate
                 updateTextRot(rot.alpha, rot.beta, rot.gamma)
+
+                angaccel_short_history[0].push(rot.alpha)
+                angaccel_short_history[1].push(rot.beta)
+                angaccel_short_history[2].push(rot.gamma)
+                if (angaccel_short_history[0].length > updateRate){
+                    angaccel_short_history.forEach(elem => {
+                        elem.shift();
+                    });
+                }
             })
 
             // Magnetometer permissions
