@@ -142,3 +142,94 @@ function updateText(alpha, beta, gamma){
                 "left to right: " + lr_delta;
     }
 }
+
+
+/////////////////////////////////////// Accelerometer gesture detection for evaluation pages
+// remove duplicate elements from array
+function arrayCondenser(arr){
+    newArr = [arr[0]];
+    for (let i = 1; i < arr.length; i++){
+        if (arr[i] != arr[i-1]){ // If it's different, add it
+            newArr.push(arr[i]);
+        }
+    }
+    return newArr;
+}
+
+    // find the angle difference w/r/t the first element and remove duplicates
+function modmod(a, n){ return a - Math.floor(a/n) * n }
+function historyToCondensed(fullhist, threshold){
+    // Find recent difference with past measurement
+    diffs = fullhist.slice(fullhist.length/4);
+    diffs.forEach((elem, i) => {
+//      angle rotation math
+        a = elem - fullhist[0];
+        a = modmod((a + 180), 360) - 180;
+        diffs[i] = a;
+    });
+
+    // "binarize" differences and remove duplicates
+    diff_classes = [];
+    diffs.forEach((elem) => {
+        diff_classes.push(elem > threshold ? 1 : (elem < -threshold ? -1 : 0));
+    });
+    condensed = arrayCondenser(diff_classes);
+    return condensed;
+}
+
+function accelArrayHandler(accel_history){
+    // Make a copy so it won't shift as we're modifying it
+    leftright_hist = accel_history[0].slice();
+    backfront_hist = accel_history[1].slice();
+    pageturn_hist = accel_history[2].slice();
+
+    // threshold and remove duplicates
+    let thresh = 30
+    lr_condensed = historyToCondensed(leftright_hist, thresh);
+    bf_condensed = historyToCondensed(backfront_hist, thresh);
+    page_condensed = historyToCondensed(pageturn_hist, thresh*1.5);
+
+    return [lr_condensed, bf_condensed, page_condensed]
+}
+
+function classify_leftright(condensed){
+    tmp = JSON.stringify(condensed);
+
+    lef_tilt = tmp == "[1]";
+    lef_flick = tmp == "[0,1,0]";
+    right_flick = tmp == "[0,-1,0]";
+    right_tilt = tmp == "[-1]";
+     // If no normal gestures, make sure it's steady before returning 0
+    if ((lef_tilt + lef_flick + right_flick + right_tilt) == 0){
+        return (tmp != "[0]")*99
+    }
+
+    return lef_tilt*-2 + lef_flick*-1 + right_flick*1 + right_tilt*2;
+}
+
+function classify_backfront(condensed){
+    tmp = JSON.stringify(condensed);
+
+    front_dip = tmp == "[0,1,0]";
+    back_dip = tmp == "[0,-1,0]";
+
+    // If no normal gestures, make sure it's steady before returning 0
+    if ((front_dip + back_dip) == 0){
+        return (tmp != "[0]")*99
+    }
+    return front_dip*1 + back_dip*-1 ;
+}
+
+function classify_pageturn(condensed){
+    tmp = JSON.stringify(condensed);
+
+    turn_to_right = tmp == "[0,1,0]";
+    turn_to_left = tmp == "[0,-1,0]";
+
+    // If no normal gestures, make sure it's steady before returning 0
+    if ((turn_to_right + turn_to_left) == 0){
+        return (tmp != "[0]")*99
+    }
+
+    return turn_to_right*1 + turn_to_left*-1 ;
+}
