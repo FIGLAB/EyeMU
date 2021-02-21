@@ -1,6 +1,6 @@
 //Backend code that coordinates the trials by block, and does all the timing and gesture detection.
 //var gestureNames = ["Forward flick", "Right flick", "Right tilt", "Left flick", "Left tilt", "Pull close", "Push away"];
-var gestureNames = ["Forward flick", "Right flick", "Right tilt", "Left flick", "Left tilt", "Pull close", "Push away", "Turn to right", "Turn to left"];
+//var gestureNames = ["Forward flick", "Right flick", "Right tilt", "Left flick", "Left tilt", "Pull close", "Push away", "Turn to right", "Turn to left"];
 var trialStarted = false; // concurrency
 
 // Square grid variables
@@ -322,7 +322,9 @@ function trialLoop(targets){
     all_gestures = [leftrightgesture, bfgesture, pushpullgesture, pageturngesture];
     hist = [localPreds, orient_short_history, head_size_history, angaccel_short_history];
     // If all gestures is not all 0 and has no 99s (unsteady), a gesture is detected. Log it
-    if (!all_gestures.every(elem => elem == 0) && all_gestures.every(elem => elem != 99)){
+//    if (!all_gestures.every(elem => elem == 0)){
+//    if (!all_gestures.every(elem => elem == 0) && all_gestures.every(elem => elem != 99)){
+    if (!all_gestures.every(elem => elem == 0 || elem == 99) && (sum(all_gestures) < 120)){
         segmentPrediction = getMeanEyeSegment(localPreds.slice(3)) // Averaging predicted gaze XYs
 
         console.log("Gaze Prediction: ", segmentPrediction);
@@ -479,8 +481,9 @@ function shuffleArr(array) {
 function headsizeToGesture(head_hist, threshold){
     // Get recent ratios to old head size
     diffs = head_hist.slice(head_hist.length/4);
+    first_elem = head_hist[0];
     diffs.forEach((elem, i) => {
-        diffs[i] = elem/head_hist[0];
+        diffs[i] = elem/first_elem;
     });
 
     // Threshold by ratio
@@ -501,6 +504,7 @@ function headsizeToGesture(head_hist, threshold){
     if ((pull + push) == 0){
         return (tmp != "[0]")*99
     }
+
     return pull*1 + push*-1;
 }
 
