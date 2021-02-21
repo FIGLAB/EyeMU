@@ -145,6 +145,10 @@ function updateText(alpha, beta, gamma){
 
 
 /////////////////////////////////////// Accelerometer gesture detection for evaluation pages
+var gestureNames = ["Forward flick", "Right flick", "Right tilt", "Left flick", "Left tilt", "Pull close", "Push away", "Turn to right", "Turn to left"];
+
+function allGestures2detected()
+
 // remove duplicate elements from array
 function arrayCondenser(arr){
     newArr = [arr[0]];
@@ -160,10 +164,11 @@ function arrayCondenser(arr){
 function modmod(a, n){ return a - Math.floor(a/n) * n }
 function historyToCondensed(fullhist, threshold){
     // Find recent difference with past measurement
-    diffs = fullhist.slice(fullhist.length/4);
+    diffs = fullhist.slice(fullhist.length/2);
+    first_elem = fullhist[0];
     diffs.forEach((elem, i) => {
 //      angle rotation math
-        a = elem - fullhist[0];
+        a = elem - first_elem;
         a = modmod((a + 180), 360) - 180;
         diffs[i] = a;
     });
@@ -193,6 +198,7 @@ function accelArrayHandler(accel_history){
 }
 
 function classify_leftright(condensed){
+    console.log("Left right condensed", condensed);
     tmp = JSON.stringify(condensed);
 
     lef_tilt = tmp == "[1]";
@@ -221,8 +227,11 @@ function classify_backfront(condensed){
 }
 
 function classify_pageturn(condensed){
+//    console.log("page turn condensed", condensed);
     tmp = JSON.stringify(condensed);
 
+//    turn_to_right = tmp == "[0,1,0]" || tmp=="[0,1,-1]" || tmp=="[0,1,-1,1]";
+//    turn_to_left = tmp == "[0,-1,0]" || tmp=="[0,-1,1]" || tmp=="[0,-1,1,-1]";
     turn_to_right = tmp == "[0,1,0]";
     turn_to_left = tmp == "[0,-1,0]";
 

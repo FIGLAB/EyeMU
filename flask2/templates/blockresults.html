@@ -4,6 +4,7 @@
 
 <script src="{{url_for('static', filename='fileIO.js')}}"></script>
 <script>
+    var gestureNames = ["Forward flick", "Right flick", "Right tilt", "Left flick", "Left tilt", "Pull close", "Push away", "Turn to right", "Turn to left"];
     var keys = ["grid1_results", "grid2_results", "list1_results", "list2_results"];
 
     function clearResultsKey(resKey){
@@ -104,12 +105,14 @@
 
 
                 evalResults.forEach((elem, ind) => {
+                    let gestNum;
                     if (Array.isArray(elem)){
                         // elem format is [d.getTime(), [detectedgesture, detectedsegment], [targetgesture, targetsegment]]
                         // Get the numbers out of the elem
                         let dateInMillis = elem[0];
                         let detected = elem[1];
                         let target = elem[2];
+                        gestNum = elem[2][0]; // Target gesture number
                         // console.log("parsed", elem);
 
                         // Add to results
@@ -143,6 +146,7 @@
                             cell = row.insertCell();
                             cell.innerHTML = "Incomplete"
                         }
+                        gestNum = -1;
                     }
                         // Add the side column if we're in a new block
                     if ((segmentCount % segmentsPerBlock) == 0){
@@ -152,7 +156,11 @@
                         let tmpLink = document.createElement("a");
                         tmpLink.target = "_blank"; 
                         tmpLink.href = "../" + resultsType + "eval/?name=" + resultsName + "&block=" + blockNum;
-                        tmpLink.innerHTML = blockNum + 1;
+                        if (gestNum != -1){
+                            tmpLink.innerHTML = gestureNames[gestNum];
+                        } else {
+                            tmpLink.innerHTML = "Start block"
+                        }
                         // cell.innerHTML = blockNum + 1;
                         cell.append(tmpLink);
                     }
@@ -191,7 +199,7 @@
                 // Add rest of stats
                 finalStats.innerHTML += "Gestures correct: " + correctGest + "/" + totals + " = " + (100*correctGest/totals).toFixed(1) + "%";
                 finalStats.innerHTML += "<br>Screen sections correct: " + correctSeg + "/" + totals + " = " + (100*correctSeg/totals).toFixed(1) + "%";
-                finalStats.innerHTML += "<br>Overall: " + (correctSeg+correctGest) + "/" + (2*totals) + " = " + (50*(correctGest+correctSeg)/totals).toFixed(1) + "%";
+                finalStats.innerHTML += "<br>Overall: " + (100*correctSeg/totals).toFixed(1) + "*" + (100*correctGest/totals).toFixed(1) + " = " + (100*(correctGest*correctSeg)/totals/totals).toFixed(1) + "%";
 
                 // Add results to document body
                 resultsDiv.append(finalStats);

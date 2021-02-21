@@ -1,7 +1,8 @@
 // New eval that tests both gestures and eye tracking
-
-var gestureNames = ["Forward flick", "Right flick", "Right tilt", "Left flick", "Left tilt", "Pull close", "Push away", "Turn to right", "Turn to left"];
 var trialStarted = false; // concurrency
+
+var gestureHistories = [];
+var exposeArrays;
 
 // Square grid variables
 var galleryNumbers = [];
@@ -12,7 +13,8 @@ var trialList;
 // Set up trial time variables
 var trial_time = 20; // timeout variable in seconds
 var trial_delay = 100 // loop delay in ms
-var lastsecHistoryLen = 1000/trial_delay;
+var lastsecHistoryLen = 1500/trial_delay;
+var startWindowIndex = 2;
 //var num_repeats = trial_time*(lastsecHistoryLen);
 var trialStartTime;
 var num_repeats = trial_time*1000 / trial_delay;
@@ -58,6 +60,34 @@ function createGalleryElems(){
     yea.style.lineHeight = "100%";
     yea.innerHTML = "&nbsp<br>&nbsp<br> Perform a gesture.";
     galleryDiv.append(yea);
+
+    // Add button to download gesture data
+    let tmpbut1 = document.createElement("button");
+    tmpbut1.addEventListener('click', function(){
+        var link = document.createElement('a');
+        link.href = makeTextFile(JSON.stringify(gestureHistories));
+        link.target = '_blank';
+        link.download = "gazel_gesturetrainer.json";
+        link.click();
+    });
+    tmpbut1.style.height = "40px";
+    tmpbut1.innerHTML = "Download Results";
+
+    // end trial button
+        let tmpbut2 = document.createElement("button");
+    tmpbut2.addEventListener('click', function(){
+        gestureHistories.push(exposeArrays);
+//        var link = document.createElement('a');
+//        link.href = makeTextFile(JSON.stringify(gestureHistories));
+//        link.target = '_blank';
+//        link.download = "gazel_gesturetrainer.json";
+//        link.click();
+    });
+    tmpbut2.style.height = "40px";
+    tmpbut2.innerHTML = "End trial and log data";
+
+    galleryDiv.append(tmpbut1);
+    galleryDiv.append(tmpbut2);
 
     // debug variables
     a = galleryDiv
@@ -262,6 +292,7 @@ function trialLoop(targets){
     /////////////////////////////// Accel, head, and eye tracking
    // Accel gesture detection
     condensed_arrays = accelArrayHandler(orient_short_history);
+
     leftrightgesture = classify_leftright(condensed_arrays[0]);
     bfgesture = classify_backfront(condensed_arrays[1]);
     pageturngesture = classify_pageturn(condensed_arrays[2])
@@ -291,24 +322,37 @@ function trialLoop(targets){
 
     /////////////////////////////// Gesture detection
     all_gestures = [leftrightgesture, bfgesture, pushpullgesture, pageturngesture];
-    // If all gestures is not all 0 and has no 99s (unsteady), a gesture is detected. Log it
     hist = [localPreds, orient_short_history, head_size_history, angaccel_short_history];
-    if (!all_gestures.every(elem => elem == 0) && all_gestures.every(elem => elem != 99)){
+    exposeArrays = JSON.stringify([condensed_arrays, all_gestures, targets, hist])
+
+//    gestureHistories.push(JSON.stringify([condensed_arrays, all_gestures, targets, hist]));
+
+    console.log(all_gestures);
+    // If all gestures is not all 0 and has no 99s (unsteady), a gesture is detected. Log it
+    if (!all_gestures.every(elem => elem == 0 || elem == 99) && (sum(all_gestures) < 120)){
+//    if (!all_gestures.every(elem => elem == 0) && all_gestures.every(elem => elem != 99)){
         segmentPrediction = getMeanEyeSegment(localPreds.slice(3)) // Averaging predicted gaze XYs
 
         console.log("Gaze Prediction: ", segmentPrediction);
 
 
-        const aa_hist_max = angaccel_short_history.map((histArr) => Math.max(...histArr.slice(histArr.length/4)))
-        const aa_hist_min = angaccel_short_history.map((histArr) => Math.min(...histArr.slice(histArr.length/4)))
+        const aa_hist_max = angaccel_short_history.map((histArr) => Math.max(...histArr.slice(histArr.length/startWindowIndex)))
+        const aa_hist_min = angaccel_short_history.map((histArr) => Math.min(...histArr.slice(histArr.length/startWindowIndex)))
 //        const aa_hist_sum = angaccel_short_history.map((histArr) => sum(histArr.slice(histArr.length/4)))
 //        const aa_hist_avg = angaccel_short_history.map((histArr) => average(histArr.slice(histArr.length/4)))
-        console.log("Angular Accel maxes: ", aa_hist_max);
-        console.log("Angular Accel mins: ", aa_hist_min);
+//        console.log("Angular Accel maxes: ", aa_hist_max);
+//        console.log("Angular Accel mins: ", aa_hist_min);
 //        console.log("Angular Accel sum: ", aa_hist_sum);
 //        console.log("Angular Accel avg: ", aa_hist_avg);
-        console.log("In-plane, Front-back, Left-right")
-        console.log("Page turn:", pageturngesture);
+//        console.log("In-plane, Front-back, Left-right")
+//        console.log("Page turn:", pageturngesture);
+
+
+        // Add to accel history
+        //    condensed is lr, bf, then page turn
+        //    detected [leftrightgesture, bfgesture, pushpullgesture, pageturngesture]
+        //    target [targetgest, targetgaze;
+        gestureHistories.push(JSON.stringify([condensed_arrays, all_gestures, targets, hist]));
 
         trialEndHandler([all_gestures, segmentPrediction], targets, hist);
     } else{
@@ -331,11 +375,13 @@ function argMax(array) {
 //function trialEndHandler(gestures, segment){
 function trialEndHandler(detected, target, histories){ // Both in [gestures, segment] format
 
-    // Show text box
+    // Show text box and download results button
     toggleHide();
     textElem = document.getElementById("trialdisplay");
     textElem.hidden = false;
     textElem.innerHTML = "Trial Complete<br>Tap to continue<hr><br>";
+
+
 
     if (detected[0] == -1){ // If no gesture triggered (timed out)
     } else{
@@ -347,8 +393,8 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
 
         // Get angular acceleration to case on which gesture is being done
         angaccel = histories[3].map((arr) => arr.slice());
-        const aa_hist_max = angaccel.map((histArr) => Math.max(...histArr.slice(histArr.length/4)))
-        const aa_hist_min = angaccel.map((histArr) => Math.min(...histArr.slice(histArr.length/4)))
+        const aa_hist_max = angaccel.map((histArr) => Math.max(...histArr.slice(histArr.length/startWindowIndex)))
+        const aa_hist_min = angaccel.map((histArr) => Math.min(...histArr.slice(histArr.length/startWindowIndex)))
         const gap = [aa_hist_max[0] - aa_hist_min[0],
                      aa_hist_max[1] - aa_hist_min[1],
                      aa_hist_max[2] - aa_hist_min[2]];
@@ -362,6 +408,7 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
         // Check for tilts, then for flicks case on which axis had highest angular accel,
         // then pull and push. Should also add page turn
         maxAccelAxis = argMax(gap);
+        console.log("Before gest detect");
 
         if (gestures[0] == -2){ // left tilt
             console.log("new left tilt");
@@ -403,8 +450,26 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
                         detectedGesture = 3;
                         break;
                     }
+                default:
+                    if (gestures[1] == -1){
+                        console.log("forward flick");
+                        detectedGesture = 0;
+                    } else if (gestures[3] == 1){
+                        console.log("page turn to right");
+                        detectedGesture = 7;
+                    } else if (gestures[3] == -1){
+                        console.log("page turn to left");
+                        detectedGesture = 8;
+                    } else if (gestures[0] == 1){
+                        console.log("right flick");
+                        detectedGesture = 1;
+                    } else if (gestures[0] == -1){
+                        console.log("left flick");
+                        detectedGesture = 3;
+                    }
             }
         }
+        console.log("After gest detect");
 
         displayText = gestureNames[detectedGesture];
 
@@ -447,9 +512,10 @@ function shuffleArr(array) {
 /////////////////////////////////////// Push pull gesture detection
 function headsizeToGesture(head_hist, threshold){
     // Get recent ratios to old head size
-    diffs = head_hist.slice(head_hist.length/4);
+    diffs = head_hist.slice(head_hist.length/startWindowIndex);
+    first_elem = head_hist[0];
     diffs.forEach((elem, i) => {
-        diffs[i] = elem/head_hist[0];
+        diffs[i] = elem/first_elem;
     });
 
     // Threshold by ratio
@@ -459,12 +525,15 @@ function headsizeToGesture(head_hist, threshold){
     });
 
     condensed = arrayCondenser(diff_classes);
+//    console.log(condensed)
 
     // classify the head gesture
     let tmp = JSON.stringify(condensed);
+//    pull = (tmp == "[0,1]");
+//    push = (tmp == "[0,-1]");
     pull = (tmp == "[1]");
-//    pullpush = (tmp == "[0,1,0]");
     push = (tmp == "[-1]");
+//    pullpush = (tmp == "[0,1,0]");
 
     // If no normal gestures, make sure it's steady before returning 0
     if ((pull + push) == 0){
@@ -472,6 +541,9 @@ function headsizeToGesture(head_hist, threshold){
     }
     return pull*1 + push*-1;
 }
+
+
+///////////////////////////// Download button for the gesture data
 
 
 divColors = [
