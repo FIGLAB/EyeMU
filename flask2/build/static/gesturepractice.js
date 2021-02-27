@@ -244,15 +244,16 @@ function startTrial(){
 
 //    TODO: clear the accel history and gyro history before starting.
     // But not clear clear, just duplicate the last reading length times
+    const latest = orient_short_history.length-1;
     orient_short_history = [
-        Array(histLen).fill(orient_short_history[0][orient_short_history.length-1]),
-        Array(histLen).fill(orient_short_history[1][orient_short_history.length-1]),
-        Array(histLen).fill(orient_short_history[2][orient_short_history.length-1])
+        Array(histLen).fill(orient_short_history[0][latest]),
+        Array(histLen).fill(orient_short_history[1][latest]),
+        Array(histLen).fill(orient_short_history[2][latest])
     ]
     angaccel_short_history = [
-        Array(histLen).fill(angaccel_short_history[0][angaccel_short_history.length-1]),
-        Array(histLen).fill(angaccel_short_history[1][angaccel_short_history.length-1]),
-        Array(histLen).fill(angaccel_short_history[2][angaccel_short_history.length-1])
+        Array(histLen).fill(0),
+        Array(histLen).fill(0),
+        Array(histLen).fill(0)
     ]
     head_size_history = [];
     localPreds = [];
@@ -496,40 +497,6 @@ function shuffleArr(array) {
 
   return array;
 }
-
-/////////////////////////////////////// Push pull gesture detection
-function headsizeToGesture(head_hist, threshold){
-    // Get recent ratios to old head size
-    diffs = head_hist.slice(head_hist.length/startWindowIndex);
-    first_elem = head_hist[0];
-    diffs.forEach((elem, i) => {
-        diffs[i] = elem/first_elem;
-    });
-
-    // Threshold by ratio
-    diff_classes = [];
-    diffs.forEach((elem) => {
-        diff_classes.push(elem > threshold ? 1 : (elem < 1/threshold ? -1 : 0));
-    });
-
-    condensed = arrayCondenser(diff_classes);
-//    console.log(condensed)
-
-    // classify the head gesture
-    let tmp = JSON.stringify(condensed);
-//    pull = (tmp == "[0,1]");
-//    push = (tmp == "[0,-1]");
-    pull = (tmp == "[1]");
-    push = (tmp == "[-1]");
-//    pullpush = (tmp == "[0,1,0]");
-
-    // If no normal gestures, make sure it's steady before returning 0
-    if ((pull + push) == 0){
-        return (tmp != "[0]")*99
-    }
-    return pull*1 + push*-1;
-}
-
 
 ///////////////////////////// Download button for the gesture data
 

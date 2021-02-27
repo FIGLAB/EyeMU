@@ -15,8 +15,8 @@ var thresh = 15;
 
 // tracking accel over time: Z, FB, LR
 var orient_short_history = [[], [], []];
-var orient_long_history = [[], [], []];
 var angaccel_short_history = [[], [], []];
+var linaccel_short_history = [[], [], []];
 
 // Convenience functions for arrays
 var average = (array) => array.reduce((a, b) => a + b) / array.length;
@@ -59,12 +59,16 @@ function getAccel(){
                 // Linear accel
                 let linac = e.acceleration;
                 updateTextLin(linac.x,linac.y,linac.z);
+                linaccel_short_history[0].push(linac.x);
+                linaccel_short_history[1].push(linac.y);
+                linaccel_short_history[2].push(linac.z);
+
+
 
 
                 // Angular Accel
                 let rot = e.rotationRate
                 updateTextRot(rot.alpha, rot.beta, rot.gamma)
-
                 angaccel_short_history[0].push(rot.alpha)
                 angaccel_short_history[1].push(rot.beta)
                 angaccel_short_history[2].push(rot.gamma)
@@ -72,6 +76,9 @@ function getAccel(){
                     angaccel_short_history.forEach(elem => {
                         elem.shift();
                     });
+                    linaccel_short_history.forEach(elem =>{
+                        elem.shift();
+                    })
                 }
             })
 
@@ -101,21 +108,6 @@ function getAccel(){
             // Hide button if granted permissions
             document.getElementById("accelPermsButton").setAttribute("hidden", true);
     }}).catch(console.error)
-}
-
-
-function orientationCheckContinuous(){
-    for (let i=0; i< 3; i++){
-        orient_long_history[i].push(average(orient_short_history[i]))
-        orient_short_history[i] = [];
-    }
-
-    //
-//    if (orient_long_history)
-
-
-
-    setTimeout(orientationCheckContinuous, 500);
 }
 
 var acc2 = [0,0,0];
@@ -167,8 +159,6 @@ function updateText(alpha, beta, gamma){
 
 /////////////////////////////////////// Accelerometer gesture detection for evaluation pages
 var gestureNames = ["Forward flick", "Right flick", "Right tilt", "Left flick", "Left tilt", "Pull close", "Push away", "Turn to right", "Turn to left"];
-
-//function allGestures2detected()
 
 // remove duplicate elements from array
 function arrayCondenser(arr){
@@ -251,8 +241,6 @@ function classify_pageturn(condensed){
 //    console.log("page turn condensed", condensed);
     tmp = JSON.stringify(condensed);
 
-//    turn_to_right = tmp == "[0,1,0]" || tmp=="[0,1,-1]" || tmp=="[0,1,-1,1]";
-//    turn_to_left = tmp == "[0,-1,0]" || tmp=="[0,-1,1]" || tmp=="[0,-1,1,-1]";
     turn_to_right = tmp == "[0,1,0]";
     turn_to_left = tmp == "[0,-1,0]";
 
@@ -262,4 +250,47 @@ function classify_pageturn(condensed){
     }
 
     return turn_to_right*1 + turn_to_left*-1 ;
+}
+
+/////////////////////////////////////// Push pull gesture detection - uses linear accel
+function headsizeToGesture(head_hist, threshold){
+    // Get recent ratios to old head size
+    diffs = head_hist.slice(head_hist.length/startWindowIndex);
+    first_elem = head_hist[0];
+    diffs.forEach((elem, i) => {
+        diffs[i] = elem/first_elem;
+    });
+
+    // Threshold by ratio
+    diff_classes = [];
+    diffs.forEach((elem) => {
+        diff_classes.push(elem > threshold ? 1 : (elem < 1/threshold ? -1 : 0));
+    });
+    condensed = arrayCondenser(diff_classes);
+
+    // Debug: Show max - min linear accels
+    yea = 10
+    let yealen = linaccel_short_history[0].length;
+    diff = (sum(linaccel_short_history[2].slice(yealen-yea)) - sum(linaccel_short_history[2].slice(yealen/startWindowIndex, yealen/startWindowIndex+yea)))/yea
+//    console.log("headsize condensed", condensed)
+//    console.log("Diff:", diff)
+
+    // classify the head gesture
+    let tmp = JSON.stringify(condensed);
+    pull = (tmp == "[1]");
+    push = (tmp == "[-1]");
+
+    // Check if the linear accel is up for the z axis (into the phone)
+    if (!pull && !push){
+        if (Math.abs(diff) > 1.5){ // May need to adjust here
+            pull = (tmp == "[0,1]");
+            push = (tmp == "[0,-1]");
+        }
+    }
+
+    // If no normal gestures, make sure it's steady before returning 0
+    if ((pull + push) == 0){
+        return (tmp != "[0]")*99
+    }
+    return pull*1 + push*-1;
 }
