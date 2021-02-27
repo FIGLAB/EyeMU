@@ -29,6 +29,7 @@ var vx = 0.0;
 var vy = 0.0;
 var bounds = [2, 98];
 var updateRate = 60;
+var histLen = updateRate*1.5;
 
 function zeroAccel(){
     Z_baseline = rotateDegrees;
@@ -54,14 +55,20 @@ function getAccel(){
 //            // Accelerometer permissions
             window.addEventListener('devicemotion', (e) => {
                 // do something with e
-//                          console.log(e)
+//                console.log(e)
+                // Linear accel
+                let linac = e.acceleration;
+                updateTextLin(linac.x,linac.y,linac.z);
+
+
+                // Angular Accel
                 let rot = e.rotationRate
                 updateTextRot(rot.alpha, rot.beta, rot.gamma)
 
                 angaccel_short_history[0].push(rot.alpha)
                 angaccel_short_history[1].push(rot.beta)
                 angaccel_short_history[2].push(rot.gamma)
-                if (angaccel_short_history[0].length > updateRate){
+                if (angaccel_short_history[0].length > histLen){
                     angaccel_short_history.forEach(elem => {
                         elem.shift();
                     });
@@ -84,7 +91,7 @@ function getAccel(){
 //                console.log(orient_short_history[0]);
 //                console.log(rotateDegrees);
 
-                if (orient_short_history[0].length > updateRate){
+                if (orient_short_history[0].length > histLen){
                     orient_short_history.forEach(elem => {
                         elem.shift();
                     });
@@ -111,6 +118,20 @@ function orientationCheckContinuous(){
     setTimeout(orientationCheckContinuous, 500);
 }
 
+var acc2 = [0,0,0];
+var slow2 = 0.1;
+function updateTextLin(x,y,z){
+    acc2[0] += (x-acc2[0])*slow2;
+    acc2[1] += (y-acc2[1])*slow2;
+    acc2[2] += (z-acc2[2])*slow2;
+
+    const elem = document.getElementById("curAccRate")
+    if (elem != null){
+        elem.innerHTML = "X Accel: " + acc2[0] + "<br>" +
+                         "Y Accel: " + acc2[1] + "<br>" +
+                         "Z Accel: " + acc2[2];
+    }
+}
 
 var acc = [0, 0, 0];
 var slow = .01;
@@ -146,6 +167,8 @@ function updateText(alpha, beta, gamma){
 
 /////////////////////////////////////// Accelerometer gesture detection for evaluation pages
 var gestureNames = ["Forward flick", "Right flick", "Right tilt", "Left flick", "Left tilt", "Pull close", "Push away", "Turn to right", "Turn to left"];
+
+//function allGestures2detected()
 
 // remove duplicate elements from array
 function arrayCondenser(arr){

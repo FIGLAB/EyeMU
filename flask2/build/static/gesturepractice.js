@@ -19,13 +19,6 @@ var startWindowIndex = 2;
 var trialStartTime;
 var num_repeats = trial_time*1000 / trial_delay;
 
-//TODO Jan 6:
-        // DONE 1. Add indicator of trial number to the new trial instructions
-// 2. Make tap on screen during trial go back to instructions
-// 3. Fix trial end handler on timeout to handle properly
-
-    // 3. Reduce wait time after a few trials
-    // 4. Fix trial generation to not be truly random
 function createGalleryElems(){
     // Create the container that holds all the elements
 
@@ -251,6 +244,16 @@ function startTrial(){
 
 //    TODO: clear the accel history and gyro history before starting.
     // But not clear clear, just duplicate the last reading length times
+    orient_short_history = [
+        Array(histLen).fill(orient_short_history[0][orient_short_history.length-1]),
+        Array(histLen).fill(orient_short_history[1][orient_short_history.length-1]),
+        Array(histLen).fill(orient_short_history[2][orient_short_history.length-1])
+    ]
+    angaccel_short_history = [
+        Array(histLen).fill(angaccel_short_history[0][angaccel_short_history.length-1]),
+        Array(histLen).fill(angaccel_short_history[1][angaccel_short_history.length-1]),
+        Array(histLen).fill(angaccel_short_history[2][angaccel_short_history.length-1])
+    ]
     head_size_history = [];
     localPreds = [];
 
@@ -268,7 +271,7 @@ function startTrial(){
 
         // Start the trial after showing user target info
     // Delay start by less after a few trials
-    delayedStart = 1000;
+    delayedStart = 100;
 
     setTimeout(() => {
         // Hide trial instructions
@@ -335,19 +338,6 @@ function trialLoop(targets){
 
         console.log("Gaze Prediction: ", segmentPrediction);
 
-
-        const aa_hist_max = angaccel_short_history.map((histArr) => Math.max(...histArr.slice(histArr.length/startWindowIndex)))
-        const aa_hist_min = angaccel_short_history.map((histArr) => Math.min(...histArr.slice(histArr.length/startWindowIndex)))
-//        const aa_hist_sum = angaccel_short_history.map((histArr) => sum(histArr.slice(histArr.length/4)))
-//        const aa_hist_avg = angaccel_short_history.map((histArr) => average(histArr.slice(histArr.length/4)))
-//        console.log("Angular Accel maxes: ", aa_hist_max);
-//        console.log("Angular Accel mins: ", aa_hist_min);
-//        console.log("Angular Accel sum: ", aa_hist_sum);
-//        console.log("Angular Accel avg: ", aa_hist_avg);
-//        console.log("In-plane, Front-back, Left-right")
-//        console.log("Page turn:", pageturngesture);
-
-
         // Add to accel history
         //    condensed is lr, bf, then page turn
         //    detected [leftrightgesture, bfgesture, pushpullgesture, pageturngesture]
@@ -408,7 +398,6 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
         // Check for tilts, then for flicks case on which axis had highest angular accel,
         // then pull and push. Should also add page turn
         maxAccelAxis = argMax(gap);
-        console.log("Before gest detect");
 
         if (gestures[0] == -2){ // left tilt
             console.log("new left tilt");
@@ -469,7 +458,6 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
                     }
             }
         }
-        console.log("After gest detect");
 
         displayText = gestureNames[detectedGesture];
 

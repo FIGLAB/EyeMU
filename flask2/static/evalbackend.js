@@ -19,7 +19,7 @@ var currentSegmentOrder = null;
 // Set up trial time variables
 var trial_time = 20; // timeout variable in seconds
 var trial_delay = 100 // loop delay in ms
-var lastsecHistoryLen = 1000/trial_delay;
+var lastsecHistoryLen = 1500/trial_delay;
 var trialStartTime;
 var num_repeats = trial_time*1000 / trial_delay;
 
@@ -104,6 +104,7 @@ function setGridTextColorWhite(square_num){
 //    galleryNumbers[ind-1].style.color = "white";
     ind = lookup[square_num-1];
     galleryNumbers[ind-1].style.color = "white";
+//    galleryNumbers[ind-1].hidden = false;
 }
 
 function setGridColorAndText(square_num, text){
@@ -115,6 +116,7 @@ function setGridColorAndText(square_num, text){
     } else{
         galleryNumbers[ind-1].innerHTML = text;
     }
+    galleryNumbers[ind-1].style.color = divColors[ind-1];
 }
 
 function toggleHide(){
@@ -264,11 +266,6 @@ function startTrial(){
         // Start the trial after showing user target info
     // Delay start by less after a few trials
     delayedStart = 1500;
-//    if (trialNum > 20){
-//        delayedStart = 1000;
-//    } else{
-//        delayedStart = 1500;
-//    }
     setTimeout(() => {
         // Hide trial instructions
         console.log("Trial started, targets:", gestureNames[targetGesture], (targetSquare));
@@ -322,13 +319,9 @@ function trialLoop(targets){
     all_gestures = [leftrightgesture, bfgesture, pushpullgesture, pageturngesture];
     hist = [localPreds, orient_short_history, head_size_history, angaccel_short_history];
     // If all gestures is not all 0 and has no 99s (unsteady), a gesture is detected. Log it
-//    if (!all_gestures.every(elem => elem == 0)){
-//    if (!all_gestures.every(elem => elem == 0) && all_gestures.every(elem => elem != 99)){
     if (!all_gestures.every(elem => elem == 0 || elem == 99) && (sum(all_gestures) < 120)){
         segmentPrediction = getMeanEyeSegment(localPreds.slice(3)) // Averaging predicted gaze XYs
-
         console.log("Gaze Prediction: ", segmentPrediction);
-
 
         trialEndHandler([all_gestures, segmentPrediction], targets, hist);
     } else{
@@ -457,6 +450,7 @@ function addToEvalResults(resultsKey, blocknum, trialnum, resultsArr){
     tmp[blocknum][trialnum] = resultsArr;
     localStorage[resultsKey] = JSON.stringify(tmp);
 }
+
 
 // Shuffle an array
 function shuffleArr(array) {
