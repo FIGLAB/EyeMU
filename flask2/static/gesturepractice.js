@@ -242,21 +242,23 @@ function getMeanEyeSegment(arr){
 function startTrial(){
     trialStarted = true; // Make sure we don't start multiple trials
 
-//    TODO: clear the accel history and gyro history before starting.
+    // clear the accel history and gyro history before starting.
     // But not clear clear, just duplicate the last reading length times
-    const latest = orient_short_history.length-1;
-    orient_short_history = [
-        Array(histLen).fill(orient_short_history[0][latest]),
-        Array(histLen).fill(orient_short_history[1][latest]),
-        Array(histLen).fill(orient_short_history[2][latest])
-    ]
-    angaccel_short_history = [
-        Array(histLen).fill(0),
-        Array(histLen).fill(0),
-        Array(histLen).fill(0)
-    ]
+    const latest = orient_short_history[0].length-1;
+    orient_short_history = [1,2,3].map(
+                    (elem, ind) => Array(histLen).fill(orient_short_history[ind][latest]));
+    angaccel_short_history = [1,2,3].map((elem) => Array(histLen).fill(0))
+    linaccel_short_history = [1,2,3].map((elem) => Array(histLen).fill(0))
+
+//    orient_short_history = [
+//        Array(histLen).fill(orient_short_history[0][latest]),
+//        Array(histLen).fill(orient_short_history[1][latest]),
+//        Array(histLen).fill(orient_short_history[2][latest])]
+//    angaccel_short_history = [Array(histLen).fill(0), Array(histLen).fill(0), Array(histLen).fill(0)]
     head_size_history = [];
     localPreds = [];
+//    console.log(JSON.stringify(orient_short_history[2]))
+    console.log(orient_short_history[0][orient_short_history[0].length-1])
 
 
     // Generate which trial is next, display it in trialdisplay
@@ -281,9 +283,6 @@ function startTrial(){
 
         // Show grid
         toggleHide();
-            // highlight one number
-//        resetGridColors();
-//        setGridColorAndText(targetSquare, gestureNames[targetGesture]);
 
         // Start trial loop
         trialStartTime = Date.now()

@@ -96,7 +96,8 @@ function getAccel(){
                 orient_short_history[1].push(frontToBack)
                 orient_short_history[2].push(leftToRight)
 //                console.log(orient_short_history[0]);
-//                console.log(rotateDegrees);
+//                console.log("rotate", rotateDegrees);
+
 
                 if (orient_short_history[0].length > histLen){
                     orient_short_history.forEach(elem => {
@@ -198,6 +199,8 @@ function accelArrayHandler(accel_history){
     leftright_hist = accel_history[0].slice();
     backfront_hist = accel_history[1].slice();
     pageturn_hist = accel_history[2].slice();
+
+    console.log("left right most recent", leftright_hist[leftright_hist.length-1])
 
     // threshold and remove duplicates
     let thresh = 30
