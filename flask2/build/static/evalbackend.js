@@ -100,17 +100,15 @@ function resetGridColors(){
 }
 
 function setGridTextColorWhite(square_num){
-//    ind = lookup[square_num-1];
-//    galleryNumbers[ind-1].style.color = "white";
     ind = lookup[square_num-1];
     galleryNumbers[ind-1].style.color = "white";
-//    galleryNumbers[ind-1].hidden = false;
 }
 
 function setGridColorAndText(square_num, text){
     ind = lookup[square_num-1];
     galleryElements[ind-1].style.backgroundColor = divColors[ind-1];
 
+    // Depending on the type of eval, add the text to the specific div but don't show it yet (set to bg color)
     if (evalType == "grid"){
         galleryNumbers[ind-1].innerHTML = text.replace(" ", "<br>");
     } else{
