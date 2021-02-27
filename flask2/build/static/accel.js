@@ -96,7 +96,8 @@ function getAccel(){
                 orient_short_history[1].push(frontToBack)
                 orient_short_history[2].push(leftToRight)
 //                console.log(orient_short_history[0]);
-//                console.log(rotateDegrees);
+//                console.log("rotate", rotateDegrees);
+
 
                 if (orient_short_history[0].length > histLen){
                     orient_short_history.forEach(elem => {
@@ -199,6 +200,8 @@ function accelArrayHandler(accel_history){
     backfront_hist = accel_history[1].slice();
     pageturn_hist = accel_history[2].slice();
 
+    console.log("left right most recent", leftright_hist[leftright_hist.length-1])
+
     // threshold and remove duplicates
     let thresh = 30
     lr_condensed = historyToCondensed(leftright_hist, thresh);
@@ -269,24 +272,11 @@ function headsizeToGesture(head_hist, threshold){
     condensed = arrayCondenser(diff_classes);
 
     // Debug: Show max - min linear accels
-    console.log("headsize condensed", condensed)
     yea = 10
     let yealen = linaccel_short_history[0].length;
     diff = (sum(linaccel_short_history[2].slice(yealen-yea)) - sum(linaccel_short_history[2].slice(yealen/startWindowIndex, yealen/startWindowIndex+yea)))/yea
-    console.log("Diff:", diff)
-
-//    let yealen = linaccel_short_history[0].length;
-//    console.log("accel z gap", [
-////            linaccel_short_history[0][yealen-1] - linaccel_short_history[0][yealen/startWindowIndex],
-////            linaccel_short_history[1][yealen-1] - linaccel_short_history[1][yealen/startWindowIndex],
-////            linaccel_short_history[2][yealen-1] - linaccel_short_history[2][yealen/startWindowIndex]
-//            (sum(linaccel_short_history[2].slice(yealen-11)) - sum(linaccel_short_history[2].slice(yealen/startWindowIndex, yealen/startWindowIndex+10)))/10])
-//    console.log(linaccel_short_history[2].slice(yealen-10))
-
-//    console.log("accel gaps", [Math.max(...linaccel_short_history[0]) - Math.min(...linaccel_short_history[0]),
-//    Math.max(...linaccel_short_history[1]) - Math.min(...linaccel_short_history[1]),
-//    Math.max(...linaccel_short_history[2]) - Math.min(...linaccel_short_history[2])])
-
+//    console.log("headsize condensed", condensed)
+//    console.log("Diff:", diff)
 
     // classify the head gesture
     let tmp = JSON.stringify(condensed);
