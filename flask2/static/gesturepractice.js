@@ -249,16 +249,8 @@ function startTrial(){
                     (elem, ind) => Array(histLen).fill(orient_short_history[ind][latest]));
     angaccel_short_history = [1,2,3].map((elem) => Array(histLen).fill(0))
     linaccel_short_history = [1,2,3].map((elem) => Array(histLen).fill(0))
-
-//    orient_short_history = [
-//        Array(histLen).fill(orient_short_history[0][latest]),
-//        Array(histLen).fill(orient_short_history[1][latest]),
-//        Array(histLen).fill(orient_short_history[2][latest])]
-//    angaccel_short_history = [Array(histLen).fill(0), Array(histLen).fill(0), Array(histLen).fill(0)]
     head_size_history = [];
     localPreds = [];
-//    console.log(JSON.stringify(orient_short_history[2]))
-    console.log(orient_short_history[0][orient_short_history[0].length-1])
 
 
     // Generate which trial is next, display it in trialdisplay
