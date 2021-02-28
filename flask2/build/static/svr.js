@@ -26,6 +26,7 @@ var showPredictDot = true;
 
 //Draw the prediction as an orange dot on the screen.
 async function drawPrediction(predictedXY) {
+    console.log("Drawing prediction in SVR");
     // Remove all existing predicdots
     const predicdots = document.getElementsByClassName('predicdot');
     if (predicdots.length > 0){
@@ -120,11 +121,11 @@ async function runSVRlive(){
     curPred[0] = curPred[0]*(1-a) + pred[0]*a;
     curPred[1] = curPred[1]*(1-a) + pred[1]*a;
 
-    curPred[0] = Math.max(0.05, Math.min(.95, curPred[0]))
-    curPred[1] = Math.max(0.05, Math.min(.95, curPred[1]))
+    let edge = 0.03
+    curPred[0] = Math.max(edge, Math.min(1-edge, curPred[0]))
+    curPred[1] = Math.max(edge, Math.min(1-edge, curPred[1]))
 
     drawPrediction(curPred)
-
     setTimeout(runSVRlive, 100);
 }
 
@@ -194,11 +195,10 @@ async function main() {
 
     // import custom model
     models = [];
-    console.log("loading model");
+    console.log("Loading base model");
 //    await loadTFJSModel("/static/models/tfjsmodel2");
     await loadTFJSModel("/static/models/tfjsmodel4");
     naturemodel = models[0];
-    console.log('Successfully loaded model');
     // Set up embeddings output
 //    natureModelEmbeddings = tf.model({inputs: naturemodel.inputs,
 //            outputs: [naturemodel.layers[29].output, naturemodel.layers[33].output, naturemodel.layers[36].output]});
@@ -208,16 +208,22 @@ async function main() {
     });
 
     // Load in SVR
+    console.log("Loading calibration model");
     svr_x_str = localStorage.getItem("svr_x");
-    svr_x = renewObject(JSON.parse(svr_x_str));
-
     svr_y_str = localStorage.getItem("svr_y");
+    svr_x = renewObject(JSON.parse(svr_x_str));
     svr_y = renewObject(JSON.parse(svr_y_str));
 
-    // Resize the regression/classification toggle to look nice
-    const regtoggle = document.getElementById('regtoggle');
-    if (regtoggle != undefined){
-        regtoggle.style.width = windowWidth + "px"
+    // If there is no SVR, load in the default one and warn user
+    if (svr_x_str == null || svr_y_str == null){
+        console.log("WARNING: Loading default SVR, expect sub-par gaze tracking")
+        let defaultSVR_str = await fetch("/static/models/defaultsvr.txt")
+            .then(response => response.text())
+            .then(data => data);
+
+        defaultSVRs = JSON.parse(JSON.parse(defaultSVR_str))
+        svr_x = renewObject(defaultSVRs[0])
+        svr_y = renewObject(defaultSVRs[1])
     }
 
     // start the live loop
@@ -227,12 +233,17 @@ async function main() {
 //    renderPrediction();
     setTimeout(function(){
             eyeSelfie(true);
-        }, 2000);
+        }, 1000);
+    setTimeout(runSVRlive, 2000);
 
-    setTimeout(runSVRlive, 3000);
+    ///////////// Setup for the playground page. Not used in other ones.
+    // Resize the regression/classification toggle to look nice
+    const regtoggle = document.getElementById('regtoggle');
+    if (regtoggle != undefined){
+        regtoggle.style.width = windowWidth + "px"
+    }
+//    drawTargetDot()
 
-    drawTargetDot()
-
-    console.log("regression loading done");
+    console.log("Gaze prediction setup complete");
 }
 

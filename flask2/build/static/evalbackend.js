@@ -25,6 +25,8 @@ var num_repeats = trial_time*1000 / trial_delay;
 
 // gaze target labelling
 var lookup;
+var divColors = ["#ef90c1","#ef9186", "#e94b95", "#eb624d", "#bb2d6b", "#d63422", "#801e48", "#9c2517"]
+
 
 var cur;
 var origScroll;
@@ -144,24 +146,21 @@ function getURLParam(key){
 function startTrial(){
     trialStarted = true; // Make sure we don't start multiple trials
 
-//    TODO: clear the accel history and gyro history before starting.
+    // clear the accel history and gyro history before starting.
     // But not clear clear, just duplicate the last reading length times
+    const latest = orient_short_history[0].length-1;
+    orient_short_history = [1,2,3].map(
+                    (elem, ind) => Array(histLen).fill(orient_short_history[ind][latest]));
+    angaccel_short_history = [1,2,3].map((elem) => Array(histLen).fill(0))
+    linaccel_short_history = [1,2,3].map((elem) => Array(histLen).fill(0))
     head_size_history = [];
     localPreds = [];
-
-    // reset trial loop repeat counter
-//    repeat_counter = 0;
 
     // Generate which trial is next, display it in trialdisplay
     textElem = document.getElementById("trialdisplay");
     textElem.hidden = false;
 
-    // Figure out which trial is next, check url and then go off the results.
-//    const queryString = window.location.search; // TODO: pre-initialize results1 to 4 with the full list so we can just index in and take them out.
-//    const urlParams = new URLSearchParams(queryString);
-
-
-    // Figure out next trial from URL params: "name" and "block"
+    ///////// Figure out which trial is next, check url and then go off the results.
 
     // Get trial name from the URL. If there isn't one, make it evalType + "1" by default
     let tmpname = getURLParam("name")
@@ -263,7 +262,7 @@ function startTrial(){
 
         // Start the trial after showing user target info
     // Delay start by less after a few trials
-    delayedStart = 1500;
+    delayedStart = 1000;
     setTimeout(() => {
         // Hide trial instructions
         console.log("Trial started, targets:", gestureNames[targetGesture], (targetSquare));
@@ -348,7 +347,6 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
     textElem.hidden = false;
 //    textElem.innerHTML = "Trial #" + trialNum + " Complete<br><hr><br>Tap to continue";
     textElem.innerHTML = "Block #" + (trialBlockNum+1) + ", Trial #" + (currentBlockTrialNum+1) +  " Complete<br><hr><br>Tap to continue";
-
 
     if (detected[0] == -1){ // If no gesture triggered (timed out)
         addToEvalResults(trialResultsKey, trialBlockNum, currentBlockTrialNum, [Date.now(), [-1, detected[1]], target, histories]);
@@ -469,36 +467,6 @@ function shuffleArr(array) {
 
   return array;
 }
-/////////////////////////////////////// Push pull gesture detection
-function headsizeToGesture(head_hist, threshold){
-    // Get recent ratios to old head size
-    diffs = head_hist.slice(head_hist.length/4);
-    first_elem = head_hist[0];
-    diffs.forEach((elem, i) => {
-        diffs[i] = elem/first_elem;
-    });
-
-    // Threshold by ratio
-    diff_classes = [];
-    diffs.forEach((elem) => {
-        diff_classes.push(elem > threshold ? 1 : (elem < 1/threshold ? -1 : 0));
-    });
-
-    condensed = arrayCondenser(diff_classes);
-
-    // classify the head gesture
-    let tmp = JSON.stringify(condensed);
-    pull = (tmp == "[1]");
-//    pullpush = (tmp == "[0,1,0]");
-    push = (tmp == "[-1]");
-
-    // If no normal gestures, make sure it's steady before returning 0
-    if ((pull + push) == 0){
-        return (tmp != "[0]")*99
-    }
-
-    return pull*1 + push*-1;
-}
 
 /////////////////////////////////////// Eye tracking
 function gaze2Section(gaze_pred){
@@ -566,92 +534,3 @@ function getMeanEyeSegment(arr){
     return section;
 }
 
-
-
-divColors = [
-    "#ef90c1",
-    "#ef9186",
-    "#e94b95",
-    "#eb624d",
-    "#bb2d6b",
-    "#d63422",
-    "#801e48",
-    "#9c2517"
-]
-
-
-
-
-///////////////////////////////////////// Accelerometer gesture detection
-//// remove duplicate elements from array
-//function arrayCondenser(arr){
-//    newArr = [arr[0]];
-//    for (let i = 1; i < arr.length; i++){
-//        if (arr[i] != arr[i-1]){ // If it's different, add it
-//            newArr.push(arr[i]);
-//        }
-//    }
-//    return newArr;
-//}
-//
-//    // find the angle difference w/r/t the first element and remove duplicates
-//function modmod(a, n){ return a - Math.floor(a/n) * n }
-//function historyToCondensed(fullhist, threshold){
-//    // Find recent difference with past measurement
-//    diffs = fullhist.slice(fullhist.length/4);
-//    diffs.forEach((elem, i) => {
-////      angle rotation math
-//        a = elem - fullhist[0];
-//        a = modmod((a + 180), 360) - 180;
-//        diffs[i] = a;
-//    });
-//
-//    // "binarize" differences and remove duplicates
-//    diff_classes = [];
-//    diffs.forEach((elem) => {
-//        diff_classes.push(elem > threshold ? 1 : (elem < -threshold ? -1 : 0));
-//    });
-//    condensed = arrayCondenser(diff_classes);
-//    return condensed;
-//}
-//
-//function accelArrayHandler(accel_history){
-//    // Make a copy so it won't shift as we're modifying it
-//    leftright_hist = accel_history[0].slice();
-//    backfront_hist = accel_history[1].slice();
-//
-//    // threshold and remove duplicates
-//    lr_condensed = historyToCondensed(leftright_hist, 30);
-//    bf_condensed = historyToCondensed(backfront_hist, 30);
-//
-//    return [lr_condensed, bf_condensed]
-//}
-//
-//function classify_leftright(condensed){
-//    tmp = JSON.stringify(condensed);
-//
-//    lef_tilt = tmp == "[1]";
-//    lef_flick = tmp == "[0,1,0]";
-//    right_flick = tmp == "[0,-1,0]";
-//    right_tilt = tmp == "[-1]";
-//     // If no normal gestures, make sure it's steady before returning 0
-//    if ((lef_tilt + lef_flick + right_flick + right_tilt) == 0){
-//        return (tmp != "[0]")*99
-//    }
-//
-//    return lef_tilt*-2 + lef_flick*-1 + right_flick*1 + right_tilt*2;
-//}
-//
-//function classify_backfront(condensed){
-//    tmp = JSON.stringify(condensed);
-//
-//    front_dip = tmp == "[0,1,0]";
-//    back_dip = tmp == "[0,-1,0]";
-//
-//    // If no normal gestures, make sure it's steady before returning 0
-//    if ((front_dip + back_dip) == 0){
-//        return (tmp != "[0]")*99
-//    }
-//    return front_dip*1 + back_dip*-1 ;
-//}
-//

@@ -200,8 +200,6 @@ function accelArrayHandler(accel_history){
     backfront_hist = accel_history[1].slice();
     pageturn_hist = accel_history[2].slice();
 
-    console.log("left right most recent", leftright_hist[leftright_hist.length-1])
-
     // threshold and remove duplicates
     let thresh = 30
     lr_condensed = historyToCondensed(leftright_hist, thresh);
@@ -212,7 +210,7 @@ function accelArrayHandler(accel_history){
 }
 
 function classify_leftright(condensed){
-    console.log("Left right condensed", condensed);
+//    console.log("Left right condensed", condensed);
     tmp = JSON.stringify(condensed);
 
     lef_tilt = tmp == "[1]";

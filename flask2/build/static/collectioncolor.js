@@ -329,10 +329,10 @@ async function collectmain() {
 
     // start training loop
 //    setTimeout(renderPrediction, 2000);
-    renderPrediction();
 //    setTimeout(drawCache, 2000);
+    renderPrediction();
 
-    console.log("collection color main complete");
+    console.log("Real-time camera setup is complete");
 }
 
 
