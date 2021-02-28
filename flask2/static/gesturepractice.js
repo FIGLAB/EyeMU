@@ -328,7 +328,7 @@ function trialLoop(targets){
 //    if (!all_gestures.every(elem => elem == 0) && all_gestures.every(elem => elem != 99)){
         segmentPrediction = getMeanEyeSegment(localPreds.slice(3)) // Averaging predicted gaze XYs
 
-        console.log("Gaze Prediction: ", segmentPrediction);
+
 
         // Add to accel history
         //    condensed is lr, bf, then page turn
@@ -363,15 +363,11 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
     textElem.hidden = false;
     textElem.innerHTML = "Trial Complete<br>Tap to continue<hr><br>";
 
-
-
     if (detected[0] == -1){ // If no gesture triggered (timed out)
     } else{
         // Show detected text
         gestures = detected[0];
-        segment = detected[1];
         detectedGesture = -1;
-        let displayText = "";
 
         // Get angular acceleration to case on which gesture is being done
         angaccel = histories[3].map((arr) => arr.slice());
@@ -384,7 +380,6 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
                      aa_hist_max[1] + aa_hist_min[1],
                      aa_hist_max[2] + aa_hist_min[2]];
         console.log("Accel max min gaps: ", gap);
-        console.log("Accel gaps Absolute: ", gapAbs);
         console.log("max gap", argMax(gap));
 
         // Check for tilts, then for flicks case on which axis had highest angular accel,
@@ -451,20 +446,16 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
             }
         }
 
-        displayText = gestureNames[detectedGesture];
-
-//        textElem.innerHTML = "Trial #" + trialNum + " Results<br><hr>";
+        // Pull out eye and gesture prediction
+        let segment = detected[1];
+        let displayText = gestureNames[detectedGesture];
         textElem.innerHTML += "<br><br>Detected Gesture: " + displayText;
-//        textElem.innerHTML += "<br>Gaze segment: " + segment;
 
-        // Show target text
-//        textElem.innerHTML += "<br><br>";
-//        textElem.innerHTML += "Target gesture and gaze:"
-//        textElem.innerHTML += "<br>Gesture: " + gestureNames[target[0]]
-//        textElem.innerHTML += "<br>Gaze segment: " + (target[1]);
+        // Debug output to console
+        console.log("Gaze Prediction: ", segment);
+        console.log("Gesture Prediction: ", displayText);
 
         // Add to results: [timestamp, detected, target, [gyro history, face dist history, and gaze history]]
-        // Goes [gest, segment]          // for target, gest is 0-6 and seg is 0-7. Need to match detected to that
     }
     trialStarted = false;
 }
