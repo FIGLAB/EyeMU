@@ -256,7 +256,8 @@ function classify_pageturn(condensed){
 /////////////////////////////////////// Push pull gesture detection - uses linear accel
 function headsizeToGesture(head_hist, threshold){
     // Get recent ratios to old head size
-    diffs = head_hist.slice(head_hist.length/startWindowIndex);
+    headsizeHistLen = 1/2;
+    diffs = head_hist.slice(head_hist.length*headsizeHistLen);
     first_elem = head_hist[0];
     diffs.forEach((elem, i) => {
         diffs[i] = elem/first_elem;
@@ -269,10 +270,10 @@ function headsizeToGesture(head_hist, threshold){
     });
     condensed = arrayCondenser(diff_classes);
 
-    // Debug: Show max - min linear accels
-    yea = 10
-    let yealen = linaccel_short_history[0].length;
-    diff = (sum(linaccel_short_history[2].slice(yealen-yea)) - sum(linaccel_short_history[2].slice(yealen/startWindowIndex, yealen/startWindowIndex+yea)))/yea
+    // Debug: Show max - min linear accels from a small snippet from the middle and end
+    shortLen = 10
+    let linacc_len = linaccel_short_history[0].length;
+    diff = (sum(linaccel_short_history[2].slice(linacc_len-shortLen)) - sum(linaccel_short_history[2].slice(linacc_len*headsizeHistLen, linacc_len*headsizeHistLen+shortLen)))/shortLen
 //    console.log("headsize condensed", condensed)
 //    console.log("Diff:", diff)
 

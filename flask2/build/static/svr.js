@@ -26,7 +26,7 @@ var showPredictDot = true;
 
 //Draw the prediction as an orange dot on the screen.
 async function drawPrediction(predictedXY) {
-    console.log("Drawing prediction in SVR");
+//    console.log("Drawing prediction in SVR");
     // Remove all existing predicdots
     const predicdots = document.getElementsByClassName('predicdot');
     if (predicdots.length > 0){
@@ -50,7 +50,10 @@ async function drawPrediction(predictedXY) {
     elem.setAttribute("class", "predicdot");
 
     if (regression){
-        elem.setAttribute("style", "left:"+ predX +"%;top:"+ predY +"%;");
+//        elem.setAttribute("style", "left:"+ predX +"%;top:"+ predY +"%;");
+        elem.style.left = "calc(" + predX + "% - 15px)";
+        elem.style.top = "calc(" + predY + "% - 15px)";
+//        console.log(elem.style.left, elem.style.top)
     } else{
         // Dividing regions, by percentage
         let x_bounds = [25, 75];
