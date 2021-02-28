@@ -153,7 +153,6 @@ const s = ( p ) => {
         }
 
         // Draw circle, with gradually oscillating radius
-//        fill( 0, 121, 184 ); // dark blue
         p.fill(194, 21, 2); // dark red
         radius = radius + sin( p.frameCount / 8 )
         p.ellipse( X, Y, radius, radius );
@@ -170,8 +169,6 @@ const s = ( p ) => {
             // If the eyes are off-screen, notify the user and pause the collection
             if (Math.min(...eyeExtremesX) < margin*2 || Math.max(...eyeExtremesX) > (1.0 - margin*2) ||
                 Math.min(...eyeExtremesY) < margin || Math.max(...eyeExtremesY) > (1.0-margin)){
-//                Math.min(...eyeExtremesY) < margin || Math.max(...eyeExtremesY) > (1.0-margin) ||
-//                (typeof(prediction) != 'undefined' && prediction.faceInViewConfidence < 0.9)){
                 p.fill(255, 20, 20);
                 p.text("Eyes are off-camera! \nData collection paused.", width/2, 3*height/5);
             } else if ((calib_rounds < n_calib_rounds) && !stopped){

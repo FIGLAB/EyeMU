@@ -19,7 +19,7 @@ var currentSegmentOrder = null;
 // Set up trial time variables
 var trial_time = 20; // timeout variable in seconds
 var trial_delay = 100 // loop delay in ms
-var lastsecHistoryLen = 1500/trial_delay;
+var lastsecHistoryLen = 1200/trial_delay;
 var trialStartTime;
 var num_repeats = trial_time*1000 / trial_delay;
 
@@ -159,88 +159,7 @@ function startTrial(){
     // Generate which trial is next, display it in trialdisplay
     textElem = document.getElementById("trialdisplay");
     textElem.hidden = false;
-
-    ///////// Figure out which trial is next, check url and then go off the results.
-
-    // Get trial name from the URL. If there isn't one, make it evalType + "1" by default
-    let tmpname = getURLParam("name")
-    if (tmpname == null){
-        tmpname = evalType + "1";
-        setURLParam("name", tmpname);
-    }
-    trialName = tmpname;
-
-    // Get type of eval, grid or list
-    let numTrialsPerBlock;
-    if (trialName.slice(0,4) == "grid"){ // Grid has len 8
-        numTrialsPerBlock = 8;
-    } else{ // List has len 6
-        numTrialsPerBlock = 6;
-    }
-
-
-    // Initialize results in localstorage if it doesn't exist.
-    trialResultsKey = trialName + "_results";
-    tmpres = localStorage.getItem(trialResultsKey);
-    if (tmpres == null){
-        let reslist = [];
-        for (let i = 0; i < gestureNames.length; i++){
-            reslist.push(makeRandomArrayOfLen(numTrialsPerBlock))
-        }
-        localStorage.setItem(trialResultsKey, JSON.stringify(reslist));
-    }
-
-
-    // Get trial block list. If there isn't one, make it
-    trialBlocksKey = trialName + "_blockorder";
-    tmplist = localStorage.getItem(trialBlocksKey);
-    if (tmplist == null){
-        let blocklist;
-        blocklist = [...Array(gestureNames.length).keys()]; // 7 gestures
-        shuffleArr(blocklist);
-        localStorage.setItem(trialBlocksKey, JSON.stringify(blocklist));
-
-        tmplist = localStorage.getItem(trialBlocksKey);
-    }
-    trialBlockOrder = JSON.parse(tmplist);
-
-    // Get trial's current block from the url
-    let tmpblock = parseInt(getURLParam("block"));
-    if (isNaN(tmpblock)){
-        tmpblock = 0;
-        setURLParam("block", tmpblock);
-    }
-    trialBlockNum = tmpblock;
-
-    // Get current block's grid num from url, or start it at 0 and re-generate if nonexistent
-//    console.log("currentBlockTrialNum before setting frmo url param", currentBlockTrialNum);
-    let tmptrialnum = parseInt(getURLParam("trialnum"));
-    if (isNaN(tmptrialnum)){
-        tmptrialnum = 0;
-        setURLParam("trialnum", tmptrialnum);
-    }
-    currentBlockTrialNum = tmptrialnum;
-//    console.log("currentBlockTrialNum after setting frmo url param", currentBlockTrialNum);
-
-
-    // Index into randomly ordered list of squares to look at, or create it
-    // We need to make a new one if it's empty, or
-    if (currentSegmentOrder == null){
-        currentSegmentOrder = makeRandomArrayOfLen(numTrialsPerBlock);
-    }
-    if (currentBlockTrialNum == currentSegmentOrder.length){ // Also create new segment list if trialnum has finished this block.
-        trialBlockNum += 1;
-        setURLParam("block", trialBlockNum);
-        currentBlockTrialNum = 0;
-        setURLParam("trialnum", currentBlockTrialNum);
-
-        currentSegmentOrder = makeRandomArrayOfLen(numTrialsPerBlock);
-    }
-
-    // Redirect to main page if this eval set is done.
-    if (trialBlockNum == gestureNames.length){
-        window.location.href = "/results";
-    }
+    updateTrialFromURL();
 
 
     console.log(trialName);
@@ -426,6 +345,90 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
 //    console.log("current block trial num at end of trialendhandler", currentBlockTrialNum);
     setURLParam("trialnum", (currentBlockTrialNum + 1));
     trialStarted = false;
+}
+
+///////////////////////////////////// Trial updating
+function updateTrialFromURL(){
+    ///////// Figure out which trial is next, check url and then go off the results.
+    // Get trial name from the URL. If there isn't one, make it evalType + "1" by default
+    let tmpname = getURLParam("name")
+    if (tmpname == null){
+        tmpname = evalType + "1";
+        setURLParam("name", tmpname);
+    }
+    trialName = tmpname;
+
+    // Get type of eval, grid or list
+    let numTrialsPerBlock;
+    if (trialName.slice(0,4) == "grid"){ // Grid has len 8
+        numTrialsPerBlock = 8;
+    } else{ // List has len 6
+        numTrialsPerBlock = 6;
+    }
+
+
+    // Initialize results in localstorage if it doesn't exist.
+    trialResultsKey = trialName + "_results";
+    tmpres = localStorage.getItem(trialResultsKey);
+    if (tmpres == null){
+        let reslist = [];
+        for (let i = 0; i < gestureNames.length; i++){
+            reslist.push(makeRandomArrayOfLen(numTrialsPerBlock))
+        }
+        localStorage.setItem(trialResultsKey, JSON.stringify(reslist));
+    }
+
+
+    // Get trial block list. If there isn't one, make it
+    trialBlocksKey = trialName + "_blockorder";
+    tmplist = localStorage.getItem(trialBlocksKey);
+    if (tmplist == null){
+        let blocklist;
+        blocklist = [...Array(gestureNames.length).keys()]; // 7 gestures
+        shuffleArr(blocklist);
+        localStorage.setItem(trialBlocksKey, JSON.stringify(blocklist));
+
+        tmplist = localStorage.getItem(trialBlocksKey);
+    }
+    trialBlockOrder = JSON.parse(tmplist);
+
+    // Get trial's current block from the url
+    let tmpblock = parseInt(getURLParam("block"));
+    if (isNaN(tmpblock)){
+        tmpblock = 0;
+        setURLParam("block", tmpblock);
+    }
+    trialBlockNum = tmpblock;
+
+    // Get current block's grid num from url, or start it at 0 and re-generate if nonexistent
+//    console.log("currentBlockTrialNum before setting frmo url param", currentBlockTrialNum);
+    let tmptrialnum = parseInt(getURLParam("trialnum"));
+    if (isNaN(tmptrialnum)){
+        tmptrialnum = 0;
+        setURLParam("trialnum", tmptrialnum);
+    }
+    currentBlockTrialNum = tmptrialnum;
+//    console.log("currentBlockTrialNum after setting frmo url param", currentBlockTrialNum);
+
+
+    // Index into randomly ordered list of squares to look at, or create it
+    // We need to make a new one if it's empty, or
+    if (currentSegmentOrder == null){
+        currentSegmentOrder = makeRandomArrayOfLen(numTrialsPerBlock);
+    }
+    if (currentBlockTrialNum == currentSegmentOrder.length){ // Also create new segment list if trialnum has finished this block.
+        trialBlockNum += 1;
+        setURLParam("block", trialBlockNum);
+        currentBlockTrialNum = 0;
+        setURLParam("trialnum", currentBlockTrialNum);
+
+        currentSegmentOrder = makeRandomArrayOfLen(numTrialsPerBlock);
+    }
+
+    // Redirect to main page if this eval set is done.
+    if (trialBlockNum == gestureNames.length){
+        window.location.href = "/results";
+    }
 }
 
 
