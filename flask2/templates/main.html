@@ -26,9 +26,8 @@
 
         regModel = localStorage['svr_x'];
         if (regModel == undefined || regModel.length == 0){
-            elem.innerText = "Personalized Model Not Found <br>
-            <a href='/grideval/?name=grid1' target="_blank">Start Anyway</a> <br>
-            ";
+            elem.innerText = `Personalized Model Not Found <br>
+            <a href='/grideval/?name=grid1' target="_blank">Start Anyway</a> <br>`;
             elem.style.backgroundColor = "pink";
         } else {
             // elem.innerText = "Personalized Model Found <br> Click to start evaluation";

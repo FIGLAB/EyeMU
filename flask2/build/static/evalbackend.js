@@ -162,17 +162,12 @@ function startTrial(){
     updateTrialFromURL();
 
 
-    console.log(trialName);
-    console.log("trialBlockNum and currentBlockTrialNum");
-    console.log(trialBlockNum, currentBlockTrialNum);
-    console.log("current gaze target: ", currentSegmentOrder[currentBlockTrialNum] + 1);
-    console.log("current gesture target: ", trialBlockOrder[trialBlockNum]);
+    console.log("");
+    console.log("Eval " + trialName + " starting block " + (trialBlockNum+1) + ", trial " + (1+currentBlockTrialNum));
     console.log(gestureNames);
 
     targetGesture = trialBlockOrder[trialBlockNum];
     targetSquare = currentSegmentOrder[currentBlockTrialNum]+1;
-
-
     textElem.innerHTML = "\"" + trialName + "\" Evaluation Trial<br>";
     textElem.innerHTML += "Block #" + (1+trialBlockNum) + ", ";
     textElem.innerHTML += "Trial #" + (1+currentBlockTrialNum) + "/" + currentSegmentOrder.length;
@@ -180,11 +175,10 @@ function startTrial(){
     textElem.innerHTML += "<br>Target square: " + (targetSquare);
 
         // Start the trial after showing user target info
-    // Delay start by less after a few trials
     delayedStart = 1000;
     setTimeout(() => {
         // Hide trial instructions
-        console.log("Trial started, targets:", gestureNames[targetGesture], (targetSquare));
+        console.log("Trial started, target gesture and segment:", gestureNames[targetGesture], (targetSquare));
         textElem.hidden = true;
 
         // Show grid
@@ -292,57 +286,56 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
         maxAccelAxis = argMax(gap);
 
         if (gestures[0] == -2){ // left tilt
-            console.log("new left tilt");
+//            console.log("new left tilt");
             detectedGesture = 4;
         } else if (gestures[0] == 2){ // right tilt
-            console.log("new right tilt");
+//            console.log("new right tilt");
             detectedGesture = 2;
         } else if (gestures[2] == 1){ // Pull
-            console.log("new pull");
+//            console.log("new pull");
             detectedGesture = 5;
         } else if (gestures[2] == -1){ // Push away
-            console.log("new push");
+//            console.log("new push");
             detectedGesture = 6;
         } else { // Flick detection
             switch(maxAccelAxis){
                 case 0: // Forward
                     if (gestures[1] == -1){
-                        console.log("forward flick");
+//                        console.log("forward flick");
                         detectedGesture = 0;
                         break;
                     }
                 case 1: // Page turns
                     if (gestures[3] == 1){
-                        console.log("page turn to right");
+//                        console.log("page turn to right");
                         detectedGesture = 7;
                         break;
                     } else if (gestures[3] == -1){
-                        console.log("page turn to left");
+//                        console.log("page turn to left");
                         detectedGesture = 8;
                         break;
                     }
                 case 2: // Right and left flick
                     if (gestures[0] == 1){
-                        console.log("right flick");
+//                        console.log("right flick");
                         detectedGesture = 1;
                         break;
                     } else if (gestures[0] == -1){
-                        console.log("left flick");
+//                        console.log("left flick");
                         detectedGesture = 3;
                         break;
                     }
             }
-        }
+          }
 
         console.log("Gesture Prediction: ", gestureNames[detectedGesture], detectedGesture);
 
-        // Add to results: [timestamp, detected, target, [gyro history, face dist history, and gaze history]]
-        // Goes [gest, segment]          // for target, gest is 0-6 and seg is 0-7. Need to match detected to that
-//        addToStorageArray("results", [Date.now(), [detectedGesture, segment], target, histories]);
-        addToEvalResults(trialResultsKey, trialBlockNum, currentBlockTrialNum, [Date.now(), [detectedGesture, segment], target, histories]);
-    }
+        // Goes [gest, segment]          // for target, gest is 0-6 and seg is 0-7
+        addToEvalResults(trialResultsKey, trialBlockNum, currentBlockTrialNum,
+            // Add to results: [timestamp, detected, target, [gyro history, face dist history, and gaze history]]
+            [Date.now(), [detectedGesture, segment], target, histories]);
+        }
 
-//    console.log("current block trial num at end of trialendhandler", currentBlockTrialNum);
     setURLParam("trialnum", (currentBlockTrialNum + 1));
     trialStarted = false;
 }

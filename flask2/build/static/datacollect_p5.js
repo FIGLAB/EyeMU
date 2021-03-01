@@ -5,11 +5,13 @@ var n_calib_rounds = 5;
 
 // Global variables
 var radius = 70.0;
+var constRadius = 90;
 var X, Y;
 var nX, nY;
 
 // Timing of steps
 var stopped = false;
+var user_readyforstills = false;
 var numSteps = 60;
 var stepsTaken = 0;
 
@@ -97,7 +99,7 @@ const s = ( p ) => {
         moveAmountPerFrame = [(nX-X)/numSteps , (nY-Y)/numSteps];
 
         // Start it in a stopped state
-        stillsTaken = num_ims_still
+        stillsTaken = 0;
         stopped = true;
 
         // Load instruction images
@@ -152,10 +154,13 @@ const s = ( p ) => {
             }
         }
 
+
         // Draw circle, with gradually oscillating radius
         p.fill(194, 21, 2); // dark red
         radius = radius + sin( p.frameCount / 8 )
-        p.ellipse( X, Y, radius, radius );
+//        p.ellipse( X, Y, radius, radius );
+//        arbPoly(X,Y,constRadius/2, 8);
+
 
         if (rBB != undefined ){ // if the face has been detected, start the data collection
             // Unless eyes are too far off screen
@@ -170,12 +175,17 @@ const s = ( p ) => {
             if (Math.min(...eyeExtremesX) < margin*2 || Math.max(...eyeExtremesX) > (1.0 - margin*2) ||
                 Math.min(...eyeExtremesY) < margin || Math.max(...eyeExtremesY) > (1.0-margin)){
                 p.fill(255, 20, 20);
+                p.ellipse( X, Y, radius, radius );
                 p.text("Eyes are off-camera! \nData collection paused.", width/2, 3*height/5);
             } else if ((calib_rounds < n_calib_rounds) && !stopped){
                 // Show that images are being taken before XY increments
                 p.textSize(20)
+                p.fill(194, 21, 2);
+                arbPoly(X,Y,constRadius/2, 8);
                 p.fill(255,255,255)
-                p.text(movingsTaken, X, Y);
+                p.text(num_ims_along_line-movingsTaken, X, Y);
+//                p.text(movingsTaken, X, Y);
+
 
                 // Track circle to new destination
                 X += moveAmountPerFrame[0];
@@ -194,6 +204,12 @@ const s = ( p ) => {
                     stepsTaken = 0;
                     calib_counter += 1;
                     calib_rounds = Math.floor(calib_counter/nx_arr.length);
+                    // Store the last set of embeddings, eyeCorners, and head geoms
+                    if (calib_counter % nx_arr.length == 0){
+                        console.log("saving last set of embeddings in localstorage, calib_rounds is n", calib_rounds);
+                        saveNthRoundinLS(calib_rounds - 1);
+                    }
+
 
                     X = nx_arr[calib_counter % nx_arr.length];
                     Y = ny_arr[calib_counter % nx_arr.length];
@@ -205,34 +221,31 @@ const s = ( p ) => {
                     stopped = true;
                     stillsDone = false;
                     stillsTaken = 0;
+                    user_readyforstills = false;
                 }
             } else if (stopped){ // taking stills
                 movingsTaken = 0;
-                if (stillsTaken < num_ims_still){
-                    if (p.frameCount % 2 == 0){ // take screenshot every N frames
+                if (stillsTaken < num_ims_still && user_readyforstills){
+                    if (p.frameCount % 3 == 0){ // take screenshot every N frames
                         eyeSelfie(false);
                         console.log("eyeSelfie at corner");
                         stillsTaken += 1;
                     } // Write number of photo and draw circle going around
-                    p.textSize(20)
+                    p.textSize(20);
+                    p.fill(194, 21, 2);
+                    arbPoly(X,Y,constRadius/2, 8);
                     p.fill(255,255,255)
-                    p.text(stillsTaken, X, Y)
+                    p.text(num_ims_still-stillsTaken, X, Y)
 
                     if (stillsTaken >= num_ims_still){
                         p.fill(0, 121, 184); // Blue circle if all images taken (because of color blindness
                         p.ellipse( X, Y, radius, radius);
                         stillsDone = true
-
-                        // Store the last set of embeddings, eyeCorners, and head geoms
-                        if (calib_counter % nx_arr.length == 0){
-                            console.log("saving last set of embeddings in localstorage, calib_rounds is n", calib_rounds);
-                            saveNthRoundinLS(calib_rounds - 1);
-                        }
                     }
-                } else if (stillsTaken >= num_ims_still){
-                    p.fill(0, 121, 184); // Blue circle if all images taken (because of color blindness
-                    p.ellipse( X, Y, radius, radius);
-                    stillsDone = true
+                } else {
+                        console.log("HERE HERE")
+                        p.fill(0, 121, 184); // Blue circle if all images taken (because of color blindness
+                        p.ellipse( X, Y, radius, radius);
                 }
             } else {
                 console.log("collection done, starting training")
@@ -245,14 +258,11 @@ const s = ( p ) => {
                 p.textSize(100);
                 p.text('Training...', width/2, height/2);
 
-    //            eyeSelfie(true); // called at the end of training as well
                 calib_counter = 0
 
                 trainNatureRegHead(leftEyes_x, rightEyes_x, eyeCorners_x,screenXYs_y);
                 done_with_training = true;
                 clearCheckpoints();
-
-//                p.noLoop();
             }
         }
     }
@@ -261,10 +271,24 @@ const s = ( p ) => {
         if (stopped && stillsDone){
             stopped = false;
             stepsTaken = 0;
+        } else if (!user_readyforstills){
+            user_readyforstills = true;
         } else if (done_with_training){
             window.location.href = "../";
         }
     };
+
+    function arbPoly(x, y, radius, npoints) {
+      let angle = p.TWO_PI / npoints;
+      p.beginShape();
+      let start = 3.1415/8
+      for (let a = start; a < (p.TWO_PI+start); a += angle) {
+        let sx = x + cos(a) * radius;
+        let sy = y + sin(a) * radius;
+        p.vertex(sx, sy);
+      }
+      p.endShape(p.CLOSE);
+    }
 };
 
 

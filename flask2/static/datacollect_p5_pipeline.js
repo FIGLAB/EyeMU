@@ -111,7 +111,7 @@ async function main(){
 
     // Load in nature model
     models = [];
-    console.log("loading model");
+    console.log("Loading base model...");
     await loadTFJSModel("/static/models/tfjsmodel4");
     naturemodel = models[0];
     console.log('Successfully loaded model');
@@ -136,5 +136,5 @@ async function main(){
     // Set up the camera and facemesh loop
     collectmain();
 
-    console.log("data collection pipeline started");
+    console.log("Data collection pipeline initialized successfully");
 }
