@@ -166,6 +166,7 @@ function downloadResults(){
     link.click();
 }
 
+
 function downloadResultsFromKey(resKey){
     resultsStr = localStorage.getItem(resKey);
 
