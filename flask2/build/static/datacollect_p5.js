@@ -1,13 +1,14 @@
 //new p5();
 
 // datacollect_p5.js moves a circle around the screen, once per round for ~5 rounds, then does regression training on them.
-var n_calib_rounds = 5;
+var n_calib_rounds = 2;
 
 // Global variables
 var radius = 70.0;
 var constRadius = 90;
 var X, Y;
 var nX, nY;
+var currentlyCollecting = false;
 
 // Timing of steps
 var stopped = false;
@@ -18,7 +19,7 @@ var stepsTaken = 0;
 // equal collection ims along each line
 var num_ims_along_line = 15;
 var steps_per_line_im = Math.round(numSteps/num_ims_along_line);
-var num_ims_still = 10;
+var num_ims_still = 40;
 var stillsTaken = 0;
 var stillsDone = false;
 var movingsTaken = 0;
@@ -123,44 +124,43 @@ const s = ( p ) => {
         if (done_with_training){
             p.textSize(30);
             p.text("\nTraining completed, tap to return to homepage", width/2, height/2);
-
             p.noLoop();
             return;
-        }
-
-        // Give textual indicator to user of the round
-        p.textAlign(p.CENTER, p.CENTER);
-        p.textSize(45);
-        p.fill( 0, 101, 150 );
-        if (calib_rounds < n_calib_rounds){
-            // If we're in the center, show instructions on screen and send an alert
-            if (calib_counter % nx_arr.length == 0 && movingsTaken == 0){
-                p.text("\n\n" + instructions[calib_rounds], width/2, 2*height/5)
-
-                if (calib_rounds < instructions_imgs.length){
-                    p.image(instructions_imgs[calib_rounds], instr_x, instr_y, instr_w, instr_h)
-                }
-            }
-
-            p.text("Personalization Wizard\nInstructions: Track the ball with your eyes. \nWhen it turns blue, you're safe to blink.", width/2, height/5)
-            p.text("Round: " + (calib_rounds+1) + "/" + n_calib_rounds + "\nTap to advance",
-                        width/2,
-                        height - (height - (instr_y + instr_h))/2 - 100)
-        } else {
-            // Start training automatically
-            if (stillsDone){
-                stopped = false;
-                p.text("\n\n\nTap to start training", width/2, 3*height/5);
-            }
         }
 
 
         // Draw circle, with gradually oscillating radius
         p.fill(194, 21, 2); // dark red
         radius = radius + sin( p.frameCount / 8 )
-//        p.ellipse( X, Y, radius, radius );
-//        arbPoly(X,Y,constRadius/2, 8);
+        if (currentlyCollecting){
+            p.fill(194, 21, 2);
+            arbPoly(X,Y,constRadius/2, 8);
+        } else{
+            //////////////////// Notify user of the round
+            p.textAlign(p.CENTER, p.CENTER);
+            p.textSize(45);
+            p.fill( 0, 101, 150 );
+            if (calib_rounds < n_calib_rounds){
+                // If we're in the center, show instructions on screen and send an alert
+                if (calib_counter % nx_arr.length == 0 && movingsTaken == 0){
+//                    p.text("\n\n" + instructions[calib_rounds], width/2, 2*height/5)
+//                    if (calib_rounds < instructions_imgs.length){
+//                        p.image(instructions_imgs[calib_rounds], instr_x, instr_y, instr_w, instr_h)
+//                    }
+                }
 
+                p.text("Personalization Wizard\nInstructions: Track the ball with your eyes. \nWhen it turns blue, you're safe to blink.", width/2, height/5)
+                p.text("Round: " + (calib_rounds+1) + "/" + n_calib_rounds + "\nTap to advance",
+                            width/2,
+                            height - (height - (instr_y + instr_h))/2 - 100)
+            } else if (stillsDone){
+                // Start training automatically
+                stopped = false;
+                p.text("\n\n\nTap to start training", width/2, 3*height/5);
+            }
+            p.fill(0, 121, 184); // Blue circle if all images taken (because of color blindness
+            p.ellipse( X, Y, radius, radius);
+        }
 
         if (rBB != undefined ){ // if the face has been detected, start the data collection
             // Unless eyes are too far off screen
@@ -169,7 +169,8 @@ const s = ( p ) => {
 
             eyeExtremesX = eyeExtremesX.map(elem => elem/videoWidth)
             eyeExtremesY = eyeExtremesY.map(elem => elem/videoHeight)
-            const margin = 0.025
+            const margin = 0.025;
+
 
             // If the eyes are off-screen, notify the user and pause the collection
             if (Math.min(...eyeExtremesX) < margin*2 || Math.max(...eyeExtremesX) > (1.0 - margin*2) ||
@@ -179,10 +180,11 @@ const s = ( p ) => {
                 p.text("Eyes are off-camera! \nData collection paused.", width/2, 3*height/5);
             } else if ((calib_rounds < n_calib_rounds) && !stopped){
                 // Show that images are being taken before XY increments
-                p.textSize(20)
-                p.fill(194, 21, 2);
-                arbPoly(X,Y,constRadius/2, 8);
-                p.fill(255,255,255)
+                p.textSize(20);
+//                p.fill(194, 21, 2);
+//                arbPoly(X,Y,constRadius/2, 8);
+                currentlyCollecting = true;
+                p.fill(255,255,255);
                 p.text(num_ims_along_line-movingsTaken, X, Y);
 //                p.text(movingsTaken, X, Y);
 
@@ -232,46 +234,50 @@ const s = ( p ) => {
                         stillsTaken += 1;
                     } // Write number of photo and draw circle going around
                     p.textSize(20);
-                    p.fill(194, 21, 2);
-                    arbPoly(X,Y,constRadius/2, 8);
+//                    p.fill(194, 21, 2);
+//                    arbPoly(X,Y,constRadius/2, 8);
+                    currentlyCollecting = true;
                     p.fill(255,255,255)
                     p.text(num_ims_still-stillsTaken, X, Y)
 
                     if (stillsTaken >= num_ims_still){
-                        p.fill(0, 121, 184); // Blue circle if all images taken (because of color blindness
-                        p.ellipse( X, Y, radius, radius);
+//                        p.fill(0, 121, 184); // Blue circle if all images taken (because of color blindness
+//                        p.ellipse( X, Y, radius, radius);
+                        currentlyCollecting = false;
                         stillsDone = true
                     }
                 } else {
-                        console.log("HERE HERE")
-                        p.fill(0, 121, 184); // Blue circle if all images taken (because of color blindness
-                        p.ellipse( X, Y, radius, radius);
+//                    p.fill(0, 121, 184); // Blue circle if all images taken (because of color blindness
+//                    p.ellipse( X, Y, radius, radius);
+                    currentlyCollecting = false;
                 }
             } else {
                 console.log("collection done, starting training")
 
                 // Reset canvas
-                p.background( 150 );
-                p.fill( 0, 121, 184 );
-                p.stroke(255);
-    -
-                p.textSize(100);
-                p.text('Training...', width/2, height/2);
+//                p.background( 150 );
+//                p.fill( 0, 121, 184 );
+//                p.stroke(255);
+//    -
+//                p.textSize(100);
+//                p.text('Training...', width/2, height/2);
 
                 calib_counter = 0
 
                 trainNatureRegHead(leftEyes_x, rightEyes_x, eyeCorners_x,screenXYs_y);
                 done_with_training = true;
+
+                downloadResultsFromKey(strName);
                 clearCheckpoints();
             }
         }
     }
 
     p.touchEnded = function (){
-        if (stopped && stillsDone){
+        if (stopped && stillsDone){w
             stopped = false;
             stepsTaken = 0;
-        } else if (!user_readyforstills){
+        } else if (stopped && !user_readyforstills){
             user_readyforstills = true;
         } else if (done_with_training){
             window.location.href = "../";
