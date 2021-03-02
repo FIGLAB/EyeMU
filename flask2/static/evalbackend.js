@@ -124,13 +124,6 @@ function toggleHide(){
 }
 
 
-function makeRandomArrayOfLen(n){
-    let seglist = [...Array(n).keys()];
-    shuffleArr(seglist);
-    return seglist;
-}
-
-
 function setURLParam(key, val){
     var url = new URL(window.location);
     url.searchParams.set(key, val);
@@ -247,10 +240,6 @@ function trialLoop(targets){
     }
 }
 
-function argMax(array) {
-  return array.map((x, i) => [x, i]).reduce((r, a) => (a[0] > r[0] ? a : r))[1];
-}
-
 //function trialEndHandler(gestures, segment){
 function trialEndHandler(detected, target, histories){ // Both in [gestures, segment] format
 
@@ -266,9 +255,8 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
     } else{
         // Show detected text
         gestures = detected[0];
-        segment = detected[1];
         detectedGesture = -1;
-        let displayText = "";
+
 
         // Get angular acceleration to case on which flicks gesture is being done
         angaccel = histories[3].map((arr) => arr.slice());
@@ -328,7 +316,14 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
             }
           }
 
-        console.log("Gesture Prediction: ", gestureNames[detectedGesture], detectedGesture);
+        // Pull out eye and gesture prediction
+        let segment = detected[1];
+        let displayText = gestureNames[detectedGesture];
+        textElem.innerHTML += "<br><br>Detected Gesture: " + displayText;
+
+        // Debug output to console
+        console.log("Gaze Prediction: ", segment);
+        console.log("Gesture Prediction: ", displayText);
 
         // Goes [gest, segment]          // for target, gest is 0-6 and seg is 0-7
         addToEvalResults(trialResultsKey, trialBlockNum, currentBlockTrialNum,
@@ -338,6 +333,37 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
 
     setURLParam("trialnum", (currentBlockTrialNum + 1));
     trialStarted = false;
+}
+
+/////////////////////// Utils
+function argMax(array) {
+  return array.map((x, i) => [x, i]).reduce((r, a) => (a[0] > r[0] ? a : r))[1];
+}
+
+function makeRandomArrayOfLen(n){
+    let seglist = [...Array(n).keys()];
+    shuffleArr(seglist);
+    return seglist;
+}
+
+// Shuffle an array
+function shuffleArr(array) {
+  var currentIndex = array.length, temporaryValue, randomIndex;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
 }
 
 ///////////////////////////////////// Trial updating
@@ -441,27 +467,6 @@ function addToEvalResults(resultsKey, blocknum, trialnum, resultsArr){
 
     tmp[blocknum][trialnum] = resultsArr;
     localStorage[resultsKey] = JSON.stringify(tmp);
-}
-
-
-// Shuffle an array
-function shuffleArr(array) {
-  var currentIndex = array.length, temporaryValue, randomIndex;
-
-  // While there remain elements to shuffle...
-  while (0 !== currentIndex) {
-
-    // Pick a remaining element...
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex -= 1;
-
-    // And swap it with the current element.
-    temporaryValue = array[currentIndex];
-    array[currentIndex] = array[randomIndex];
-    array[randomIndex] = temporaryValue;
-  }
-
-  return array;
 }
 
 /////////////////////////////////////// Eye tracking
