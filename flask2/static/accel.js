@@ -80,6 +80,17 @@ function getAccel(){
                         elem.shift();
                     })
                 }
+
+                // Overall logging for eval
+                if (trackingOn){
+                    track_accel_gyro[0][0].push(rot.alpha);
+                    track_accel_gyro[0][1].push(rot.beta);
+                    track_accel_gyro[0][2].push(rot.gamma);
+
+                    track_accel_gyro[1][0].push(linac.x);
+                    track_accel_gyro[1][1].push(linac.y);
+                    track_accel_gyro[1][2].push(linac.z);
+                }
             })
 
             // Magnetometer permissions
@@ -103,6 +114,12 @@ function getAccel(){
                     orient_short_history.forEach(elem => {
                         elem.shift();
                     });
+                }
+                // Logging for eval
+                if (trackingOn){
+                    track_accel_gyro[2][0].push(rotateDegrees);
+                    track_accel_gyro[2][1].push(frontToBack);
+                    track_accel_gyro[2][2].push(leftToRight);
                 }
             }, true);
 

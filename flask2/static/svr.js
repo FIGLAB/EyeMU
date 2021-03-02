@@ -11,6 +11,7 @@ var output;
 var curEyes = []
 var natureModelEmbeddings;
 var faceGeom;
+var allFeatures_mat;
 
 //SVR vars
 var svr_x;
@@ -106,10 +107,6 @@ async function runSVRlive(){
 
     pred = tf.tidy(() => {
                 let curGeom = tf.tensor(faceGeom.getGeom()).reshape([1,4]);
-                 // EXPERIMENT: Trying to greyscale images to increase accuracy
-//                leye = greyscaleImage(curEyes[0])
-//                reye = greyscaleImage(curEyes[1])
-//                let embed = natureModelEmbeddings.predict([leye.div(255).sub(0.5).reshape([1, 128, 128, 3]), reye.div(255).sub(0.5).reshape([1, 128, 128, 3]), curEyes[2].reshape([1, 8]), curGeom]);
                 let embed = natureModelEmbeddings.predict([curEyes[0].div(256).sub(0.5).reshape([1, 128, 128, 3]), curEyes[1].div(256).sub(0.5).reshape([1, 128, 128, 3]), curEyes[2].reshape([1, 8]), curGeom]);
                 embed[0] = embed[0].div(100);
                 embed[1] = embed[1].div(10);
@@ -117,6 +114,7 @@ async function runSVRlive(){
 
                 allFeatures = tf.concat([embed, curEyes[2].reshape([1,8]), curGeom], 1);
                 allFeatures_mat = array2mat(allFeatures.arraySync());
+
                 return [svr_x.predict(allFeatures_mat), svr_y.predict(allFeatures_mat)]
             })
 
