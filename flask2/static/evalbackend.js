@@ -27,6 +27,33 @@ var num_repeats = trial_time*1000 / trial_delay;
 var lookup;
 var divColors = ["#ef90c1","#ef9186", "#e94b95", "#eb624d", "#bb2d6b", "#d63422", "#801e48", "#9c2517"]
 
+// Gesture detection
+var firstGest = -1;
+var firstGaze = -1;
+var endTrialTap = false;
+
+// Whole trial tracking
+var track_embeds = [];
+var track_accel_gyro = [[[], [], []], [[], [], []], [[], [], []]]; // Linear, Angular, then Gyro
+var track_gaze = [];
+var track_gestures = [];
+var track_headsize = [];
+var trackingOn = false;
+
+function resetTracking(){
+    track_embeds = [];
+    track_accel_gyro = [[[], [], []], [[], [], []], [[], [], []]]; // Linear, Angular, then Gyro
+    track_gaze = [];
+    track_gestures = [];
+    track_headsize = [];
+}
+
+function getTrackingHist(){
+    return [track_headsize, track_embeds, track_gaze, track_accel_gyro, track_gestures];
+}
+
+
+
 
 var cur;
 var origScroll;
@@ -60,10 +87,12 @@ function blockedEval(){
 
             startTrial();
             document.body.onclick = () => {
-                if (typeof(curPred) != 'undefined' && AccelStarted && !trialStarted){
-                    startTrial();
-                } else if ((typeof(curPred) != 'undefined' && AccelStarted && trialStarted)){
-
+                if (typeof(curPred) != 'undefined' && AccelStarted){
+                    if (!trialStarted){
+                        startTrial();
+                    } else{
+                        endTrialTap = true;
+                    }
                 }
             };
         }
@@ -149,6 +178,10 @@ function startTrial(){
     head_size_history = [];
     localPreds = [];
 
+    // Reset the first detections
+    firstGest = -1;
+    firstGaze = -1;
+
     // Generate which trial is next, display it in trialdisplay
     textElem = document.getElementById("trialdisplay");
     textElem.hidden = false;
@@ -188,6 +221,8 @@ function startTrial(){
 
 // Main loop of the trial running gesture detection and eye segmentation
 function trialLoop(targets){
+    trackingOn = true; // Track while looping
+
     /////////////////////////////// Accel, head, and eye tracking
    // Accel gesture detection
     condensed_arrays = accelArrayHandler(orient_short_history);
@@ -220,28 +255,59 @@ function trialLoop(targets){
 
     /////////////////////////////// Gesture detection
     all_gestures = [leftrightgesture, bfgesture, pushpullgesture, pageturngesture];
-    hist = [localPreds, orient_short_history, head_size_history, angaccel_short_history];
+//    hist = [localPreds, orient_short_history, head_size_history, angaccel_short_history];
     // If all gestures is not all 0 and has no 99s (unsteady), a gesture is detected. Log it
     if (!all_gestures.every(elem => elem == 0 || elem == 99) && (sum(all_gestures) < 120)){
-        segmentPrediction = getMeanEyeSegment(localPreds.slice(3)) // Averaging predicted gaze XYs
-        console.log("Gaze Prediction: ", segmentPrediction);
-
-        trialEndHandler([all_gestures, segmentPrediction], targets, hist);
-    } else{
-        if ((Date.now() - trialStartTime) > trial_time*1000){ // Timeout
-            // Failed to detect gesture, but save eye position anyway
-            segmentPrediction = getMeanEyeSegment(localPreds.slice(3))
-
-            trialEndHandler([-1, segmentPrediction], targets, hist);
-            return;
-        } else{ // Otherwise, run the loop again
-            setTimeout(() => trialLoop(targets), trial_delay);
+        if (firstGest == -1){
+            firstGest = all_gestures.slice();
+            segmentPrediction = getMeanEyeSegment(localPreds.slice(3)) // Averaging predicted gaze XYs
+            firstGaze = segmentPrediction
         }
+    }
+
+    // Data logging for gaze, gesture, headsize, and embeddings
+    if (trackingOn){
+        track_gaze.push([...curPred]);
+        track_gestures.push([...all_gestures]);
+
+        let tmpEmbeds = Array.from(allFeatures_mat.val)
+        track_embeds.push(tmpEmbeds);
+        track_headsize.push(head_size_history[head_size_history.length-1]);
+    }
+
+
+//        console.log("Gaze Prediction: ", segmentPrediction);
+//        trialEndHandler([all_gestures, segmentPrediction], targets, hist);
+//    else{
+//        if ((Date.now() - trialStartTime) > trial_time*1000){ // Timeout
+//            // Failed to detect gesture, but save eye position anyway
+//            segmentPrediction = getMeanEyeSegment(localPreds.slice(3))
+//
+//            trialEndHandler([-1, segmentPrediction], targets, hist);
+//            return;
+//        } else{ // Otherwise, run the loop again
+//            setTimeout(() => trialLoop(targets), trial_delay);
+//        }
+//    }
+
+
+    if (endTrialTap){
+//        hist = [localPreds, orient_short_history, head_size_history, angaccel_short_history];
+        hist = getTrackingHist();
+        endTrialTap = false;
+
+        if (firstGaze == -1){
+            firstGaze = getMeanEyeSegment(localPreds.slice(3)) // Averaging predicted gaze XYs
+        }
+        trialEndHandler([firstGest, firstGaze], targets, hist);
+    } else{
+        setTimeout(() => trialLoop(targets), trial_delay);
     }
 }
 
 //function trialEndHandler(gestures, segment){
 function trialEndHandler(detected, target, histories){ // Both in [gestures, segment] format
+    trackingOn = false; // Turn off tracking
 
     // Show text box
     toggleHide();
@@ -251,7 +317,11 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
     textElem.innerHTML = "Block #" + (trialBlockNum+1) + ", Trial #" + (currentBlockTrialNum+1) +  " Complete<br><hr><br>Tap to continue";
 
     if (detected[0] == -1){ // If no gesture triggered (timed out)
+        console.log("before LS store in eval");
+        checkLSsize();
         addToEvalResults(trialResultsKey, trialBlockNum, currentBlockTrialNum, [Date.now(), [-1, detected[1]], target, histories]);
+        console.log("After LS store in eval");
+        checkLSsize();
     } else{
         // Show detected text
         gestures = detected[0];
@@ -319,7 +389,6 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
         // Pull out eye and gesture prediction
         let segment = detected[1];
         let displayText = gestureNames[detectedGesture];
-        textElem.innerHTML += "<br><br>Detected Gesture: " + displayText;
 
         // Debug output to console
         console.log("Gaze Prediction: ", segment);
@@ -331,8 +400,10 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
             [Date.now(), [detectedGesture, segment], target, histories]);
         }
 
+
     setURLParam("trialnum", (currentBlockTrialNum + 1));
     trialStarted = false;
+    resetTracking();
 }
 
 /////////////////////// Utils
