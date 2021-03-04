@@ -82,7 +82,7 @@ function getAccel(){
                 }
 
                 // Overall logging for eval
-                if (trackingOn){
+                if (typeof(trackingOn) != "undefined" && trackingOn){
                     track_accel_gyro[0][0].push(rot.alpha);
                     track_accel_gyro[0][1].push(rot.beta);
                     track_accel_gyro[0][2].push(rot.gamma);
@@ -116,7 +116,7 @@ function getAccel(){
                     });
                 }
                 // Logging for eval
-                if (trackingOn){
+                if (typeof(trackingOn) != "undefined" && trackingOn){
                     track_accel_gyro[2][0].push(rotateDegrees);
                     track_accel_gyro[2][1].push(frontToBack);
                     track_accel_gyro[2][2].push(leftToRight);

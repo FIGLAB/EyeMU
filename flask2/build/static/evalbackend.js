@@ -186,19 +186,30 @@ function startTrial(){
     textElem = document.getElementById("trialdisplay");
     textElem.hidden = false;
     updateTrialFromURL();
+//    console.log("past update trial from URL")
+
+//    while (typeof(trialBlockOrder) == "undefined"){
+//        console.log("AHHHH UNDEFINED");
+//    }
+    ldb.get(trialBlocksKey, function (tmplist) {
+        console.log("block order set");
+        trialBlockOrder = JSON.parse(tmplist);
+
+        console.log("");
+        console.log("Eval " + trialName + " starting block " + (trialBlockNum+1) + ", trial " + (1+currentBlockTrialNum));
+        console.log(gestureNames);
+
+        targetGesture = trialBlockOrder[trialBlockNum];
+        targetSquare = currentSegmentOrder[currentBlockTrialNum]+1;
+        textElem.innerHTML = "\"" + trialName + "\" Evaluation Trial<br>";
+        textElem.innerHTML += "Block #" + (1+trialBlockNum) + ", ";
+        textElem.innerHTML += "Trial #" + (1+currentBlockTrialNum) + "/" + currentSegmentOrder.length;
+        textElem.innerHTML += "<br>Target gesture: " + gestureNames[targetGesture];
+        textElem.innerHTML += "<br>Target square: " + (targetSquare);
+    });
 
 
-    console.log("");
-    console.log("Eval " + trialName + " starting block " + (trialBlockNum+1) + ", trial " + (1+currentBlockTrialNum));
-    console.log(gestureNames);
 
-    targetGesture = trialBlockOrder[trialBlockNum];
-    targetSquare = currentSegmentOrder[currentBlockTrialNum]+1;
-    textElem.innerHTML = "\"" + trialName + "\" Evaluation Trial<br>";
-    textElem.innerHTML += "Block #" + (1+trialBlockNum) + ", ";
-    textElem.innerHTML += "Trial #" + (1+currentBlockTrialNum) + "/" + currentSegmentOrder.length;
-    textElem.innerHTML += "<br>Target gesture: " + gestureNames[targetGesture];
-    textElem.innerHTML += "<br>Target square: " + (targetSquare);
 
         // Start the trial after showing user target info
     delayedStart = 1000;
@@ -439,6 +450,7 @@ function shuffleArr(array) {
 
 ///////////////////////////////////// Trial updating
 function updateTrialFromURL(){
+//    console.log('eneterd trial from URL')
     ///////// Figure out which trial is next, check url and then go off the results.
     // Get trial name from the URL. If there isn't one, make it evalType + "1" by default
     let tmpname = getURLParam("name")
@@ -459,28 +471,54 @@ function updateTrialFromURL(){
 
     // Initialize results in localstorage if it doesn't exist.
     trialResultsKey = trialName + "_results";
-    tmpres = localStorage.getItem(trialResultsKey);
-    if (tmpres == null){
-        let reslist = [];
-        for (let i = 0; i < gestureNames.length; i++){
-            reslist.push(makeRandomArrayOfLen(numTrialsPerBlock))
+    ldb.get(trialResultsKey, function (tmpres) {
+        if (tmpres == null){
+            let reslist = [];
+            for (let i = 0; i < gestureNames.length; i++){
+                reslist.push(makeRandomArrayOfLen(numTrialsPerBlock))
+            }
+            ldb.set(trialResultsKey, JSON.stringify(reslist));
         }
-        localStorage.setItem(trialResultsKey, JSON.stringify(reslist));
-    }
+    });
+
+//    tmpres = localStorage.getItem(trialResultsKey);
+//    if (tmpres == null){
+//        let reslist = [];
+//        for (let i = 0; i < gestureNames.length; i++){
+//            reslist.push(makeRandomArrayOfLen(numTrialsPerBlock))
+//        }
+//        localStorage.setItem(trialResultsKey, JSON.stringify(reslist));
+//    }
 
 
     // Get trial block list. If there isn't one, make it
     trialBlocksKey = trialName + "_blockorder";
-    tmplist = localStorage.getItem(trialBlocksKey);
-    if (tmplist == null){
-        let blocklist;
-        blocklist = [...Array(gestureNames.length).keys()]; // 7 gestures
-        shuffleArr(blocklist);
-        localStorage.setItem(trialBlocksKey, JSON.stringify(blocklist));
+    ldb.get(trialBlocksKey, function (tmplist) {
+        if (tmplist == null){
+            let blocklist;
+            blocklist = [...Array(gestureNames.length).keys()]; // 7 gestures
+            shuffleArr(blocklist);
+            ldb.set(trialBlocksKey, JSON.stringify(blocklist));
+        }
+    });
+//    ldb.get(trialBlocksKey, function (tmplist) {
+//        console.log("block order set");
+//        trialBlockOrder = JSON.parse(tmplist);
+//    });
 
-        tmplist = localStorage.getItem(trialBlocksKey);
-    }
-    trialBlockOrder = JSON.parse(tmplist);
+
+
+
+//    tmplist = localStorage.getItem(trialBlocksKey);
+//    if (tmplist == null){
+//        let blocklist;
+//        blocklist = [...Array(gestureNames.length).keys()]; // 7 gestures
+//        shuffleArr(blocklist);
+//        localStorage.setItem(trialBlocksKey, JSON.stringify(blocklist));
+//
+//        tmplist = localStorage.getItem(trialBlocksKey);
+//    }
+//    trialBlockOrder = JSON.parse(tmplist);
 
     // Get trial's current block from the url
     let tmpblock = parseInt(getURLParam("block"));
@@ -524,20 +562,45 @@ function updateTrialFromURL(){
 
 ////////////////////////////////////// Block based saving
 function addToEvalResults(resultsKey, blocknum, trialnum, resultsArr){
-    if (!localStorage.getItem(resultsKey)){ // Populate if empty
-        console.log("adding to eval broken, key \"" + resultsKey + "\" is empty");
-    }
+//    if (!localStorage.getItem(resultsKey)){ // Populate if empty
+//        console.log("adding to eval broken, key \"" + resultsKey + "\" is empty");
+//    }
+//
+//    let tmp;
+//    try{
+//        tmp = JSON.parse(localStorage.getItem(resultsKey))
+//    } catch{
+//        console.log("adding to eval broken, key \"" + resultsKey + "\" is not parseable");
+//    }
+////    console.log("parsed eval key " + resultsKey + " as " + tmp)
+//
+//    tmp[blocknum][trialnum] = resultsArr;
+//    localStorage[resultsKey] = JSON.stringify(tmp);
 
-    let tmp;
-    try{
-        tmp = JSON.parse(localStorage.getItem(resultsKey))
-    } catch{
-        console.log("adding to eval broken, key \"" + resultsKey + "\" is not parseable");
-    }
-//    console.log("parsed eval key " + resultsKey + " as " + tmp)
+//ldb.get(trialResultsKey, function (value) {
+//  console.log('And the value is', value);
+//});
 
-    tmp[blocknum][trialnum] = resultsArr;
-    localStorage[resultsKey] = JSON.stringify(tmp);
+
+    ldb.get(resultsKey, function (savedArr) {
+        // Check for null
+        if (!savedArr){
+            console.log("No data stored in " + resultsKey + " evaluation saving failed");
+        }
+
+        // Check for corruption
+        let tmp;
+        try{
+            tmp = JSON.parse(savedArr);
+        } catch{
+            console.log("Data not parseable in " + resultsKey);
+        }
+
+//        Add to the results
+        tmp[blocknum][trialnum] = resultsArr;
+        ldb.set(resultsKey, JSON.stringify(tmp));
+    });
+
 }
 
 /////////////////////////////////////// Eye tracking
