@@ -177,6 +177,54 @@ function downloadResultsFromKey(resKey){
     link.click();
 }
 
+function downloadResultsFromLSDB(resKey){
+    ldb.get(resKey, function (resultsStr) {
+        var link = document.createElement('a');
+        link.href = makeTextFile(resultsStr);
+        link.target = '_blank';
+        link.download = resKey + "_gazel_results.json";
+        link.click();
+    });
+}
+
+function notNull(obj) {
+    for(var key in obj) {
+        if(obj[key] == null)
+            return false;
+    }
+    return true;
+}
+
+function downloadResultsManyLSDB(keyList){
+    results = Object();
+    for (let i = 0; i<keyList.length; i++){
+        ldb.get(keyList[i], function (value) {
+            results[keyList[i]] = value;
+        });
+    }
+
+    function downloadStuff(){
+        setTimeout(() =>{
+//            if (results.every(elem => elem!=null)){
+//            console.log(results)
+//            if (notNull(results)){
+            if (Object.keys(results).length == keyList.length){
+                resultsStr = JSON.stringify(results);
+
+                var link = document.createElement('a');
+                link.href = makeTextFile(resultsStr);
+                link.target = '_blank';
+                link.download = "ALL_gazel.json";
+                link.click();
+            } else{
+                downloadStuff();
+            }
+        }, 100);
+    }
+
+    downloadStuff();
+}
+
 function downloadResultsManyKeys(keyList){
     results = Object();
     for (let i = 0; i<keyList.length; i++){
@@ -195,5 +243,33 @@ function downloadResultsManyKeys(keyList){
 function checkLSsize(){
 var _lsTotal=0,_xLen,_x;for(_x in localStorage){ if(!localStorage.hasOwnProperty(_x)){continue;} _xLen= ((localStorage[_x].length + _x.length)* 2);_lsTotal+=_xLen; console.log(_x.substr(0,50)+" = "+ (_xLen/1024).toFixed(2)+" KB")};console.log("Total = " + (_lsTotal / 1024).toFixed(2) + " KB");
 }
+
+// Using IndexedDB instead of localStorage: https://github.com/DVLP/localStorageDB
+!function(){
+function e(t,o){return n?void(n.transaction("s").objectStore("s").get(t).onsuccess=function(e){var t=e.target.result&&e.target.result.v||null;o(t)}):void setTimeout(function(){e(t,o)},100)}
+
+var t=window.indexedDB||window.mozIndexedDB||window.webkitIndexedDB||window.msIndexedDB;
+if(!t)return void console.error("indexDB not supported");
+
+var n,o={k:"",v:""},r=t.open("d2",1);
+
+r.onsuccess=function(e){n=this.result},
+r.onerror=function(e){console.error("indexedDB request error"),console.log(e)},
+r.onupgradeneeded=function(e){n=null;var t=e.target.result.createObjectStore("s",{keyPath:"k"});t.transaction.oncomplete=function(e){n=e.target.db}},
+window.ldb={get:e,set:function(e,t){o.k=e,o.v=t,n.transaction("s","readwrite").objectStore("s").put(o)}}
+}();
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

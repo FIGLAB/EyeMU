@@ -361,7 +361,7 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
     toggleHide();
     textElem = document.getElementById("trialdisplay");
     textElem.hidden = false;
-    textElem.innerHTML = "Trial Complete<br>Tap to continue<hr><br>";
+    textElem.innerHTML = "<br>Tap to continue<hr><br>";
 
     if (detected[0] == -1){ // If no gesture triggered (timed out)
     } else{
