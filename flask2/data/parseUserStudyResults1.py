@@ -16,7 +16,7 @@ files = []
 for r,d,f in os.walk("."):
     for file in f:
         if ".webarchive" in file:
-            files.append(file)
+            files.append(os.path.join(r, file))
 
 # Webarchive format -> parsed JSON dictionaries
 fileData = []
@@ -25,6 +25,8 @@ for file in files:
     jsonStr = cleanhtml(tmp._main_resource.data.decode())
     jsonData = json.loads(jsonStr)
     fileData.append(jsonData)
+
+jonaData = fileData[1]
 
 
 
