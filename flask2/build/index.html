@@ -319,14 +319,6 @@
         Hold your phone at a natural angle. After 5 rounds, we'll use your eye images to train an eye tracker personalized for you.
 
         <br><br>
-        Each round should be done in a different pose or a different lighting, for a total of 5 unique setups. They should be normal poses that one could use a phone comfortably in. This will help the eye tracker learn your eyes. <br> An example procedure could have 5 rounds at the following poses:
-        <ol style="padding-left:-5%;">
-          <li>Sitting normally in a desk chair</li>
-          <li>Sitting in the same chair, facing a lamp instead of away from it</li>
-          <li>Standing in the bathroom</li>
-          <li>Sitting in the kitchen</li>
-          <li>Lying on your bed looking up at your phone</li>
-      </ol>
       </p>
 
       <div style="text-align:center;">
@@ -341,17 +333,15 @@
 
           In this step, you'll test your personalized model.
             <br><br>
-          You'll be tracking a green circle around the screen again, but this time it will be accompanied by a smaller, orange circle which is your predicted gaze location. When arriving at a location, the large tracking dot will stop for a short while, then start recording the prediction's error. When it's done counting, the numbers will stop and it will turn blue. Tap to continue.
-            <br><br>
-          After the circle returns to the center, the trial is done and the errors will be written to the screen. You will need to do five (5) of these evaluations, each in a different location or pose. Find diverse positions that you didn't train your model on.
-            <br><br>
           To start a new evaluation, refresh the page.
       </p>
 
       <p id="regressionModelFound"></p>
 
-      <br>
       <p>To train a new model, simply redo the personalization section.</p>
+      <button onclick="saveRegressionModels()">Download Personalized Model</button>
+
+
   </div>
 </div>
 

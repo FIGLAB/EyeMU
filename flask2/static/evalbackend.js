@@ -209,8 +209,6 @@ function startTrial(){
     });
 
 
-
-
         // Start the trial after showing user target info
     delayedStart = 1000;
     setTimeout(() => {
@@ -285,22 +283,6 @@ function trialLoop(targets){
         track_embeds.push(tmpEmbeds);
         track_headsize.push(head_size_history[head_size_history.length-1]);
     }
-
-
-//        console.log("Gaze Prediction: ", segmentPrediction);
-//        trialEndHandler([all_gestures, segmentPrediction], targets, hist);
-//    else{
-//        if ((Date.now() - trialStartTime) > trial_time*1000){ // Timeout
-//            // Failed to detect gesture, but save eye position anyway
-//            segmentPrediction = getMeanEyeSegment(localPreds.slice(3))
-//
-//            trialEndHandler([-1, segmentPrediction], targets, hist);
-//            return;
-//        } else{ // Otherwise, run the loop again
-//            setTimeout(() => trialLoop(targets), trial_delay);
-//        }
-//    }
-
 
     if (endTrialTap){
 //        hist = [localPreds, orient_short_history, head_size_history, angaccel_short_history];

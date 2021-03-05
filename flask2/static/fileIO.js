@@ -152,7 +152,7 @@ function saveRegressionModels(){
     var link = document.createElement('a');
     link.href = makeTextFile(combined);
     link.target = '_blank';
-    link.download = "regressionmodels.json";
+    link.download = "personalizedModels.json";
     link.click();
 }
 
