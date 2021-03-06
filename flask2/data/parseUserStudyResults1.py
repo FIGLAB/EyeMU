@@ -23,10 +23,48 @@ fileData = []
 for file in files:
     tmp = webarchive.open(file)
     jsonStr = cleanhtml(tmp._main_resource.data.decode())
-    jsonData = json.loads(jsonStr)
-    fileData.append(jsonData)
+    # cleanhtml(a.main_resource.data.decode())
+    try:
+        jsonData = json.loads(jsonStr)
+        for key in jsonData.keys():
+            jsonData[key] = json.loads(jsonData[key])
+        fileData.append(jsonData)
+    except:
+        print("Failed on " + file)
 
-jonaData = fileData[1]
+jonaData = fileData[0]
+# Data format
+# Dict with keys ['grid1_results', 'grid2_results', 'list1_results', 'list2_results'])
+
+# Each eval key has 9 blocks (one per gesture), where each block is in the form
+# [timestamp, detectedGestureAndGaze, targetGestureAndGaze, histories]
+gestureNames = ["Forward flick", "Right flick", "Right tilt", "Left flick", "Left tilt", "Pull close", "Push away", "Turn to right", "Turn to left"]
+
+# Histories is long, is arranged like this:
+# [Head sizes, Eye embeddings + features, Gaze predictions, IMU, Gesture labels]
+# IMU is [linear accel, angular accel, rotation]
+
+firstdata = fileData[0]
+for eval in firstdata.keys():
+    for gestureBlock in firstdata[eval]:
+        for segment in gestureBlock:
+            # Unpack each segment trial
+            timestamp, detected, target, histories = segment
+
+            # Get the ground truth gesture and square out
+            gesture = target[0]
+            gestureName = gestureNames[gesture]
+            gaze = target[1]
+
+            # Unpack the histories array
+            headsize_hist, embeddings_hist, gazepreds_hist, IMU_hist, gestdetect_hist = histories
+
+            # Add to pandas dataframe
+
+
+
+
+
 
 
 
