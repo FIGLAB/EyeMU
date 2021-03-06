@@ -50,6 +50,7 @@ function resetTracking(){
 
 function getTrackingHist(){
     return [track_headsize, track_embeds, track_gaze, track_accel_gyro, track_gestures];
+
 }
 
 
