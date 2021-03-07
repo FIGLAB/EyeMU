@@ -276,6 +276,7 @@ function trialLoop(targets){
     }
 
     // Data logging for gaze, gesture, headsize, and embeddings
+//    console.log(curPred)
     if (trackingOn){
         track_gaze.push([...curPred]);
         track_gestures.push([...all_gestures]);
@@ -588,14 +589,17 @@ function addToEvalResults(resultsKey, blocknum, trialnum, resultsArr){
 
 /////////////////////////////////////// Eye tracking
 function gaze2Section(gaze_pred){
-    actualX = window.scrollX + gaze_pred[0]*innerWidth;
-    actualY = window.scrollY + gaze_pred[1]*innerHeight;
+    actualX = window.scrollX + gaze_pred[0]*window.innerWidth;
+    actualY = window.scrollY + gaze_pred[1]*window.innerHeight;
+//    console.log("gaze to section scroll", window.scrollX, window.scrollY)
+//    console.log("inner width and height", innerWidth, innerHeight)
 
     if (evalType == "grid"){
         // Generate the top and bottom bounds of one elem in each row
         heightBounds = [0.0];
         for (let i = 2; i < galleryElements.length; i += 2){
             heightBounds.push(galleryElements[i].offsetTop);
+            console.log(galleryElements[i].offsetTop/window.innerHeight)
         }
 
         let row;
@@ -614,6 +618,7 @@ function gaze2Section(gaze_pred){
         heightBounds = [0.0];
         for (let i = 1; i < galleryElements.length; i += 1){
             heightBounds.push(galleryElements[i].offsetTop);
+            console.log(galleryElements[i].offsetTop/window.innerHeight)
         }
 
         let row;

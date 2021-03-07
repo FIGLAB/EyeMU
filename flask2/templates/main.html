@@ -36,7 +36,7 @@
             <a href='/grideval/?name=grid2' target="_blank">Grid Eval 2</a> <br>
             <a href='/grideval/?name=grid3' target="_blank">Grid Eval 3</a> <br>
             <a href='/listeval/?name=list1' target="_blank">List Eval 1</a> <br>
-            <a href='/listeval/?name=list2' target="_blank">List Eval 2</a> <br>`;
+            <a href='/listeval/?name=list2' target="_blank">List Eval 2</a> <br>
             <a href='/listeval/?name=list3' target="_blank">List Eval 3</a> <br>`;
             elem.style.backgroundColor = "lightgreen";
         }
@@ -54,6 +54,13 @@
            checkRegressionModel();
            enlargeButtons();
     });
+
+    document.addEventListener('click', printMousePos, true);
+    function printMousePos(e){
+          cursorX = e.pageX;
+          cursorY= e.pageY;
+          console.log("x: " + cursorX + ", y: " + cursorY);
+    }
 
 
     //main();

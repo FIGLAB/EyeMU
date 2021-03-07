@@ -66,6 +66,8 @@ async function eyeSelfie(continuous){
     faceGeom_x.push(curGeom);
 
     // Calculate and accumulate y vars
+//    console.log("In eyeselfie, X and Y, and window width height", X, Y, windowWidth, windowHeight)
+//    console.log("In eyeselfie, innerheight", window.innerWidth, window.innerHeight)
     const nowVals = [X/windowWidth, Y/windowHeight];
     screenXYs_y.push(nowVals);
 }
