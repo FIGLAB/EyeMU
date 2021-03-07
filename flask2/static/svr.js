@@ -122,7 +122,7 @@ async function runSVRlive(){
     curPred[0] = curPred[0]*(1-a) + pred[0]*a;
     curPred[1] = curPred[1]*(1-a) + pred[1]*a;
 
-    let edge = 0.03
+    let edge = 0.01
     curPred[0] = Math.max(edge, Math.min(1-edge, curPred[0]))
     curPred[1] = Math.max(edge, Math.min(1-edge, curPred[1]))
 

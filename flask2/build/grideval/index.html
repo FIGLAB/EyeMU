@@ -161,6 +161,14 @@
         blockedEval();
     })
 
+    // Log clicks to the console to see if there's an offset problem.
+    document.addEventListener('click', printMousePos, true);
+    function printMousePos(e){
+          cursorX = e.pageX;
+          cursorY= e.pageY;
+          console.log("x: " + cursorX + ", y: " + cursorY);
+    }
+
 </script>
 
 <!--width: 100vw; height: 100vh; -->

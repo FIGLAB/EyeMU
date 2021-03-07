@@ -65,10 +65,11 @@ var windowHeight;
 const s = ( p ) => {
     // Setup the Processing Canvas
     windowWidth = p.windowWidth;
-    windowHeight = p.windowHeight*.95;
+    windowHeight = p.windowHeight*.999;
 
     let width = windowWidth;
     let height = windowHeight;
+    console.log("processing width and height", width, height);
 
     var instr_w = width/2
     var instr_h = height/5
@@ -85,8 +86,8 @@ const s = ( p ) => {
         p.frameRate(60);
 
                     // Create the waypoints for the target dot to follow
-        let w_op = [width/10, width/2, width*9/10];
-        let h_op = [height/20, height/2, height*19/20];
+        let w_op = [width/20, width/2, width*19/20];
+        let h_op = [height/40, height/2, height*39/40];
                 //center   botmid, botleft, mid left, topleft, topright, midright, botright
         nx_arr = [w_op[1], w_op[1], w_op[0], w_op[0], w_op[0],  w_op[2], w_op[2], w_op[2]]
         ny_arr = [h_op[1], h_op[2], h_op[2], h_op[1], h_op[0], h_op[0], h_op[1], h_op[2]]
@@ -210,6 +211,7 @@ const s = ( p ) => {
                     if (calib_counter % nx_arr.length == 0){
                         console.log("saving last set of embeddings in localstorage, calib_rounds is n", calib_rounds);
                         saveNthRoundinLS(calib_rounds - 1);
+                        location.reload();
                     }
 
 
@@ -253,15 +255,6 @@ const s = ( p ) => {
                 }
             } else {
                 console.log("collection done, starting training")
-
-                // Reset canvas
-//                p.background( 150 );
-//                p.fill( 0, 121, 184 );
-//                p.stroke(255);
-//    -
-//                p.textSize(100);
-//                p.text('Training...', width/2, height/2);
-
                 calib_counter = 0
 
                 trainNatureRegHead(leftEyes_x, rightEyes_x, eyeCorners_x,screenXYs_y);
