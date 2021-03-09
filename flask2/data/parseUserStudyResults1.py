@@ -44,6 +44,9 @@ gestureNames = ["Forward flick", "Right flick", "Right tilt", "Left flick", "Lef
 # [Head sizes, Eye embeddings + features, Gaze predictions, IMU, Gesture labels]
 # IMU is [linear accel, angular accel, rotation]
 
+eyeData = []
+segmentData = []
+
 firstdata = fileData[0]
 for eval in firstdata.keys():
     for gestureBlock in firstdata[eval]:
@@ -59,6 +62,8 @@ for eval in firstdata.keys():
             # Unpack the histories array
             headsize_hist, embeddings_hist, gazepreds_hist, IMU_hist, gestdetect_hist = histories
 
+            eyeData.append(gazepreds_hist[-7:])
+            segmentData.append(gaze)
             # Add to pandas dataframe
 
 
@@ -70,7 +75,8 @@ for eval in firstdata.keys():
 
 
 
-with open("flask2/data/grid1resultsandy.json", "r") as f:
+# with open("flask2/data/grid1resultsandy.json", "r") as f:
+with open("flask2/data/list1resultsandy.json", "r") as f:
     data = json.load(f)
 data = np.array(data)
 
@@ -92,11 +98,12 @@ import matplotlib.pyplot as plt
 import matplotlib
 
 clors = list(matplotlib.colors.TABLEAU_COLORS)
-ymult = 1.8
-# allSegs = [[] for i in range(6)]
-allSegs = [[] for i in range(8)]
+ymult = 1
+allSegs = [[] for i in range(6)]
+# allSegs = [[] for i in range(8)]
 for i, (eyeset,seg) in enumerate(allEyes):
     # line = plt.plot([x[0] for x in eyeset], [ymult*(1-x[1]) for x in eyeset], '.', color=clors[seg % len(clors)])[0]
+    # eyeset = eyeset[-7:]
     xavg = sum([x[0] for x in eyeset])/len(eyeset)
     yavg = ymult*(1-sum([x[1] for x in eyeset])/len(eyeset))
     line = plt.plot(xavg, yavg, 'o', color=clors[seg%len(clors)])[0]
@@ -112,8 +119,8 @@ plt.ylim((0, ymult))
 
 # Draw locations of demarkation lines between list segments
 if len(allSegs) == 6:
-    for i in range(5):
-        plt.hlines((ymult/6)*i, 0, 1.0)
+    for i in range(1,6):
+        plt.hlines((ymult/6)*(6-i), 0, 1.0)
 else:
     for i in range(4):
         plt.hlines((ymult / 4) * i, 0, 1.0)

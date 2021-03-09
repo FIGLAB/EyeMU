@@ -192,22 +192,27 @@ function startTrial(){
 //    while (typeof(trialBlockOrder) == "undefined"){
 //        console.log("AHHHH UNDEFINED");
 //    }
-    ldb.get(trialBlocksKey, function (tmplist) {
-        console.log("block order set");
-        trialBlockOrder = JSON.parse(tmplist);
+    var yea = performance.now();
+    setTimeout(() => {
+        ldb.get(trialBlocksKey, function (tmplist) {
+            console.log("trialBlockKeys takes this long: ", performance.now()-yea);
+            console.log("block order set");
+            trialBlockOrder = JSON.parse(tmplist);
 
-        console.log("");
-        console.log("Eval " + trialName + " starting block " + (trialBlockNum+1) + ", trial " + (1+currentBlockTrialNum));
-        console.log(gestureNames);
+            console.log("");
+            console.log("Eval " + trialName + " starting block " + (trialBlockNum+1) + ", trial " + (1+currentBlockTrialNum));
+            console.log(gestureNames);
 
-        targetGesture = trialBlockOrder[trialBlockNum];
-        targetSquare = currentSegmentOrder[currentBlockTrialNum]+1;
-        textElem.innerHTML = "\"" + trialName + "\" Evaluation Trial<br>";
-        textElem.innerHTML += "Block #" + (1+trialBlockNum) + ", ";
-        textElem.innerHTML += "Trial #" + (1+currentBlockTrialNum) + "/" + currentSegmentOrder.length;
-        textElem.innerHTML += "<br>Target gesture: " + gestureNames[targetGesture];
-        textElem.innerHTML += "<br>Target square: " + (targetSquare);
-    });
+            targetGesture = trialBlockOrder[trialBlockNum];
+            targetSquare = currentSegmentOrder[currentBlockTrialNum]+1;
+            textElem.innerHTML = "\"" + trialName + "\" Evaluation Trial<br>";
+            textElem.innerHTML += "Block #" + (1+trialBlockNum) + ", ";
+            textElem.innerHTML += "Trial #" + (1+currentBlockTrialNum) + "/" + currentSegmentOrder.length;
+            textElem.innerHTML += "<br>Target gesture: " + gestureNames[targetGesture];
+            textElem.innerHTML += "<br>Target square: " + (targetSquare);
+        });
+    }, 200);
+
 
 
         // Start the trial after showing user target info
@@ -276,9 +281,9 @@ function trialLoop(targets){
     }
 
     // Data logging for gaze, gesture, headsize, and embeddings
-    console.log(curPred)
+//    console.log(curPred)
     if (trackingOn){
-        track_gaze.push([...curPred]);
+        track_gaze.push([...rawPred]);
         track_gestures.push([...all_gestures]);
 
         let tmpEmbeds = Array.from(allFeatures_mat.val)
