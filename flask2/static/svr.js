@@ -9,6 +9,7 @@ var output;
 
 // Embeddings and other features
 var curEyes = []
+var rawPred;
 var natureModelEmbeddings;
 var faceGeom;
 var allFeatures_mat;
@@ -105,7 +106,7 @@ async function runSVRlive(){
         return
     }
 
-    pred = tf.tidy(() => {
+    rawPred = tf.tidy(() => {
                 let curGeom = tf.tensor(faceGeom.getGeom()).reshape([1,4]);
                 let embed = natureModelEmbeddings.predict([curEyes[0].div(256).sub(0.5).reshape([1, 128, 128, 3]), curEyes[1].div(256).sub(0.5).reshape([1, 128, 128, 3]), curEyes[2].reshape([1, 8]), curGeom]);
                 embed[0] = embed[0].div(100);
@@ -119,8 +120,8 @@ async function runSVRlive(){
             })
 
     let a = 0.5;
-    curPred[0] = curPred[0]*(1-a) + pred[0]*a;
-    curPred[1] = curPred[1]*(1-a) + pred[1]*a;
+    curPred[0] = curPred[0]*(1-a) + rawPred[0]*a;
+    curPred[1] = curPred[1]*(1-a) + rawPred[1]*a;
 
     let edge = 0.01
     curPred[0] = Math.max(edge, Math.min(1-edge, curPred[0]))
