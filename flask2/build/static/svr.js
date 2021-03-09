@@ -150,12 +150,13 @@ async function drawTargetDot(){
     targDot.setAttribute("class", "targetdot");
     document.body.appendChild(targDot);
 
+
     // Set its location and add it to the body
-    if (showPredictDot){
-        targDot.setAttribute("style", "left:" + nx_arr[targetNum] +"%; top:" + ny_arr[targetNum] + "%;");
-    } else{
-        targDot.setAttribute("style", "left:" + "-10" +"%; top:" + "-10" + "%;");
-    }
+//    if (showPredictDot){
+//        targDot.setAttribute("style", "left:" + nx_arr[targetNum] +"%; top:" + ny_arr[targetNum] + "%;");
+//    } else{
+//        targDot.setAttribute("style", "left:" + "-10" +"%; top:" + "-10" + "%;");
+//    }
 
     // update target number if enough time has passed. This is to make the target dot reactive
     targetTimerCount += 1;
