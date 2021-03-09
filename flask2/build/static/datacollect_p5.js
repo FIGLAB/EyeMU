@@ -120,6 +120,8 @@ const s = ( p ) => {
         p.fill( 0, 60, 90 );
         p.stroke(255);
 
+        p.ellipse(width*.1+25,height*.1+25,50,50);
+
         window.scrollBy(0,-1000); // Keep phone scrolled to bottom of page.
 
         if (done_with_training){
