@@ -1,7 +1,7 @@
 //new p5();
 
 // datacollect_p5.js moves a circle around the screen, once per round for ~5 rounds, then does regression training on them.
-var n_calib_rounds = 4;
+var n_calib_rounds = 5;
 
 // Global variables
 var radius = 70.0;
@@ -19,7 +19,7 @@ var stepsTaken = 0;
 // equal collection ims along each line
 var num_ims_along_line = 15;
 var steps_per_line_im = Math.round(numSteps/num_ims_along_line);
-var num_ims_still = 40;
+var num_ims_still = 20;
 var stillsTaken = 0;
 var stillsDone = false;
 var movingsTaken = 0;
