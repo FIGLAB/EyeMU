@@ -5,16 +5,16 @@ import webarchive
 import re
 import json
 
+import matplotlib.pyplot as plt
+import matplotlib
 
 def cleanhtml(raw_html):
-  cleanr = re.compile('<.*?>')
-  cleantext = re.sub(cleanr, '', raw_html)
-  return cleantext
+    cleanr = re.compile('<.*?>')
+    cleantext = re.sub(cleanr, '', raw_html)
+    return cleantext
 
 
-def plotEyes(allEyes):
-    import matplotlib.pyplot as plt
-    import matplotlib
+def plotEyes(allEyes, trunc=False):
 
 
     clors = list(matplotlib.colors.TABLEAU_COLORS)
@@ -49,6 +49,15 @@ def plotEyes(allEyes):
     plt.title(
         "On-screen gaze predictions for each section during evaluation")
 
+def EWMA(lst, a=0.5):
+    newLst = [[0,0]]
+    for elem in lst:
+        tmp = [newLst[-1][0]*a + elem[0]*(1-a), newLst[-1][1]*a + elem[1]*(1-a)]
+
+        newLst.append(tmp)
+    return newLst[1:]
+
+
 # Import all webarchives in the directory
 files = []
 for r,d,f in os.walk("."):
@@ -70,7 +79,6 @@ for file in files:
     except:
         print("Failed on " + file)
 
-jonaData = fileData[0]
 # Data format
 # Dict with keys ['grid1_results', 'grid2_results', 'list1_results', 'list2_results'])
 
@@ -82,10 +90,10 @@ gestureNames = ["Forward flick", "Right flick", "Right tilt", "Left flick", "Lef
 # [Head sizes, Eye embeddings + features, Gaze predictions, IMU, Gesture labels]
 # IMU is [linear accel, angular accel, rotation]
 
-eyeData = []
-segmentData = []
-
 firstdata = fileData[0]
+eyeData = []
+gestData = []
+segmentData = []
 for eval in firstdata.keys():
 
     for gestureBlock in firstdata[eval]:
@@ -102,32 +110,75 @@ for eval in firstdata.keys():
             headsize_hist, embeddings_hist, gazepreds_hist, IMU_hist, gestdetect_hist = histories
 
             if 'grid' in eval:
-                print(eval)
-                eyeData.append(gazepreds_hist[-7:])
+                # print(eval)
+                gestData.append(gestdetect_hist)
+                eyeData.append(gazepreds_hist)
                 segmentData.append(gaze)
             # Add to pandas dataframe
 
-zippedEyes = zip(eyeData, segmentData)
-plotEyes(zippedEyes)
 
-# with open("flask2/data/grid1resultsandy.json", "r") as f:
-with open("flask2/data/list1resultsandy.json", "r") as f:
-    data = json.load(f)
-data = np.array(data)
+newGest = [0]*len(gestData)
+newEyes = [0]*len(gestData)
+# Stock the eyeData and gestData at the first unsteady
+for i,gestSet in enumerate(gestData):
+    for ind, elem in enumerate(gestSet):
+        if (not all(x==0 for x in elem)):
+            newGest[i] = gestData[i][:ind-1]
+            newEyes[i] = eyeData[i][:ind-1]
+    if type(newGest[i]) != list:
+        newGest[i] = gestData[i]
+        newEyes[i] = eyeData[i]
+print("Len of gesture data and eye data (should match)", len(gestData), len(eyeData))
+print("All gestures transferred over: ", not any(type(x) != list for x in newGest))
+
+a = [len(x) for x in newEyes]
+print(sorted(a))
+a = [len(x) for x in eyeData]
+print(sorted(a))
+
+######### Clip at 0 and 1, then EWMA filter the eye predictions
+clippedEyes = [np.clip(x, 0,1) for x in newEyes]
+ewmaEyes = [EWMA(x) for x in clippedEyes]
 
 
-allEyes = []
-for gests in data:
-    for listsegs in gests:
-        tstamp = listsegs[0]
-        predGest, predSeg = listsegs[1]
-        targGest, targSeg = listsegs[2]
-        histories = listsegs[3]
-        eyePreds, gyrohist, headsizehist, angularhist = histories
-
-        allEyes.append([eyePreds,targSeg])
+######### Plot and score the eye predictions
+def accScore(eyeAndSegment, name):
+    eyeData, segmentData = eyeAndSegment
+    if name == 'grid':
+        mapping = {}
 
 
-plotEyes(allEyes)
+zippedEyes = zip(ewmaEyes, segmentData)
+print("Accuracy score:", accScore(zippedEyes, 'grid'))
+plotEyes(zippedEyes, True)
+
+
+
+
+
+
+
+
+
+
+# # with open("flask2/data/grid1resultsandy.json", "r") as f:
+# with open("flask2/data/list1resultsandy.json", "r") as f:
+#     data = json.load(f)
+# data = np.array(data)
+#
+#
+# allEyes = []
+# for gests in data:
+#     for listsegs in gests:
+#         tstamp = listsegs[0]
+#         predGest, predSeg = listsegs[1]
+#         targGest, targSeg = listsegs[2]
+#         histories = listsegs[3]
+#         eyePreds, gyrohist, headsizehist, angularhist = histories
+#
+#         allEyes.append([eyePreds,targSeg])
+#
+#
+# plotEyes(allEyes)
 
 
