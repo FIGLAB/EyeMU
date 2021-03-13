@@ -114,6 +114,9 @@ function blockedEval(){
     cur = galleryElements[0]; // debuggery
 }
 
+//[0,1,2,3,4,5,6,7]
+//to
+//[1,3,]
 
 ////////////////////////// Convenience functions to light up individual squares.
 function resetGridColors(){

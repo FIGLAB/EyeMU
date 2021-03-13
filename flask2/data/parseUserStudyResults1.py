@@ -15,8 +15,6 @@ def cleanhtml(raw_html):
 
 
 def plotEyes(allEyes, trunc=False):
-
-
     clors = list(matplotlib.colors.TABLEAU_COLORS)
     ymult = 1
     # allSegs = [[] for i in range(6)]
@@ -57,6 +55,68 @@ def EWMA(lst, a=0.5):
         newLst.append(tmp)
     return newLst[1:]
 
+######### Plot and score the eye predictions
+def avgXYs(lst):
+    if len(lst) == 0:
+        return [0,0]
+    return [sum([x[0] for x in lst])/len(lst),sum([x[1] for x in lst])/len(lst)]
+
+def segmentDataAsCoordinates(segNum):
+    return [(1 + (segNum-1)//4)/3, (((segNum-1) % 4) + 1)/5]
+
+def accScore(eyeAndSegment, name):
+    eyeData, segmentData = eyeAndSegment
+    if name == 'grid':
+        def f(lst):
+            x,y = lst
+            # return int((y//.25 + 1)*((x > .5) + 1))
+            return int(((y//.25)+1) + 4*(x > .5))
+    else:
+        def f(lst):
+            x, y = lst
+            return int(y//(1/6) + 1)
+
+    # priorLen = 7
+    guessedSegs = []
+    avg_XY_arr = []
+    # Calculate accuracy
+
+    for trial in eyeData:
+        avg_XY_arr.append(avgXYs(trial))
+        guessedSegs.append(f(avg_XY_arr[-1]))
+
+    # Get accuracy per segment
+    perSegAcc = {i:[0,0] for i in range(1,9)} # correct, total
+    for i,seg in enumerate(segmentData):
+        perSegAcc[seg][1] += 1
+        if guessedSegs[i] == seg:
+            perSegAcc[seg][0] += 1
+
+    # Calculate normalized error
+    accErrorXY = [0,0]
+    for i,seg in enumerate(segmentData):
+        x,y = segmentDataAsCoordinates(seg)
+        accErrorXY[0] += abs(avg_XY_arr[i][0] - x)
+        accErrorXY[1] += abs(avg_XY_arr[i][1] - y)
+    accErrorXY[0] /= len(segmentData)
+    accErrorXY[1] /= len(segmentData)
+    print("norm euclidean error:",round((accErrorXY[0]**2 +accErrorXY[1]**2)**.5,2) ,accErrorXY)
+
+    matches = [x == y for (x, y) in zip(guessedSegs, segmentData)]
+    return sum(matches)/len(matches)
+
+
+# Data format
+# Dict with keys ['grid1_results', 'grid2_results', 'list1_results', 'list2_results'])
+
+# Each eval key has 9 blocks (one per gesture), where each block is in the form
+# [timestamp, detectedGestureAndGaze, targetGestureAndGaze, histories]
+gestureNames = ["Forward flick", "Right flick", "Right tilt", "Left flick", "Left tilt", "Pull close", "Push away", "Turn to right", "Turn to left"]
+
+# Histories is long, is arranged like this:
+# [Head sizes, Eye embeddings + features, Gaze predictions, IMU, Gesture labels]
+# IMU is [linear accel, angular accel, rotation]
+
 
 # Import all webarchives in the directory
 files = []
@@ -78,80 +138,78 @@ for file in files:
         fileData.append(jsonData)
     except:
         print("Failed on " + file)
-
-# Data format
-# Dict with keys ['grid1_results', 'grid2_results', 'list1_results', 'list2_results'])
-
-# Each eval key has 9 blocks (one per gesture), where each block is in the form
-# [timestamp, detectedGestureAndGaze, targetGestureAndGaze, histories]
-gestureNames = ["Forward flick", "Right flick", "Right tilt", "Left flick", "Left tilt", "Pull close", "Push away", "Turn to right", "Turn to left"]
-
-# Histories is long, is arranged like this:
-# [Head sizes, Eye embeddings + features, Gaze predictions, IMU, Gesture labels]
-# IMU is [linear accel, angular accel, rotation]
-
-firstdata = fileData[0]
-eyeData = []
-gestData = []
-segmentData = []
-for eval in firstdata.keys():
-
-    for gestureBlock in firstdata[eval]:
-        for segment in gestureBlock:
-            # Unpack each segment trial
-            timestamp, detected, target, histories = segment
-
-            # Get the ground truth gesture and square out
-            gesture = target[0]
-            gestureName = gestureNames[gesture]
-            gaze = target[1]
-
-            # Unpack the histories array
-            headsize_hist, embeddings_hist, gazepreds_hist, IMU_hist, gestdetect_hist = histories
-
-            if 'grid' in eval:
-                # print(eval)
-                gestData.append(gestdetect_hist)
-                eyeData.append(gazepreds_hist)
-                segmentData.append(gaze)
-            # Add to pandas dataframe
+print("Successfully parsed " + str(len(fileData)) + " trials")
 
 
-newGest = [0]*len(gestData)
-newEyes = [0]*len(gestData)
-# Stock the eyeData and gestData at the first unsteady
-for i,gestSet in enumerate(gestData):
-    for ind, elem in enumerate(gestSet):
-        if (not all(x==0 for x in elem)):
-            newGest[i] = gestData[i][:ind-1]
-            newEyes[i] = eyeData[i][:ind-1]
-    if type(newGest[i]) != list:
-        newGest[i] = gestData[i]
-        newEyes[i] = eyeData[i]
-print("Len of gesture data and eye data (should match)", len(gestData), len(eyeData))
-print("All gestures transferred over: ", not any(type(x) != list for x in newGest))
+def getAccAndErr(data):
+    eyeData = []
+    gestData = []
+    segmentData = []
+    for eval in data.keys():
 
-a = [len(x) for x in newEyes]
-print(sorted(a))
-a = [len(x) for x in eyeData]
-print(sorted(a))
+        for gestureBlock in data[eval]:
+            for segment in gestureBlock:
+                # Unpack each segment trial
+                timestamp, detected, target, histories = segment
 
-######### Clip at 0 and 1, then EWMA filter the eye predictions
-clippedEyes = [np.clip(x, 0,1) for x in newEyes]
-ewmaEyes = [EWMA(x) for x in clippedEyes]
+                # Get the ground truth gesture and square out
+                gesture = target[0]
+                gestureName = gestureNames[gesture]
+                gaze = target[1]
 
+                # Unpack the histories array
+                headsize_hist, embeddings_hist, gazepreds_hist, IMU_hist, gestdetect_hist = histories
 
-######### Plot and score the eye predictions
-def accScore(eyeAndSegment, name):
-    eyeData, segmentData = eyeAndSegment
-    if name == 'grid':
-        mapping = {}
+                if 'grid' in eval:
+                    # print(eval)
+                    gestData.append(gestdetect_hist)
+                    eyeData.append(gazepreds_hist)
+                    segmentData.append(gaze)
+                # Add to pandas dataframe
 
 
-zippedEyes = zip(ewmaEyes, segmentData)
-print("Accuracy score:", accScore(zippedEyes, 'grid'))
-plotEyes(zippedEyes, True)
+    newGest = [0]*len(gestData)
+    newEyes = [0]*len(gestData)
+    # Stock the eyeData and gestData at the first unsteady
+    for i,gestSet in enumerate(gestData):
+        for ind, elem in enumerate(gestSet):
+            if (not all(x==0 for x in elem)):
+                newGest[i] = gestData[i][:ind-1]
+                newEyes[i] = eyeData[i][:ind-1]
+        if type(newGest[i]) != list:
+            newGest[i] = gestData[i]
+            newEyes[i] = eyeData[i]
 
+    ######### Clip at 0 and 1, then EWMA filter the eye predictions
+    clippedEyes = [np.clip(x, 0.01, .99) for x in newEyes]
+    ewmaEyes = [EWMA(x) for x in clippedEyes]
+    print("Accuracy score:", accScore([ewmaEyes, segmentData], 'grid'))
+    print()
+
+
+
+# print("Len of gesture data and eye data (should match)", len(gestData), len(eyeData))
+# print("All gestures transferred over: ", not any(type(x) != list for x in newGest))
+#
+# a = [len(x) for x in newEyes]
+# print(sorted(a))
+# a = [len(x) for x in eyeData]
+# print(sorted(a))
+
+# ######### Clip at 0 and 1, then EWMA filter the eye predictions
+# clippedEyes = [np.clip(x, 0.01,.99) for x in newEyes]
+# ewmaEyes = [EWMA(x) for x in clippedEyes]
+
+
+
+# print("Accuracy score:", accScore([ewmaEyes, segmentData], 'grid'))
+#
+#
+# zippedEyes = zip(ewmaEyes, segmentData)
+# plotEyes(zippedEyes, True)
+
+for data in fileData:
+    getAccAndErr(data)
 
 
 
