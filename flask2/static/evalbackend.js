@@ -157,7 +157,7 @@ function setGridTextColorWhite(square_num){
 
     galleryNumbers[ind-1].style.zIndex = "5";
     evalTarget.style.zIndex = "4";
-    evalTarget.style.backgroundColor = "rgba(255, 0, 0, 0.8)";
+    evalTarget.style.backgroundColor = "rgba(255, 0, 0, 0.5)";
 
 }
 
@@ -176,7 +176,6 @@ function setGridColorAndText(square_num, text){
 
     // DOT TESTING
     evalTarget.hidden = false;
-//    evalTarget.style.backgroundColor = divColors[ind-1];
     galleryNumbers[ind-1].style.zIndex = "4";
     evalTarget.style.zIndex = "5";
     evalTarget.style.backgroundColor = "red";
