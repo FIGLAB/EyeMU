@@ -4,6 +4,7 @@ import os
 import webarchive
 import re
 import json
+import pandas as pd
 
 import matplotlib.pyplot as plt
 import matplotlib
@@ -100,10 +101,10 @@ def accScore(eyeAndSegment, name):
         accErrorXY[1] += abs(avg_XY_arr[i][1] - y)
     accErrorXY[0] /= len(segmentData)
     accErrorXY[1] /= len(segmentData)
-    print("norm euclidean error:",round((accErrorXY[0]**2 +accErrorXY[1]**2)**.5,2) ,accErrorXY)
+    print("norm euclidean error:", round((accErrorXY[0]**2 +accErrorXY[1]**2)**.5,2) ,accErrorXY)
 
     matches = [x == y for (x, y) in zip(guessedSegs, segmentData)]
-    return sum(matches)/len(matches)
+    return sum(matches)/len(matches), accErrorXY
 
 
 # Data format
@@ -122,15 +123,15 @@ gestureNames = ["Forward flick", "Right flick", "Right tilt", "Left flick", "Lef
 files = []
 for r,d,f in os.walk("."):
     for file in f:
-        if ".webarchive" in file:
+        if ".webarchive" in file and 'archivedData' not in r:
             files.append(os.path.join(r, file))
+
 
 # Webarchive format -> parsed JSON dictionaries
 fileData = []
 for file in files:
     tmp = webarchive.open(file)
     jsonStr = cleanhtml(tmp._main_resource.data.decode())
-    # cleanhtml(a.main_resource.data.decode())
     try:
         jsonData = json.loads(jsonStr)
         for key in jsonData.keys():
@@ -146,7 +147,6 @@ def getAccAndErr(data):
     gestData = []
     segmentData = []
     for eval in data.keys():
-
         for gestureBlock in data[eval]:
             for segment in gestureBlock:
                 # Unpack each segment trial
@@ -161,12 +161,10 @@ def getAccAndErr(data):
                 headsize_hist, embeddings_hist, gazepreds_hist, IMU_hist, gestdetect_hist = histories
 
                 if 'grid' in eval:
-                    # print(eval)
                     gestData.append(gestdetect_hist)
                     eyeData.append(gazepreds_hist)
                     segmentData.append(gaze)
                 # Add to pandas dataframe
-
 
     newGest = [0]*len(gestData)
     newEyes = [0]*len(gestData)
@@ -183,8 +181,11 @@ def getAccAndErr(data):
     ######### Clip at 0 and 1, then EWMA filter the eye predictions
     clippedEyes = [np.clip(x, 0.01, .99) for x in newEyes]
     ewmaEyes = [EWMA(x) for x in clippedEyes]
-    print("Accuracy score:", accScore([ewmaEyes, segmentData], 'grid'))
+    acc, err = accScore([ewmaEyes, segmentData], 'grid')
+    print("Accuracy score:", acc)
     print()
+    return acc, err
+
 
 
 
@@ -196,20 +197,13 @@ def getAccAndErr(data):
 # a = [len(x) for x in eyeData]
 # print(sorted(a))
 
-# ######### Clip at 0 and 1, then EWMA filter the eye predictions
-# clippedEyes = [np.clip(x, 0.01,.99) for x in newEyes]
-# ewmaEyes = [EWMA(x) for x in clippedEyes]
-
-
-
-# print("Accuracy score:", accScore([ewmaEyes, segmentData], 'grid'))
-#
-#
 # zippedEyes = zip(ewmaEyes, segmentData)
 # plotEyes(zippedEyes, True)
 
+errs = []
 for data in fileData:
-    getAccAndErr(data)
+    _, err = getAccAndErr(data)
+    errs.append(err)
 
 
 
