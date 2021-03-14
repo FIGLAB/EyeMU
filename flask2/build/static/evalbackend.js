@@ -38,6 +38,7 @@ var track_accel_gyro = [[[], [], []], [[], [], []], [[], [], []]]; // Linear, An
 var track_gaze = [];
 var track_gestures = [];
 var track_headsize = [];
+var track_headInView = [];
 var trackingOn = false;
 
 function resetTracking(){
@@ -46,14 +47,15 @@ function resetTracking(){
     track_gaze = [];
     track_gestures = [];
     track_headsize = [];
+    track_headInView = [];
 }
 
 function getTrackingHist(){
-    return [track_headsize, track_embeds, track_gaze, track_accel_gyro, track_gestures];
+    return [track_headsize, track_embeds, track_gaze, track_accel_gyro, track_gestures, track_headInView];
 
 }
 
-
+var evalTarget;
 
 
 var cur;
@@ -110,10 +112,20 @@ function blockedEval(){
     createGalleryElems();
     toggleHide();
 
+    // Add a single dot // DOT TESTING
+    evalTarget = document.createElement("div");
+    evalTarget.setAttribute("class", "evalTarget");
+    evalTarget.style.left = "-100px";
+    evalTarget.style.top = "-100px";
+    document.body.appendChild(evalTarget);
+
     accelbuttonholder
     cur = galleryElements[0]; // debuggery
 }
 
+//[0,1,2,3,4,5,6,7]
+//to
+//[1,3,]
 
 ////////////////////////// Convenience functions to light up individual squares.
 function resetGridColors(){
@@ -122,6 +134,7 @@ function resetGridColors(){
         div.style.color = "black";
 //        div.style.backgroundColor = divColors[i];
         galleryElements[i].style.backgroundColor = "grey";
+        galleryElements[i].style.backgroundColor = "aliceblue";
         i++;
         if (evalType == "grid"){
             div.innerHTML = "&nbsp<br>&nbsp";
@@ -129,16 +142,28 @@ function resetGridColors(){
             div.innerHTML = "&nbsp";
         }
     }
+
+    evalTarget.hidden = true;
 }
 
 function setGridTextColorWhite(square_num){
     ind = lookup[square_num-1];
-    galleryNumbers[ind-1].style.color = "white";
+//    galleryNumbers[ind-1].style.color = "white";
+    galleryNumbers[ind-1].style.color = "black";
+
+    // DOT TESTING
+//    evalTarget.hidden = true;
+//    evalTarget.style.backgroundColor = "#FF5050";
+
+    galleryNumbers[ind-1].style.zIndex = "5";
+    evalTarget.style.zIndex = "4";
+    evalTarget.style.backgroundColor = "rgba(255, 0, 0, 0.8)";
+
 }
 
 function setGridColorAndText(square_num, text){
     ind = lookup[square_num-1];
-    galleryElements[ind-1].style.backgroundColor = divColors[ind-1];
+//    galleryElements[ind-1].style.backgroundColor = divColors[ind-1];
 
     // Depending on the type of eval, add the text to the specific div but don't show it yet (set to bg color)
     if (evalType == "grid"){
@@ -146,7 +171,17 @@ function setGridColorAndText(square_num, text){
     } else{
         galleryNumbers[ind-1].innerHTML = text;
     }
-    galleryNumbers[ind-1].style.color = divColors[ind-1];
+//    galleryNumbers[ind-1].style.color = divColors[ind-1];
+    galleryNumbers[ind-1].style.color = 'aliceblue';
+
+    // DOT TESTING
+    evalTarget.hidden = false;
+//    evalTarget.style.backgroundColor = divColors[ind-1];
+    galleryNumbers[ind-1].style.zIndex = "4";
+    evalTarget.style.zIndex = "5";
+    evalTarget.style.backgroundColor = "red";
+    evalTarget.style.top = Math.trunc(galleryElements[ind-1].offsetTop + galleryElements[ind-1].offsetHeight/2) + "px";
+    evalTarget.style.left = Math.trunc(galleryElements[ind-1].offsetLeft + galleryElements[ind-1].offsetWidth/2) + "px";
 }
 
 function toggleHide(){
@@ -228,6 +263,7 @@ function startTrial(){
         resetGridColors();
         setGridColorAndText(targetSquare, gestureNames[targetGesture]);
 
+
         // Start trial loop
         trialStartTime = Date.now()
         trialLoop([targetGesture, targetSquare]);
@@ -289,6 +325,7 @@ function trialLoop(targets){
         let tmpEmbeds = Array.from(allFeatures_mat.val)
         track_embeds.push(tmpEmbeds);
         track_headsize.push(head_size_history[head_size_history.length-1]);
+        track_headInView.push(prediction.faceInViewConfidence);
     }
 
     if (endTrialTap){
@@ -307,6 +344,7 @@ function trialLoop(targets){
 
 //function trialEndHandler(gestures, segment){
 function trialEndHandler(detected, target, histories){ // Both in [gestures, segment] format
+    resetGridColors();
     trackingOn = false; // Turn off tracking
 
     // Show text box
@@ -317,11 +355,11 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
     textElem.innerHTML = "Block #" + (trialBlockNum+1) + ", Trial #" + (currentBlockTrialNum+1) +  " Complete<br><hr><br>Tap to continue";
 
     if (detected[0] == -1){ // If no gesture triggered (timed out)
-        console.log("before LS store in eval");
-        checkLSsize();
+//        console.log("before LS store in eval");
+//        checkLSsize();
         addToEvalResults(trialResultsKey, trialBlockNum, currentBlockTrialNum, [Date.now(), [-1, detected[1]], target, histories]);
-        console.log("After LS store in eval");
-        checkLSsize();
+//        console.log("After LS store in eval");
+//        checkLSsize();
     } else{
         // Show detected text
         gestures = detected[0];
@@ -604,7 +642,7 @@ function gaze2Section(gaze_pred){
         heightBounds = [0.0];
         for (let i = 2; i < galleryElements.length; i += 2){
             heightBounds.push(galleryElements[i].offsetTop);
-            console.log(galleryElements[i].offsetTop/window.innerHeight)
+//            console.log(galleryElements[i].offsetTop/window.innerHeight)
         }
 
         let row;

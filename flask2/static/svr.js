@@ -141,9 +141,7 @@ var targetTimerCount = 0;
 async function drawTargetDot(){
     // Remove old target dots
     const targs = document.getElementsByClassName('targetdot');
-    while (targs.length > 0){
-        targs[0].parentNode.removeChild(targs[0]);
-    };
+    while (targs.length > 0){ targs[0].parentNode.removeChild(targs[0]); };
 
     // Create a new one
     targDot = document.createElement("div");

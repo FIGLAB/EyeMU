@@ -149,8 +149,6 @@ async function setupCamera() {
       facingMode: 'user',
       aspectRatio: 1.3333,
       width: { ideal: 1920 },
-//      height: { ideal: 1708 }
-//      height: { ideal: 1280 }
     },
   });
   video.srcObject = stream;
