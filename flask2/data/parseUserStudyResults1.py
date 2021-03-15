@@ -63,7 +63,7 @@ def avgXYs(lst):
     return [sum([x[0] for x in lst])/len(lst),sum([x[1] for x in lst])/len(lst)]
 
 def segmentDataAsCoordinates(segNum):
-    return [(1 + (segNum-1)//4)/3, (((segNum-1) % 4) + 1)/5]
+    return [(1 + (segNum-1)//4)/3, 1/8 + (((segNum-1) % 4) )/4]
 
 def accScore(eyeAndSegment, name):
     eyeData, segmentData = eyeAndSegment
@@ -168,7 +168,7 @@ def getAccAndErr(data):
 
     newGest = [0]*len(gestData)
     newEyes = [0]*len(gestData)
-    # Stock the eyeData and gestData at the first unsteady
+    # Stop the eyeData and gestData at the first unsteady
     for i,gestSet in enumerate(gestData):
         for ind, elem in enumerate(gestSet):
             if (not all(x==0 for x in elem)):
@@ -209,28 +209,5 @@ for data in fileData:
 
 
 
-
-
-
-
-# # with open("flask2/data/grid1resultsandy.json", "r") as f:
-# with open("flask2/data/list1resultsandy.json", "r") as f:
-#     data = json.load(f)
-# data = np.array(data)
-#
-#
-# allEyes = []
-# for gests in data:
-#     for listsegs in gests:
-#         tstamp = listsegs[0]
-#         predGest, predSeg = listsegs[1]
-#         targGest, targSeg = listsegs[2]
-#         histories = listsegs[3]
-#         eyePreds, gyrohist, headsizehist, angularhist = histories
-#
-#         allEyes.append([eyePreds,targSeg])
-#
-#
-# plotEyes(allEyes)
 
 
