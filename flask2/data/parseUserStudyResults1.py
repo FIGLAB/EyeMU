@@ -189,7 +189,33 @@ def getAccAndErr(data):
 
 
 
-# print("Len of gesture data and eye data (should match)", len(gestData), len(eyeData))
+# print("Len of gesture data and
+#
+# Search Roboclub Members
+#
+#
+#
+#
+# 1
+#
+# 2
+#
+# 3
+#
+# RM
+# 4
+#
+# 5
+#
+# 6
+#
+# 7
+#
+# CS
+# 8
+#
+# PS
+# 9eye data (should match)", len(gestData), len(eyeData))
 # print("All gestures transferred over: ", not any(type(x) != list for x in newGest))
 #
 # a = [len(x) for x in newEyes]
