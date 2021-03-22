@@ -239,7 +239,7 @@ function startTrial(){
 
             targetGesture = trialBlockOrder[trialBlockNum];
             targetSquare = currentSegmentOrder[currentBlockTrialNum]+1;
-            textElem.innerHTML = "\"" + trialName + "\" Evaluation Trial<br>";
+            textElem.innerHTML =  trialName + "<br><br>";
             textElem.innerHTML += "Block #" + (1+trialBlockNum) + ", ";
             textElem.innerHTML += "Trial #" + (1+currentBlockTrialNum) + "/" + currentSegmentOrder.length;
             textElem.innerHTML += "<br>Target gesture: " + gestureNames[targetGesture];
