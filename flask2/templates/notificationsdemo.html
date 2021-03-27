@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block headextra %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Tensorflow core, model, and backend-->
+<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>-->
+<!-- TFjs version 2.7 local-->
+<script src="{{url_for('static', filename='tf.min.js')}}"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
+
+<!-- Javascript specific to this page -->
+<script src="{{url_for('static', filename='ML.js')}}"></script>
+<script src="{{url_for('static', filename='accel.js')}}"></script>
+<script src="{{url_for('static', filename='svr.js')}}"></script>
+<script src="{{url_for('static', filename='collectioncolor.js')}}"></script>
+<script src="{{url_for('static', filename='notificationsdemo.js')}}"></script>
+
+
+<!--Other ML library-->
+<script src="{{url_for('static', filename='mlweb.js')}}"></script>
+
+<script>
+    main();
+    showPredictDot = false;
+
+    // Wait until after the body loads before adding elements to it.
+    document.addEventListener("DOMContentLoaded", function(event) {
+        // document.getElementById('accelbuttonholder').remove();
+        // let myp5 = new p5(s);
+    })
+
+</script>
+
+{% endblock %}
+
+
+{% block body %}
+
+<button id="accelPermsButton" onclick="getAccel()">Get Accel</button>
+
+<div id="main">
+    <canvas hidden id="eyecache"></canvas>
+    <video hidden autoplay muted playsinline id="video"  style="
+              -webkit-transform: scaleX(-1);
+              transform: scaleX(-1);
+              visibility: hidden;
+              width: auto;
+              height: auto;
+              "></video>
+
+</div>
+{% endblock %}
