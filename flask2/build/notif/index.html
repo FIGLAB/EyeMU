@@ -129,6 +129,7 @@
 
     
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
 
 <!-- Tensorflow core, model, and backend-->
 <!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>-->
@@ -147,6 +148,7 @@
 
 <!--Other ML library-->
 <script src="/static/mlweb.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/p5.js"></script>
 
 <script>
     main();
@@ -156,18 +158,60 @@
     document.addEventListener("DOMContentLoaded", function(event) {
         // document.getElementById('accelbuttonholder').remove();
         // let myp5 = new p5(s);
+        notifStarter();
     })
 
 </script>
+
+<style>
+    .top_notif {
+        border-radius: 15px;
+        margin: 10px;
+        left: 0;
+
+
+        animation: slideintop .7s;
+        animation-timing-function: cubic-bezier(.35,1.29,.64,1);
+        animation-fill-mode: forwards;
+    }
+
+    @keyframes slideoutleft{
+        to{
+            transform: translate(-600px) ;
+            opacity: 0;
+        }
+    }
+
+    @keyframes slideup{
+        to{
+            transform: translate(0px, -89px);
+        }
+    }
+
+
+    @keyframes slideintop {
+        from {
+            transform: translate(0px, -100px) ;
+        }
+    }
+
+</style>
 
 
 </head>
 <body style="background-color:aliceblue; font-family: Verdana, sans-serif;">
 
+<div id="accelbuttonholder" style="width:100%; height:100%; display: flex; justify-content: center; align-items: center;">
 
-<button id="accelPermsButton" onclick="getAccel()">Get Accel</button>
+    <br>
+
+    <button id="accelPermsButton" onclick="getAccel()">Get Accel</button>
+</div>
+
+
 
 <div id="main">
+    <div id="p5jscanvasholder">
     <canvas hidden id="eyecache"></canvas>
     <video hidden autoplay muted playsinline id="video"  style="
               -webkit-transform: scaleX(-1);
