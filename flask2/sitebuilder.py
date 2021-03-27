@@ -92,6 +92,10 @@ def zoo2():
 def zoo3():
     return render_template("zoo.html", zooNum = 3)
 
+@app.route('/notif/')
+def notif():
+    return render_template("notificationsdemo.html")
+
 
 
 @app.after_request
