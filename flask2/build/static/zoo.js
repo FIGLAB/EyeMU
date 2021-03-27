@@ -275,7 +275,6 @@ function imageGallery(){
 
 //        steady = Math.abs(diff) < 5;
 
-
         if (steady){
             // Track head size
             let cur_face_geom = faceGeom.getGeom();

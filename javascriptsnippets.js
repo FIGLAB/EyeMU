@@ -1,4 +1,6 @@
 
+
+
 var textFile = null;
 // Create a text file that you can download, out of text
 function makeTextFile(text) {
