@@ -143,7 +143,6 @@
 <script src="/static/accel.js"></script>
 <script src="/static/svr.js"></script>
 <script src="/static/collectioncolor.js"></script>
-<script src="/static/livegestandgaze.js"></script>
 <script src="/static/notificationsdemo.js"></script>
 
 
@@ -170,72 +169,10 @@
         margin: 10px;
         left: 0;
 
-        border: 2px solid #ffffff;
 
         animation: slideintop .7s;
         animation-timing-function: cubic-bezier(.35,1.29,.64,1);
         animation-fill-mode: forwards;
-
-        transition: all 0.2s ease;
-    }
-
-    .top_notif:focus{
-        border: 2px solid #2222dd;
-        transition: all 0.2s ease;
-    }
-
-
-
-    .fullApp {
-        border-radius: 20px;
-        margin: 1px;
-        left: 0px;
-
-        z-index: 3;
-        /*animation: slideinbottom .5s;*/
-        animation: bloomImage .2s;
-        animation-timing-function: linear;
-        animation-fill-mode: forwards;
-    }
-
-
-    @keyframes bloomImage{
-        from{
-            transform: translate(50%, 10%);
-            transform: scale(0.1);
-        }
-        to {
-            transform: translate(0%, 0%);
-            transform: scale(1);
-        }
-    }
-
-    @keyframes unbloomImage{
-        from {
-            transform: translate(0%, 0%);
-            transform: scale(1);
-        }
-        to{
-            transform: translate(50%, 50%);
-            transform: scale(0);
-        }
-    }
-
-
-
-
-    @keyframes slideinbottom{
-        from{
-            transform: translate(0px, 800px);
-            opacity: 0;
-        }
-    }
-
-    @keyframes slideoutbottom{
-        to{
-            transform: translate(0px, 800px);
-            opacity: 0;
-        }
     }
 
     @keyframes slideoutleft{
@@ -245,29 +182,18 @@
         }
     }
 
-    @keyframes slideoutright{
-        from{
-            transform: translate(0px, -110px);
-        }
-        to{
-            transform: translate(600px, -110px);
-            opacity: 0;
-        }
-    }
-
     @keyframes slideup{
         to{
-            transform: translate(0px, -110px);
+            transform: translate(0px, -89px);
         }
     }
 
 
     @keyframes slideintop {
         from {
-            transform: translate(0px, -200px) ;
+            transform: translate(0px, -100px) ;
         }
     }
-
 
 </style>
 
