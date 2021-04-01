@@ -25,36 +25,39 @@ var windowHeight = window.innerHeight;
 // Show HTML prediction dot or p5js
 var showPredictDot = true;
 
+// Easing for the eye prediction
+var easX = 0;
+var easY = 0;
+var easefactor = .2;
+var dotelem;
 
 //Draw the prediction as an orange dot on the screen.
-async function drawPrediction(predictedXY) {
+async function drawPrediction() {
 //    console.log("Drawing prediction in SVR");
-    // Remove all existing predicdots
-    const predicdots = document.getElementsByClassName('predicdot');
-    if (predicdots.length > 0){
-        predicdots[0].parentNode.removeChild(predicdots[0]);
-    };
-
-    // and regions
-    const regions = document.getElementsByClassName('onscreenregion');
-    if (regions.length > 0){
-        regions[0].parentNode.removeChild(regions[0]);
-    };
+    if (typeof(curPred) == "undefined"){
+        setTimeout(drawPrediction, 300);
+        return;
+    }
 
     //Generate prediction dot
-    predX = Math.floor(predictedXY[0]*100);
-    predY = Math.floor(predictedXY[1]*100);
+    predX = Math.floor(curPred[0]*100);
+    predY = Math.floor(curPred[1]*130);
 
     predX = Math.min(Math.max(predX, 0), 100);
     predY = Math.min(Math.max(predY, 0), 100);
 
-    elem = document.createElement("div");
-    elem.setAttribute("class", "predicdot");
+    easX = easX + (predX-easX)*easefactor;
+    easY = easY + (predY-easY)*easefactor;
+    predX = easX;
+    predY = easY;
+
+
+    elem = document.getElementById("dotelem");
 
     if (regression){
 //        elem.setAttribute("style", "left:"+ predX +"%;top:"+ predY +"%;");
-        elem.style.left = "calc(" + predX + "% - 15px)";
-        elem.style.top = "calc(" + predY + "% - 15px)";
+        elem.style.left = "calc(" + predX + "% - 50px)";
+        elem.style.top = "calc(" + predY + "% - 50px)";
 //        console.log(elem.style.left, elem.style.top)
     } else{
         // Dividing regions, by percentage
@@ -73,23 +76,17 @@ async function drawPrediction(predictedXY) {
         // Set dot and highlighted region lightup
         elem.setAttribute("style", "left:"+ whichCol_Xcoord +"%;top:"+ whichRow_Ycoord +"%;");
 
-//        console.log("creating region")
-        reg = document.createElement("div");
-        reg.setAttribute("class", "onscreenregion");
-        reg.setAttribute("style", "left:" + (col_left ? 0 : (col_right ? x_bounds[1] : x_bounds[0])) + "%;"
-                               + " right:" + (col_left ? x_bounds[1] : (col_right ? 0 : x_bounds[0])) + "%;"
-
-                               + " top:" + (row_top ? 0 : (row_bot ? y_bounds[1] : y_bounds[0])) + "%;"
-                               + " bottom:" + (row_top ? y_bounds[1] : (row_bot ? 0 : y_bounds[0])) + "%;");
     }
 
 
     if (showPredictDot){
-        document.body.appendChild(elem);
-        if (!regression){
-            document.body.appendChild(reg);
-        }
+
+
+//        if (!regression){
+//            document.body.appendChild(reg);
+//        }
     }
+    requestAnimationFrame(drawPrediction);
 };
 
 // For greying out images
@@ -127,7 +124,7 @@ async function runSVRlive(){
     curPred[0] = Math.max(edge, Math.min(1-edge, curPred[0]))
     curPred[1] = Math.max(edge, Math.min(1-edge, curPred[1]))
 
-    drawPrediction(curPred)
+//    drawPrediction(curPred);
     setTimeout(runSVRlive, 100);
 }
 
@@ -178,35 +175,36 @@ function showDebug(){
         return;
     }
 
+
+
     setTimeout(() => {
+
+
+        dotelem = document.createElement("div");
+        dotelem.setAttribute("class", "predicdot");
+        dotelem.id = "dotelem";
+        dotelem.style.zIndex = "800";
+        regression = true;
+        document.body.appendChild(dotelem);
+
+
+        drawPrediction();
 
         console.log("showing debug");
         document.body.style.backgroundColor = "white";
 
         // Draw head image onto screen
-//        videoCanvas.hidden = false;
-////        videoCanvas.width = 720;
-////        videoCanvas.height = 960;
-//        videoCanvas.style.position = 'absolute';
-//        videoCanvas.style.top =  (window.innerHeight - videoCanvas.height) + "px";
-//        videoCanvas.style.left = (window.innerWidth-videoCanvas.width)/2 + "px";
-
         faceCanvas = document.createElement("canvas");
         faceCanvas.width = 720;
         faceCanvas.height = 960;
         faceCanvas.style.position = 'absolute';
-        faceCanvas.style.top =  (window.innerHeight - faceCanvas.height +100 ) + "px";
+        faceCanvas.style.top =  (window.innerHeight - faceCanvas.height -100 ) + "px";
         faceCanvas.style.left = (window.innerWidth-faceCanvas.width)/2 + "px";
+        faceCanvas.style.transform = "scaleX(-1)";
         facectx = faceCanvas.getContext("2d");
         document.body.append(faceCanvas);
 
         // Draw eye image onto screen
-//        canvas = document.getElementById("eyecache");
-//        canvas.hidden = false;
-//        canvas.style.position = 'absolute';
-//        canvas.style.left = (window.innerWidth-canvas.width)/2 + "px";
-
-
         factor = 2;
         betweenEyes = 80
         eyeCanvas = document.createElement("canvas");
@@ -214,6 +212,8 @@ function showDebug(){
         eyeCanvas.height = factor*2*iny + 10;
         eyeCanvas.style.position = 'absolute';
         eyeCanvas.style.left = (window.innerWidth-eyeCanvas.width)/2 + "px";
+        eyeCanvas.style.top = 100 + "px";
+        eyeCanvas.style.transform = "scaleX(-1)";
 
         eyectx = eyeCanvas.getContext("2d");
         document.body.append(eyeCanvas);
@@ -224,7 +224,7 @@ function showDebug(){
         accelDisplay = document.createElement("p");
         accelDisplay.id = "curOrientation";
         accelDisplay.style.position = "absolute";
-        accelDisplay.style.top = Math.trunc(window.innerHeight/5) + "px";
+        accelDisplay.style.top = Math.trunc(window.innerHeight/4) + "px";
         accelDisplay.style.left = "50px";
         accelDisplay.style.fontSize = "1.2em";
         document.body.append(accelDisplay);
@@ -240,13 +240,13 @@ async function continualCopy(){
 //    console.log("yea");
     facectx.drawImage(videoCanvas, 0,0, videoCanvas.width, videoCanvas.height,
                                     0, 0, faceCanvas.width, faceCanvas.height);
-    facectx.strokeStyle = "red";
+    facectx.fillStyle = "red";
     facectx.beginPath();
-facectx.clearRect(0,0,faceCanvas.width,faceCanvas.height);
+//facectx.clearRect(0,0,faceCanvas.width,faceCanvas.height);
     for (i of prediction.scaledMesh){
         facectx.beginPath();
         facectx.ellipse(i[0]*factor, i[1]*factor, 3, 3, 0,0,6.28);
-        facectx.stroke();
+        facectx.fill();
     }
 
 
