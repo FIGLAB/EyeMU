@@ -238,15 +238,15 @@ async function continualCopy(){
     eyectx.drawImage(canvas, 0, 0, inx, iny,      factor*(inx+betweenEyes), tmpy, inx*factor, iny*factor);
     eyectx.drawImage(canvas, inx+10, 0, inx, iny,       0, tmpy, inx*factor, iny*factor);
 //    console.log("yea");
-//    facectx.drawImage(videoCanvas, 0,0, videoCanvas.width, videoCanvas.height,
-//                                    0, 0, faceCanvas.width, faceCanvas.height);
+    facectx.drawImage(videoCanvas, 0,0, videoCanvas.width, videoCanvas.height,
+                                    0, 0, faceCanvas.width, faceCanvas.height);
     facectx.strokeStyle = "red";
     facectx.beginPath();
 facectx.clearRect(0,0,faceCanvas.width,faceCanvas.height);
     for (i of prediction.scaledMesh){
         facectx.beginPath();
-        facectx.ellipse(i[0], i[1], 1,1,0,0,6.28);
-    facectx.stroke();
+        facectx.ellipse(i[0]*factor, i[1]*factor, 3, 3, 0,0,6.28);
+        facectx.stroke();
     }
 
 
