@@ -96,6 +96,9 @@ def zoo3():
 def notif():
     return render_template("notificationsdemo.html")
 
+@app.route('/email/')
+def email():
+    return render_template("emaildemo.html")
 
 
 @app.after_request

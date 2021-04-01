@@ -220,7 +220,7 @@ function unfullSizeApp(){
 // JS on the HTML page calls notifstarter, which calls p5js, which calls startnotifloop. Whew!
 function notifStarter(){
     if (typeof(curPred) == 'undefined' || !AccelStarted){
-    if (!AccelStarted){
+//    if (!AccelStarted){
         console.log("curPred undefined, notifs demo restarting")
         setTimeout(notifStarter, 400);
         return;
