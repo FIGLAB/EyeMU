@@ -242,10 +242,13 @@ async function continualCopy(){
 //                                    0, 0, faceCanvas.width, faceCanvas.height);
     facectx.strokeStyle = "red";
     facectx.beginPath();
+facectx.clearRect(0,0,faceCanvas.width,faceCanvas.height);
     for (i of prediction.scaledMesh){
+        facectx.beginPath();
         facectx.ellipse(i[0], i[1], 1,1,0,0,6.28);
-    }
     facectx.stroke();
+    }
+
 
     requestAnimationFrame(continualCopy);
 }
