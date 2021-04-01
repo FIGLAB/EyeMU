@@ -14,6 +14,7 @@
 <script src="{{url_for('static', filename='fileIO.js')}}"></script>
 <script src="{{url_for('static', filename='svr.js')}}"></script>
 <script src="{{url_for('static', filename='collectioncolor.js')}}"></script>
+<script src="{{url_for('static', filename='accel.js')}}"></script>
 <!--<script src="{{url_for('static', filename='livetest.js')}}"></script>-->
 
 
@@ -23,6 +24,7 @@
 
 <script>
     main();
+    showDebug();
 </script>
 
 {% endblock %}
@@ -31,10 +33,10 @@
 {% block body %}
 
 <div id="main">
-
+    <button id="accelPermsButton" onclick="getAccel()">Get Accel</button>
     <canvas hidden id="eyecache"></canvas>
 
-    <div >
+    <div hidden>
         <button id="regtoggle"  class="widebutton" onclick="regr_class_toggle()" style="vertical-align: middle; margin-bottom:10px; background:#2196F3; width:100vw;"><h4>Classification</h4></button>
 </div>
 
