@@ -75,7 +75,6 @@ async function drawPrediction() {
 
         // Set dot and highlighted region lightup
         elem.setAttribute("style", "left:"+ whichCol_Xcoord +"%;top:"+ whichRow_Ycoord +"%;");
-
     }
 
 
@@ -198,7 +197,7 @@ function showDebug(){
         faceCanvas.width = 720;
         faceCanvas.height = 960;
         faceCanvas.style.position = 'absolute';
-        faceCanvas.style.top =  (window.innerHeight - faceCanvas.height -100 ) + "px";
+        faceCanvas.style.top =  (window.innerHeight - faceCanvas.height + 140) + "px";
         faceCanvas.style.left = (window.innerWidth-faceCanvas.width)/2 + "px";
         faceCanvas.style.transform = "scaleX(-1)";
         facectx = faceCanvas.getContext("2d");
@@ -212,7 +211,7 @@ function showDebug(){
         eyeCanvas.height = factor*2*iny + 10;
         eyeCanvas.style.position = 'absolute';
         eyeCanvas.style.left = (window.innerWidth-eyeCanvas.width)/2 + "px";
-        eyeCanvas.style.top = 100 + "px";
+        eyeCanvas.style.top = 50 + "px";
         eyeCanvas.style.transform = "scaleX(-1)";
 
         eyectx = eyeCanvas.getContext("2d");
@@ -224,10 +223,48 @@ function showDebug(){
         accelDisplay = document.createElement("p");
         accelDisplay.id = "curOrientation";
         accelDisplay.style.position = "absolute";
-        accelDisplay.style.top = Math.trunc(window.innerHeight/4) + "px";
+        accelDisplay.style.top = Math.trunc(window.innerHeight/4.2) + "px";
         accelDisplay.style.left = "50px";
-        accelDisplay.style.fontSize = "1.2em";
+        accelDisplay.style.fontSize = "2em";
         document.body.append(accelDisplay);
+
+
+        headPresentDisplay = document.createElement("h2");
+        headPresentDisplay.style.position = "absolute";
+        headPresentDisplay.style.top = Math.trunc(window.innerHeight/3.4) + "px";
+        headPresentDisplay.style.left = "50px";
+        headPresentDisplay.style.fontSize = "5em";
+
+        headLookingDisplay = document.createElement("h2");
+        headLookingDisplay.style.position = "absolute";
+        headLookingDisplay.style.top = Math.trunc(window.innerHeight/2.8) + "px";
+        headLookingDisplay.style.left = "50px";
+        headLookingDisplay.style.fontSize = "5em";
+
+        document.body.append(headPresentDisplay);
+        document.body.append(headLookingDisplay);
+
+        setInterval(() => {
+            if (prediction.faceInViewConfidence > .9){
+                headPresentDisplay.style.color = 'green';
+                headPresentDisplay.innerHTML = "Face present";
+            } else {
+                headPresentDisplay.style.color = 'red';
+                headPresentDisplay.innerHTML = "Face not present";
+            }
+
+            if (prediction.faceInViewConfidence  > .9 && abs(faceGeom.curYaw) < .3){
+                headLookingDisplay.style.color = 'green';
+                headLookingDisplay.innerHTML = "Looking at screen";
+            } else{
+                headLookingDisplay.style.color = 'red';
+                headLookingDisplay.innerHTML = "Looking away";
+            }
+
+
+
+        }, 50);
+
     }, 500);
 }
 
@@ -240,12 +277,12 @@ async function continualCopy(){
 //    console.log("yea");
     facectx.drawImage(videoCanvas, 0,0, videoCanvas.width, videoCanvas.height,
                                     0, 0, faceCanvas.width, faceCanvas.height);
-    facectx.fillStyle = "red";
+    facectx.fillStyle = "cyan";
     facectx.beginPath();
 //facectx.clearRect(0,0,faceCanvas.width,faceCanvas.height);
     for (i of prediction.scaledMesh){
         facectx.beginPath();
-        facectx.ellipse(i[0]*factor, i[1]*factor, 3, 3, 0,0,6.28);
+        facectx.ellipse(i[0]*factor, i[1]*factor, 5, 5, 0,0,6.28);
         facectx.fill();
     }
 

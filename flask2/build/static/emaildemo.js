@@ -44,6 +44,7 @@ var threadPath = startString + "thread.png";
 
 var header
 var foot
+var startedDemo = false;
 
 function createHead(){
     header = document.createElement("img");
@@ -75,10 +76,12 @@ var triangleArr = [];
 function createEmail(i){
 
 //    startX = header.offsetHeight;
-    startX = 120;
+    startX = 130;
 
     let email = document.createElement("img");
     email.setAttribute("src", emailPaths[i]);
+//    email.classList.push("email")
+    email.setAttribute("tabindex", 0);
     email.width = window.innerWidth;
     email.style.position = "absolute";
     email.style.zIndex = 1;
@@ -98,10 +101,10 @@ function createEmail(i){
     tri.style.top = (startX + i*emailHeight + emailHeight*.625) + "px";
     document.body.append(tri);
     triangleArr.push(tri);
-
-
 }
 
+
+var kicked = 0;
 
 function kickRight(i){
     emailArr[i].style.transform += " translateX(700px) ";
@@ -113,15 +116,22 @@ function kickRight(i){
         emailArr[j].style.transform += " translateY(-" + emailHeight + "px) ";
         triangleArr[j].style.transform += " translateY(-" + emailHeight + "px) ";
     }
+    kicked += 1;
 }
+
 
 function kickLeft(i){
     emailArr[i].style.transform += " translateX(-700px) ";
     emailArr[i].style.opacity = 0;
+    triangleArr[i].style.transform += " translateX(-700px) ";
+    triangleArr[i].style.opacity = 0;
+
 
     for (let j = i+1; j < emailArr.length; j++){
         emailArr[j].style.transform += " translateY(-" + emailHeight + "px) ";
+        triangleArr[j].style.transform += " translateY(-" + emailHeight + "px) ";
     }
+    kicked += 1;
 }
 
 function pullEmail(){
@@ -155,7 +165,6 @@ function tiltThread(){
     thread.style.transform = "scaleY(1)";
 }
 
-
 function untiltThread(){
     // Slide the rest of the emails back up
     for (let j = 2; j < emailArr.length; j++){
@@ -170,8 +179,6 @@ function untiltThread(){
     thread.style.opacity = 0;
     thread.style.transform = "scaleY(0)";
 }
-
-
 
 var bigEmail
 var thread
@@ -188,7 +195,7 @@ function startEmailLoop(){
     bigEmail.style.position = "absolute";
     bigEmail.style.zIndex = 5;
     bigEmail.width = window.innerWidth;
-    bigEmail.style.transition = "all .5s";
+    bigEmail.style.transition = "all .2s";
     bigEmail.style.transform = "scale(0.1)";
     bigEmail.style.opacity = 0.0;
     document.body.append(bigEmail);
@@ -208,7 +215,7 @@ function startEmailLoop(){
     thread.style.top = (emailArr[1].offsetHeight + emailArr[1].offsetTop) + "px";
     thread.style.position = "absolute";
     thread.width = window.innerWidth*7/8;
-    thread.style.transition = "all 0.5s";
+    thread.style.transition = "all 0.4s";
     thread.style.transform = "scaleY(0)";
     thread.style.transformOrigin = "0% 0%";
     thread.style.opacity = 0.0;
@@ -217,51 +224,74 @@ function startEmailLoop(){
 
     document.body.style.zoom = "1";
     gestDetectLoop();
+    startedDemo = true;
+    document.body.onclick = () => {
+        if (startedDemo){
+            location.reload();
+        }
+    };
 }
 
+
+
+var statemachine = 0;
 function gestDetectLoop(){
-
-    // Left flick while top is focused,
-    // Right flick while top is focused,
-    // pull while top is focused,
-    // push while full frame up
-
+    // flick right and left
 
     // Focus the element that is in focus
+    let focusRegion;
     if (typeof(localPreds) != "undefined"){
-        let eyeXY = getMeanEyeXY(localPreds.slice(3))
-        if (eyeXY[1] < .2){
-//            console.log(!allNotifs[0].hidden, !allNotifs[1].hidden)
-            if (!allNotifs[0].hidden) allNotifs[0].focus();
-            else if (!allNotifs[1].hidden) allNotifs[1].focus();
-            else if (allNotifs.length > 2 && !allNotifs[2].hidden) allNotifs[2].focus();
-        } else if (eyeXY[1] < .4){
-            if (!allNotifs[0].hidden) allNotifs[1].focus();
-        } else {
-            if (document.activeElement != document.body){
+        let eyeXY = getMeanEyeXY(localPreds.slice(5))
+        focusRegion = Math.trunc((eyeXY[1]-.22)/.125);
+        console.log(focusRegion)
+
+        if (focusRegion < 0){
+            focusRegion = 0;
+        } else if (focusRegion > 3 && focusRegion < 6){
+            focusRegion = 3;
+        }
+        focusRegion = focusRegion + kicked;
+
+
+        if (statemachine != 1 && statemachine != 3){
+            if (focusRegion <= 4){
+                emailArr[focusRegion].focus()
+                emailArr[focusRegion].style.zIndex = 2;
+            } else if (document.activeElement != document.body){
+                document.activeElement.style.zIndex = 1;
                 document.activeElement.blur();
             }
         }
     }
+//var gestureNames = ["Forward flick",
+//"Right flick",
+// "Right tilt",
+// "Left flick",
+//  "Left tilt",
+//   "Pull close",
+//    "Push away",
+//    "Turn to right",
+//     "Turn to left"];
 
-//    // Detect the 4 actions
-//    if (lastGesture == 3 && document.activeElement  == allNotifs[0] && !sentLeft){
-//        sendLeft(0);
-//        sentLeft = true;
-//        console.log("sending left")
-//    } else if (lastGesture == 1 && document.activeElement  == allNotifs[1] && !sentRight){
-//        sendRight(1);
-//        sentRight = true;
-//        console.log("sending right")
-//    } else if (lastGesture == 5 && document.activeElement  == allNotifs[2] && !pulled){
-//        pulled = true;
-//        fullSizeApp()
-//        console.log("full")
-//    } else if (lastGesture == 6 && !pushed && pulled){
-//        pushed == true;
-//        unfullSizeApp();
-//        console.log("unfull")
-//    }
+
+    if (lastGesture == 5 && statemachine == 0){
+        pullEmail()
+        statemachine += 1;
+    } else if (lastGesture == 6 && statemachine == 1){
+        pushEmail()
+        statemachine += 1;
+    } else if (lastGesture == 1 && statemachine == 2){
+        tiltThread()
+        statemachine += 1;
+    } else if (lastGesture == 3 && statemachine == 3){
+        untiltThread()
+        statemachine += 1;
+    }  else if (lastGesture == 8 && statemachine > 3){
+        if (focusRegion == 0 || focusRegion == 3){
+            kickLeft(focusRegion);
+            statemachine += 1;
+        }
+    }
 
 
     // Reset the last gesture var if we triggered on it
@@ -275,47 +305,6 @@ function gestDetectLoop(){
 
 
 
-function sendLeft(i){
-    allNotifs[i].style.animation = "slideoutleft 1s forwards";
-    setTimeout(() => allNotifs[i].hidden = true, 1200);
-
-    for (thing of allNotifs.slice(i+1)){
-        thing.style.animation = "slideup 1s forwards";
-//        setTimeout(() => thing.style.top = "0px", 1300);
-//        thing.style.animation = "slideup 1s";
-//        setTimeout(() => thing.style.top = "0px", 1000);
-    }
-}
-
-function sendRight(i){
-    allNotifs[i].style.animation = "slideoutright 1s forwards";
-    setTimeout(() => allNotifs[i].hidden = true, 999);
-
-    setTimeout(() => {
-        notifHeight = 130;
-        addNotif(apmuspath, 0);
-        }, 1500);
-}
-
-
-//var appIm = document.createElement("img");
-//appIm.setAttribute("class", "fullApp");
-//
-//appIm.setAttribute("src", apmus);
-//appIm.width = window.innerWidth-2;
-//appIm.style.top = "0px";
-//appIm.height = window.innerWidth*2391/1170;
-//appIm.style.position='absolute';
-
-function fullSizeApp(){
-    document.body.append(appIm);
-    setTimeout(() => allNotifs[2].hidden=true, 1000)
-}
-
-function unfullSizeApp(){
-    appIm.style.animation = "unbloomImage .2s forwards";
-}
-//fullSizeApp();
 
 
 // JS on the HTML page calls notifstarter, which calls p5js, which calls startnotifloop. Whew!
