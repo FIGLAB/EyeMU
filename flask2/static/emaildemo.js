@@ -66,13 +66,13 @@ function createFoot(){
     // Fix top every once in a while
     setInterval(() => {
         foot.style.top = window.innerHeight-foot.height + "px";
-    }, 50);
+    }, 1000);
 }
 
-
-emailArr = [];
+var emailHeight = 100;
+var emailArr = [];
 function createEmail(i){
-    emailHeight = 89;
+
 //    startX = header.offsetHeight;
     startX = 120;
 
@@ -80,37 +80,70 @@ function createEmail(i){
     email.setAttribute("src", emailPaths[i]);
     email.width = window.innerWidth;
     email.style.position = "absolute";
+    email.style.zIndex = 1;
     email.style.top = (startX + i*emailHeight) + "px";
+    email.style.left = "0px";
+
+    // Set transitions
+    email.style.transition = "all 1s";
+
     document.body.append(email)
     emailArr.push(email)
 }
 
 
+function kickLeft(i){
+    emailArr[i].style.transform += " translateX(700px) ";
+    emailArr[i].style.opacity = 0;
+
+    for (let j = i+1; j < emailArr.length; j++){
+        emailArr[j].style.transform += " translateY(-" + emailHeight + "px) ";
+    }
+}
+
+function kickRight(i){
+    emailArr[i].style.transform += " translateX(-700px) ";
+    emailArr[i].style.opacity = 0;
+
+    for (let j = i+1; j < emailArr.length; j++){
+        emailArr[j].style.transform += " translateY(-" + emailHeight + "px) ";
+    }
+}
+
+function pullEmail(){
+    // Create the tech view, make it transition to scale 1 from zero.
+    document.body.append(bigEmail);
+    setTimeout(() => bigEmail.style.transform = "scale(1,1) translateY(200px)", 100);
+}
+
+function pushEmail(){
+}
+
+
+var bigEmail
 function startEmailLoop(){
 //    // Add header and footer to head and foot
     createHead();
     createFoot();
 
+    // Create big email
+    bigEmail = document.createElement("img");
+    bigEmail.src = bigTechNewsPath;
+    bigEmail.style.top = 0;
+    bigEmail.style.left = 0;
+    bigEmail.style.position = "absolute";
+    bigEmail.style.zIndex = 5;
+    bigEmail.width = window.innerWidth;
+    bigEmail.style.transition = "all .5s";
+    bigEmail.style.transform = "scale(0,0) translateY(-200px)";
+
 
     // Add emails
-
     for (let i of Array(7).keys()){
         createEmail(i);
     }
 
     document.body.style.zoom = "1";
-
-
-//    let header = document.createElement("img");
-//
-//    header.setAttribute("src", impath);
-//    header.setAttribute("tabindex", 0);
-//    notification_elem.width = window.innerWidth - 12*2;
-//    notification_elem.height = notifHeight;
-//    notification_elem.style.top = (notifHeight+10)*i + "px";
-//    notification_elem.style.position='absolute';
-
-
     gestDetectLoop();
 }
 
@@ -168,23 +201,6 @@ function gestDetectLoop(){
 }
 
 
-function addNotif(impath, i){
-    let notification_elem = document.createElement("img");
-
-    notification_elem.setAttribute("class", "top_notif");
-
-    notification_elem.setAttribute("src", impath);
-    notification_elem.setAttribute("tabindex", 0);
-    notification_elem.width = window.innerWidth - 12*2;
-    notification_elem.height = notifHeight;
-    notification_elem.style.top = (notifHeight+10)*i + "px";
-    notification_elem.style.position='absolute';
-
-    // Log and add notification to body in a few seconds
-    allNotifs.push(notification_elem);
-    setTimeout(() => document.body.append(notification_elem), 1500*(i+1));
-    return notification_elem
-}
 
 
 function sendLeft(i){
