@@ -39,7 +39,7 @@ emailPaths = emailPaths.map((x) => startString + x)
 var bigTechNewsPath = startString + "technews.png";
 var inboxFoot = startString + "inboxfooter.png";
 var inboxHead = startString + "inboxheader.png";
-var thread = startString + "thread.png";
+var threadPath = startString + "thread.png";
 
 
 var header
@@ -66,11 +66,12 @@ function createFoot(){
     // Fix top every once in a while
     setInterval(() => {
         foot.style.top = window.innerHeight-foot.height + "px";
-    }, 1000);
+    }, 100);
 }
 
 var emailHeight = 100;
 var emailArr = [];
+var triangleArr = [];
 function createEmail(i){
 
 //    startX = header.offsetHeight;
@@ -85,23 +86,36 @@ function createEmail(i){
     email.style.left = "0px";
 
     // Set transitions
-    email.style.transition = "all 1s";
+    email.style.transition = "all .5s";
 
     document.body.append(email)
     emailArr.push(email)
+
+    // Create drop down triangles
+    let tri = document.createElement("div");
+    tri.classList.add("rtriangle");
+    tri.style.left = "9px";
+    tri.style.top = (startX + i*emailHeight + emailHeight*.625) + "px";
+    document.body.append(tri);
+    triangleArr.push(tri);
+
+
 }
 
 
-function kickLeft(i){
+function kickRight(i){
     emailArr[i].style.transform += " translateX(700px) ";
     emailArr[i].style.opacity = 0;
+    triangleArr[i].style.transform += " translateX(700px) ";
+    triangleArr[i].style.opacity = 0;
 
     for (let j = i+1; j < emailArr.length; j++){
         emailArr[j].style.transform += " translateY(-" + emailHeight + "px) ";
+        triangleArr[j].style.transform += " translateY(-" + emailHeight + "px) ";
     }
 }
 
-function kickRight(i){
+function kickLeft(i){
     emailArr[i].style.transform += " translateX(-700px) ";
     emailArr[i].style.opacity = 0;
 
@@ -112,15 +126,55 @@ function kickRight(i){
 
 function pullEmail(){
     // Create the tech view, make it transition to scale 1 from zero.
-    document.body.append(bigEmail);
-    setTimeout(() => bigEmail.style.transform = "scale(1,1) translateY(200px)", 100);
+//    setTimeout(() => bigEmail.style.transform = "scale(1.0,1.0)", 300);
+    bigEmail.style.transform = "scale(1.0)";
+    bigEmail.style.opacity = 1.0;
 }
 
 function pushEmail(){
+    bigEmail.style.transform = "scale(0.1) translateY(-1000px)";
+    bigEmail.style.opacity = 0.0;
+    emailArr[2].src = startString + "email2_read.png";
+}
+
+function tiltThread(){
+    // Eventually make the email read
+    setTimeout(() => emailArr[1].src = startString + "email1_read.png");
+
+    // Slide the rest of the emails down
+    for (let j = 2; j < emailArr.length; j++){
+        emailArr[j].style.transform += " translateY(" + 350 + "px) ";
+//        triangleArr[j].style.transition =
+        triangleArr[j].style.transform += " translateY(" + 350 + "px) ";
+    }
+
+    // Show the thread, rotate the triangle
+    triangleArr[1].style.transform += " rotate(90deg)";
+    thread.style.top = (emailArr[1].offsetHeight + emailArr[1].offsetTop) + "px";
+    thread.style.opacity = 1;
+    thread.style.transform = "scaleY(1)";
 }
 
 
+function untiltThread(){
+    // Slide the rest of the emails back up
+    for (let j = 2; j < emailArr.length; j++){
+        emailArr[j].style.transform += " translateY(-" + 350 + "px) ";
+//        triangleArr[j].style.transition =
+        triangleArr[j].style.transform += " translateY(-" + 350 + "px) ";
+    }
+
+    // Show the thread, rotate the triangle
+    triangleArr[1].style.transform += " rotate(-90deg)";
+//    thread.style.top = (emailArr[1].offsetHeight + emailArr[1].offsetTop) + "px";
+    thread.style.opacity = 0;
+    thread.style.transform = "scaleY(0)";
+}
+
+
+
 var bigEmail
+var thread
 function startEmailLoop(){
 //    // Add header and footer to head and foot
     createHead();
@@ -135,13 +189,31 @@ function startEmailLoop(){
     bigEmail.style.zIndex = 5;
     bigEmail.width = window.innerWidth;
     bigEmail.style.transition = "all .5s";
-    bigEmail.style.transform = "scale(0,0) translateY(-200px)";
+    bigEmail.style.transform = "scale(0.1)";
+    bigEmail.style.opacity = 0.0;
+    document.body.append(bigEmail);
+
 
 
     // Add emails
     for (let i of Array(7).keys()){
         createEmail(i);
     }
+
+
+    // Create thread
+    thread = document.createElement("img");
+    thread.src = threadPath;
+    thread.style.left = window.innerWidth/8 + "px";
+    thread.style.top = (emailArr[1].offsetHeight + emailArr[1].offsetTop) + "px";
+    thread.style.position = "absolute";
+    thread.width = window.innerWidth*7/8;
+    thread.style.transition = "all 0.5s";
+    thread.style.transform = "scaleY(0)";
+    thread.style.transformOrigin = "0% 0%";
+    thread.style.opacity = 0.0;
+    document.body.append(thread);
+
 
     document.body.style.zoom = "1";
     gestDetectLoop();

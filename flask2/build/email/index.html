@@ -222,50 +222,19 @@
 
 
 
+   .rtriangle {
+      width: 0;
+      height: 0;
+      position: absolute;
+      z-index: 3;
+      transition: all .5s;
 
-    @keyframes slideinbottom{
-        from{
-            transform: translate(0px, 800px);
-            opacity: 0;
-        }
+
+      border-top: 6px solid transparent;
+      border-left: 10.8px solid green;
+      border-bottom: 6px solid transparent;
     }
 
-    @keyframes slideoutbottom{
-        to{
-            transform: translate(0px, 800px);
-            opacity: 0;
-        }
-    }
-
-    @keyframes slideoutleft{
-        to{
-            transform: translate(-600px) ;
-            opacity: 0;
-        }
-    }
-
-    @keyframes slideoutright{
-        from{
-            transform: translate(0px);
-        }
-        to{
-            transform: translate(600px);
-            opacity: 0;
-        }
-    }
-
-    @keyframes slideup{
-        to{
-            transform: translate(0px, -94px);
-        }
-    }
-
-
-    @keyframes slideintop {
-        from {
-            transform: translate(0px, -200px) ;
-        }
-    }
 
 </style>
 
