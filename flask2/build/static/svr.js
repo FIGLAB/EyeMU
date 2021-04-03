@@ -256,9 +256,13 @@ function showDebug(){
             if (prediction.faceInViewConfidence  > .9 && abs(faceGeom.curYaw) < .3){
                 headLookingDisplay.style.color = 'green';
                 headLookingDisplay.innerHTML = "Looking at screen";
+                elem = document.getElementById("dotelem");
+                elem.hidden = false;
             } else{
                 headLookingDisplay.style.color = 'red';
                 headLookingDisplay.innerHTML = "Looking away";
+                elem = document.getElementById("dotelem");
+                elem.hidden = true;
             }
 
 

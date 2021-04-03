@@ -120,6 +120,8 @@ const s = ( p ) => {
         p.fill( 0, 60, 90 );
         p.stroke(255);
 
+
+
         window.scrollBy(0,-1000); // Keep phone scrolled to bottom of page.
 
         if (done_with_training){
@@ -200,6 +202,7 @@ const s = ( p ) => {
                     eyeSelfie(false);
                     movingsTaken += 1;
                     console.log("eyeSelfie along line");
+                    console.log(performance.now());
                 }
 
                 // If destination point is reached, move to stationary capture
@@ -233,6 +236,7 @@ const s = ( p ) => {
                     if (p.frameCount % 3 == 0){ // take screenshot every N frames
                         eyeSelfie(false);
                         console.log("eyeSelfie at corner");
+                        console.log(performance.now());
                         stillsTaken += 1;
                     } // Write number of photo and draw circle going around
                     p.textSize(20);
