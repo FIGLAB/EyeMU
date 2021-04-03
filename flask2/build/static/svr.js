@@ -124,7 +124,8 @@ async function runSVRlive(){
     curPred[1] = Math.max(edge, Math.min(1-edge, curPred[1]))
 
 //    drawPrediction(curPred);
-    setTimeout(runSVRlive, 100);
+    setTimeout(runSVRlive, 10);
+
 }
 
 var w_op = [100/10, 100/2, 9*100/10];

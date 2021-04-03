@@ -144,7 +144,7 @@
 <script src="/static/svr.js"></script>
 <script src="/static/collectioncolor.js"></script>
 <script src="/static/livegestandgaze.js"></script>
-<script src="/static/emaildemo.js"></script>
+<script src="/static/homescreendemo.js"></script>
 
 
 <!--Other ML library-->
@@ -157,27 +157,31 @@
 
     // Wait until after the body loads before adding elements to it.
     document.addEventListener("DOMContentLoaded", function(event) {
-        emailStarter();
+        homescreenStarter();
     })
 
 </script>
 
 <style>
-
-   .rtriangle {
-      width: 0;
-      height: 0;
+    .dot {
+      height: 2px;
+      width: 2px;
+      background-color: #ff0000;
+      border-radius: 50%;
       position: absolute;
-      z-index: 3;
-      transition: all .5s;
-
-
-      border-top: 6px solid transparent;
-      border-left: 10.8px solid green;
-      border-bottom: 6px solid transparent;
     }
 
+    .icon{
+        height: 64px;
+        width: 64px;
+        background-color:#00000000;
+        border-radius: 20px;
+        position: absolute;
+        z-index: 2;
+        border: 6px solid #00000000;
 
+        transition: all .3s;
+    }
 </style>
 
 

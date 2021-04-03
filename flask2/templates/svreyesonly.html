@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block headextra %}
+
+<!-- Tensorflow core, model, and backend-->
+<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>-->
+<!-- TFjs version 2.7 local-->
+<script src="{{url_for('static', filename='tf.min.js')}}"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
+
+<!-- Javascript specific to this page -->
+<script src="{{url_for('static', filename='ML.js')}}"></script>
+<script src="{{url_for('static', filename='fileIO.js')}}"></script>
+<script src="{{url_for('static', filename='svr.js')}}"></script>
+<script src="{{url_for('static', filename='collectioncolor.js')}}"></script>
+<script src="{{url_for('static', filename='accel.js')}}"></script>
+<!--<script src="{{url_for('static', filename='livetest.js')}}"></script>-->
+
+
+<!--Other ML library-->
+<!--<script src="http://mlweb.loria.fr/ml.js"></script>-->
+<script src="{{url_for('static', filename='mlweb.js')}}"></script>
+
+<script>
+    main();
+    showDebug();
+</script>
+
+{% endblock %}
+
+
+{% block body %}
+
+<div id="main">
+    <button id="accelPermsButton" onclick="getAccel()">Get Accel</button>
+    <canvas hidden id="eyecache"></canvas>
+
+    <div hidden>
+        <button id="regtoggle"  class="widebutton" onclick="regr_class_toggle()" style="vertical-align: middle; margin-bottom:10px; background:#2196F3; width:100vw;"><h4>Classification</h4></button>
+</div>
+
+
+    <video hidden autoplay muted playsinline id="video"  style="
+              -webkit-transform: scaleX(-1);
+              transform: scaleX(-1);
+              visibility: hidden;
+              width: auto;
+              height: auto;
+              ">
+            </video>
+
+</div>
+
+<!--<div class="targetdot" style="left:50%; top:50%;"></div>-->
+
+{% endblock %}

@@ -34,6 +34,11 @@ def uncalibtest():
 def svrtest():
     return render_template("svr.html")
 
+# Tests the original model, boosted with the regression model in real-time
+@app.route('/svreyesonly/')
+def svreyesonly():
+    return render_template("svreyesonly.html")
+
 ################# Prep for evaluating gaze + accel.
 # Gesture detection standalone
 @app.route('/gestures/')
@@ -99,6 +104,10 @@ def notif():
 @app.route('/email/')
 def email():
     return render_template("emaildemo.html")
+
+@app.route('/homescreen/')
+def homescreen():
+    return render_template("homescreendemo.html")
 
 
 @app.after_request

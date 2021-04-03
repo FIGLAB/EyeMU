@@ -1,23 +1,6 @@
 showPredictDot = false;
 
 
-var allNotifs = []
-var notifHeight = 110;
-
-var sentLeft = false;
-var sentRight = false;
-var pulled = false;
-var pushed = false;
-
-
-
-var defaultImPath = "../static/notifdemo/fakenotif2.png";
-var slackpath = "../static/notifdemo/slacknotif.png";
-var calpath = "../static/notifdemo/calendarnotif.png";
-var apmuspath = "../static/notifdemo/applemusicnotif.png";
-var apmus = "../static/notifdemo/apmus3.jpg";
-var twostart = [calpath, slackpath]
-
 
 var inboxImPath = "../static/emaildemo/maininboxblank.png";
 var threadImPath = "../static/emaildemo/thread.png";
@@ -305,8 +288,6 @@ function gestDetectLoop(){
 
 
 
-
-
 // JS on the HTML page calls notifstarter, which calls p5js, which calls startnotifloop. Whew!
 function emailStarter(){
     if (typeof(curPred) == 'undefined' || !AccelStarted){
@@ -326,16 +307,6 @@ function emailStarter(){
     setTimeout(liveloop, 200);
     setTimeout(startEmailLoop, 400);
 }
-
-
-
-
-
-
-
-
-
-
 
 
 
