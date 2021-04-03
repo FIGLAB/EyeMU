@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+
+
+    <title>GAZEL</title>
+
+<!-- For drawing the predicted output directly onto the HTML page with an icon-->
+<!-- CSS comments are not //, and if you put them in the <style> header they break it -->
+    <style>
+    .placeholderdot{
+        width: 90px;
+        height: 90px;
+        background-color: #ffab56;
+        border-radius: 50%;
+        position:fixed;
+    }
+
+    .targetdot{
+        width: 150px;
+        height: 150px;
+        background-color: #0e5cab;
+        border-radius: 50%;
+        position:fixed;
+    }
+
+    .predicdot{
+        width: 90px;
+        height: 90px;
+        background-color: #ffab56;
+        border-radius: 50%;
+        position:fixed;
+    }
+
+    .evalTarget{
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        position:fixed;
+        transform: translate(-50%, -50%);
+    }
+
+    .onscreenregion{
+        position:fixed;
+        background-color:#00003010;
+        left: 0px;
+        top: 0px;
+        right:100px;
+        bottom:100px;
+    }
+
+
+    .widebutton {
+        display: block;
+        width: 100%;
+        border: none;
+        background-color: #CCC;
+        padding: 14px 28px;
+        font-size: 16px;
+        cursor: pointer;
+        text-align: center;
+    }
+
+    hr {
+        background-color:#ccc;
+        height:1px;
+        border:none;
+    }
+    </style>
+
+    <!--  Style for eval: grid and list   -->
+    <style>
+    .griddiv {
+        width: 49%;
+        height: 24%;
+        margin:0.5%;
+        align-items: center;
+
+        display: inline-block;
+    }
+
+    .griddivtext{
+        text-align: center;
+        line-height: 100%;
+        font-size: 0.8em;
+
+        top: calc(50% - 1em);
+        position: relative;
+    }
+
+    .listdiv {
+        width: 99%;
+        height: calc((100% - 3%)/6);
+        margin: 0.5%;
+        align-items: center;
+
+        display: inline-block;
+    }
+
+    .listdivtext{
+        text-align: center;
+        line-height: 100%;
+        font-size: 0.8em;
+
+        top: calc(50% - 0.5em);
+        position: relative;
+    }
+
+
+    .galleryContainer {
+        height:100%;
+        width: 100%;
+        line-height: 0px;
+        align-item: center;
+        position: relative;
+
+        overflow: hidden;
+    }
+    </style>
+
+    <!--  Style for results display -->
+    <style>
+        table,td {
+            border: 1px solid black;
+        }
+    </style>
+
+    
+
+<!-- Tensorflow core, model, and backend-->
+<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>-->
+<!-- TFjs version 2.7 local-->
+<script src="/static/tf.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
+
+<!-- Javascript specific to this page -->
+<script src="/static/ML.js"></script>
+<script src="/static/fileIO.js"></script>
+<script src="/static/svreyesonly.js"></script>
+<script src="/static/collectioncolor.js"></script>
+<script src="/static/accel.js"></script>
+<!--<script src="/static/livetest.js"></script>-->
+
+
+<!--Other ML library-->
+<!--<script src="http://mlweb.loria.fr/ml.js"></script>-->
+<script src="/static/mlweb.js"></script>
+
+<script>
+    main();
+    showDebug();
+</script>
+
+
+</head>
+<body style="background-color:aliceblue; font-family: Verdana, sans-serif;">
+
+
+<div id="main">
+    <button id="accelPermsButton" onclick="getAccel()">Get Accel</button>
+    <canvas hidden id="eyecache"></canvas>
+
+    <div hidden>
+        <button id="regtoggle"  class="widebutton" onclick="regr_class_toggle()" style="vertical-align: middle; margin-bottom:10px; background:#2196F3; width:100vw;"><h4>Classification</h4></button>
+</div>
+
+
+    <video hidden autoplay muted playsinline id="video"  style="
+              -webkit-transform: scaleX(-1);
+              transform: scaleX(-1);
+              visibility: hidden;
+              width: auto;
+              height: auto;
+              ">
+            </video>
+
+</div>
+
+<!--<div class="targetdot" style="left:50%; top:50%;"></div>-->
+
+
+</body>
+</html>
