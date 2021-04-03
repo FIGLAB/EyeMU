@@ -175,11 +175,7 @@ function showDebug(){
         return;
     }
 
-
-
     setTimeout(() => {
-
-
         dotelem = document.createElement("div");
         dotelem.setAttribute("class", "predicdot");
         dotelem.id = "dotelem";
@@ -230,47 +226,74 @@ function showDebug(){
         document.body.append(accelDisplay);
 
 
-        headPresentDisplay = document.createElement("h2");
-        headPresentDisplay.style.position = "absolute";
-        headPresentDisplay.style.top = Math.trunc(window.innerHeight/3.4) + "px";
-        headPresentDisplay.style.left = "50px";
-        headPresentDisplay.style.fontSize = "5em";
+        var markovNodes = [];
+        for (i of [1,2,3]){
+            markovNodes.push(makeTextDisplay());
+        }
 
-        headLookingDisplay = document.createElement("h2");
-        headLookingDisplay.style.position = "absolute";
-        headLookingDisplay.style.top = Math.trunc(window.innerHeight/2.8) + "px";
-        headLookingDisplay.style.left = "50px";
-        headLookingDisplay.style.fontSize = "5em";
-
-        document.body.append(headPresentDisplay);
-        document.body.append(headLookingDisplay);
-
+        xs = curPred.map((e) => e[0]);
+        ys = curPred.map((e) => e[1]);
         setInterval(() => {
-            if (prediction.faceInViewConfidence > .9){
-                headPresentDisplay.style.color = 'green';
-                headPresentDisplay.innerHTML = "Face present";
-            } else {
-                headPresentDisplay.style.color = 'red';
-                headPresentDisplay.innerHTML = "Face not present";
+            let truthArr = [prediction.faceInViewConfidence > .9,
+                            abs(faceGeom.curYaw) < .3,
+                            (Math.max(xs) - Math.min(xs)) < .4];
+
+            successText = ["User Present: True",
+                           "<br>User Looking At Screen: True",
+                           "<br><br>Fixated On Target: True<br>Motion Gestures: Running"]
+            failText = ["User Present: False",
+                           "<br>User Looking At Screen: False",
+                           "<br><br>Fixated On Target: False<br>Motion Gestures: Paused"]
+
+            for (i of [0,1,2]){
+                if (truthArr.slice(0,i+1).every((x) => x)){ // If true up to here,
+                    markovNodes[i].style.color = 'green';
+                    markovNodes[i].innerHTML = successText[i];
+                } else{
+                    markovNodes[i].style.color = 'red';
+                    markovNodes[i].innerHTML = failText[i];
+                }
             }
 
-            if (prediction.faceInViewConfidence  > .9 && abs(faceGeom.curYaw) < .3){
-                headLookingDisplay.style.color = 'green';
-                headLookingDisplay.innerHTML = "Looking at screen";
-                elem = document.getElementById("dotelem");
-                elem.hidden = false;
-            } else{
-                headLookingDisplay.style.color = 'red';
-                headLookingDisplay.innerHTML = "Looking away";
-                elem = document.getElementById("dotelem");
-                elem.hidden = true;
-            }
 
-
-
+//            if (truthArr[0]){ // Face in view
+//                markovNodes[0].style.color = 'green';
+//                markovNodes[0].innerHTML = "Face present";
+//            }
+//
+//            if (prediction.faceInViewConfidence > .9){
+//                headPresentDisplay.style.color = 'green';
+//                headPresentDisplay.innerHTML = "Face present";
+//            } else {
+//                headPresentDisplay.style.color = 'red';
+//                headPresentDisplay.innerHTML = "Face not present";
+//            }
+//
+//            if (prediction.faceInViewConfidence  > .9 && abs(faceGeom.curYaw) < .3){
+//                headLookingDisplay.style.color = 'green';
+//                headLookingDisplay.innerHTML = "Looking at screen";
+//                elem = document.getElementById("dotelem");
+//                elem.hidden = false;
+//            } else{
+//                headLookingDisplay.style.color = 'red';
+//                headLookingDisplay.innerHTML = "Looking away";
+//                elem = document.getElementById("dotelem");
+//                elem.hidden = true;
+//            }
         }, 50);
 
     }, 500);
+}
+
+function makeTextDisplay(){
+    let tmp = document.createElement("h2");
+    tmp.style.position = "absolute";
+    tmp.style.top = Math.trunc(window.innerHeight/3.6) + "px";
+    tmp.style.left = "50px";
+    tmp.style.fontSize = "4em";
+
+    document.body.append(tmp);
+    return tmp;
 }
 
 
@@ -282,13 +305,17 @@ async function continualCopy(){
 //    console.log("yea");
     facectx.drawImage(videoCanvas, 0,0, videoCanvas.width, videoCanvas.height,
                                     0, 0, faceCanvas.width, faceCanvas.height);
+
+
     facectx.fillStyle = "cyan";
-    facectx.beginPath();
-//facectx.clearRect(0,0,faceCanvas.width,faceCanvas.height);
-    for (i of prediction.scaledMesh){
+
+    if (prediction.faceInViewConfidence > .9){
         facectx.beginPath();
-        facectx.ellipse(i[0]*factor, i[1]*factor, 5, 5, 0,0,6.28);
-        facectx.fill();
+        for (i of prediction.scaledMesh){
+            facectx.beginPath();
+            facectx.ellipse(i[0]*factor, i[1]*factor, 5, 5, 0,0,6.28);
+            facectx.fill();
+        }
     }
 
 

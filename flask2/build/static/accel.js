@@ -168,9 +168,13 @@ function updateText(alpha, beta, gamma){
     const elem = document.getElementById("curOrientation")
     if (elem != null){
 
-        elem.innerHTML = "Z rotation: " + z_delta + "<br>" +
-                "Front-to-back rotation: " + fb_delta + "<br>" +
-                "Left-to-right rotation: " + lr_delta;
+//        elem.innerHTML = "Z rotation: " + z_delta + "<br>" +
+//                "Front-to-back rotation: " + fb_delta + "<br>" +
+//                "Left-to-right rotation: " + lr_delta;
+        var rnd = (x) => (x).toFixed(2);
+        elem.innerHTML = "Gyro: (" + rnd(z_delta) + ", " +
+                rnd(fb_delta) + ", " +
+                rnd(lr_delta) + ")";
     }
 }
 

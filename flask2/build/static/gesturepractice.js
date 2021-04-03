@@ -51,36 +51,36 @@ function createGalleryElems(){
     let yea = document.createElement("h1");
     yea.style.textAlign = "center";
     yea.style.lineHeight = "100%";
-    yea.innerHTML = "&nbsp<br>&nbsp<br> Perform a gesture.";
+//    yea.innerHTML = "&nbsp<br>&nbsp<br> Perform a gesture.";
     galleryDiv.append(yea);
 
     // Add button to download gesture data
-    let tmpbut1 = document.createElement("button");
-    tmpbut1.addEventListener('click', function(){
-        var link = document.createElement('a');
-        link.href = makeTextFile(JSON.stringify(gestureHistories));
-        link.target = '_blank';
-        link.download = "gazel_gesturetrainer.json";
-        link.click();
-    });
-    tmpbut1.style.height = "40px";
-    tmpbut1.innerHTML = "Download Results";
-
-    // end trial button
-        let tmpbut2 = document.createElement("button");
-    tmpbut2.addEventListener('click', function(){
-        gestureHistories.push(exposeArrays);
+//    let tmpbut1 = document.createElement("button");
+//    tmpbut1.addEventListener('click', function(){
 //        var link = document.createElement('a');
 //        link.href = makeTextFile(JSON.stringify(gestureHistories));
 //        link.target = '_blank';
 //        link.download = "gazel_gesturetrainer.json";
 //        link.click();
-    });
-    tmpbut2.style.height = "40px";
-    tmpbut2.innerHTML = "End trial and log data";
-
-    galleryDiv.append(tmpbut1);
-    galleryDiv.append(tmpbut2);
+//    });
+//    tmpbut1.style.height = "40px";
+//    tmpbut1.innerHTML = "Download Results";
+//
+//    // end trial button
+//        let tmpbut2 = document.createElement("button");
+//    tmpbut2.addEventListener('click', function(){
+//        gestureHistories.push(exposeArrays);
+////        var link = document.createElement('a');
+////        link.href = makeTextFile(JSON.stringify(gestureHistories));
+////        link.target = '_blank';
+////        link.download = "gazel_gesturetrainer.json";
+////        link.click();
+//    });
+//    tmpbut2.style.height = "40px";
+//    tmpbut2.innerHTML = "End trial and log data";
+//
+//    galleryDiv.append(tmpbut1);
+//    galleryDiv.append(tmpbut2);
 
     // debug variables
     a = galleryDiv
@@ -157,6 +157,11 @@ function newEvalGrid(){
     // Populate the screen with the boxes, and hide them
     createGalleryElems();
     toggleHide();
+
+    document.body.style.backgroundColor = "white";
+//    document.body.style.color = "darkgreen";
+    document.body.style.color = "#025020";
+
 
     // Create trialList if it doesn't exist yet
     if (!localStorage.getItem('trial_list')){
@@ -262,7 +267,8 @@ function startTrial(){
     targetGesture = trialList[trialNum][0];
     targetSquare = trialList[trialNum][1];
 
-    textElem.innerHTML = "Starting...";
+//    textElem.innerHTML = "Starting...";
+    textElem.innerHTML = "";
 
         // Start the trial after showing user target info
     // Delay start by less after a few trials
@@ -361,7 +367,8 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
     toggleHide();
     textElem = document.getElementById("trialdisplay");
     textElem.hidden = false;
-    textElem.innerHTML = "<br>Tap to continue<hr><br>";
+//    textElem.innerHTML = "<br>Tap to continue<hr><br>";
+    textElem.innerHTML = "<br><br><br>";
 
     if (detected[0] == -1){ // If no gesture triggered (timed out)
     } else{
@@ -449,7 +456,10 @@ function trialEndHandler(detected, target, histories){ // Both in [gestures, seg
         // Pull out eye and gesture prediction
         let segment = detected[1];
         let displayText = gestureNames[detectedGesture];
-        textElem.innerHTML += "<br><br>Detected Gesture: " + displayText;
+//        textElem.innerHTML += "<br><br>Detected Gesture: " + displayText;
+        textElem.innerHTML += displayText;
+
+        setTimeout(startTrial, 1400);
 
         // Debug output to console
         console.log("Gaze Prediction: ", segment);
