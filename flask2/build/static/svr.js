@@ -168,6 +168,9 @@ async function drawTargetDot(){
     setTimeout(drawTargetDot, 500);
 }
 
+
+var markovNodes;
+var eyeHist = [];
 function showDebug(){
     if (typeof(videoCanvas) == 'undefined'){
         console.log("showing debug failed since no videoCanvas, restarting");
@@ -191,10 +194,11 @@ function showDebug(){
 
         // Draw head image onto screen
         faceCanvas = document.createElement("canvas");
-        faceCanvas.width = 720;
-        faceCanvas.height = 960;
+        faceCanvas.width = 672;
+        faceCanvas.height = 960/720*faceCanvas.width;
         faceCanvas.style.position = 'absolute';
-        faceCanvas.style.top =  (window.innerHeight - faceCanvas.height + 140) + "px";
+//        faceCanvas.style.top =  (window.innerHeight - faceCanvas.height + 140) + "px";
+        faceCanvas.style.top =  400 + "px";
         faceCanvas.style.left = (window.innerWidth-faceCanvas.width)/2 + "px";
         faceCanvas.style.transform = "scaleX(-1)";
         facectx = faceCanvas.getContext("2d");
@@ -208,7 +212,7 @@ function showDebug(){
         eyeCanvas.height = factor*2*iny + 10;
         eyeCanvas.style.position = 'absolute';
         eyeCanvas.style.left = (window.innerWidth-eyeCanvas.width)/2 + "px";
-        eyeCanvas.style.top = 50 + "px";
+        eyeCanvas.style.top = 0 + "px";
         eyeCanvas.style.transform = "scaleX(-1)";
 
         eyectx = eyeCanvas.getContext("2d");
@@ -220,30 +224,35 @@ function showDebug(){
         accelDisplay = document.createElement("p");
         accelDisplay.id = "curOrientation";
         accelDisplay.style.position = "absolute";
-        accelDisplay.style.top = Math.trunc(window.innerHeight/4.2) + "px";
+        accelDisplay.style.top = Math.trunc(window.innerHeight/5.5) + "px";
         accelDisplay.style.left = "50px";
         accelDisplay.style.fontSize = "2em";
         document.body.append(accelDisplay);
 
 
-        var markovNodes = [];
+        markovNodes = [];
         for (i of [1,2,3]){
             markovNodes.push(makeTextDisplay());
         }
 
-        xs = curPred.map((e) => e[0]);
-        ys = curPred.map((e) => e[1]);
+
         setInterval(() => {
+            // Update eye history
+            eyeHist.push([...curPred]);
+            if (eyeHist.length > 25) eyeHist.shift();
+            xs = eyeHist.map((e) => e[0]);
+            ys = eyeHist.map((e) => e[1]);
+
             let truthArr = [prediction.faceInViewConfidence > .9,
                             abs(faceGeom.curYaw) < .3,
-                            (Math.max(xs) - Math.min(xs)) < .4];
+                  ((Math.max(...xs) - Math.min(...xs)) < .3) && ((Math.max(...ys) - Math.min(...ys)) < .3)];
 
             successText = ["User Present: True",
-                           "<br>User Looking At Screen: True",
-                           "<br><br>Fixated On Target: True<br>Motion Gestures: Running"]
+                           "<br>Looking At Screen: True",
+                           "<br><br><br>Fixated On Target: True<br>Motion Gestures: Running"]
             failText = ["User Present: False",
-                           "<br>User Looking At Screen: False",
-                           "<br><br>Fixated On Target: False<br>Motion Gestures: Paused"]
+                           "<br>Looking At Screen: False",
+                           "<br><br><br>Fixated On Target: False<br>Motion Gestures: Paused"]
 
             for (i of [0,1,2]){
                 if (truthArr.slice(0,i+1).every((x) => x)){ // If true up to here,
@@ -256,43 +265,37 @@ function showDebug(){
             }
 
 
-//            if (truthArr[0]){ // Face in view
-//                markovNodes[0].style.color = 'green';
-//                markovNodes[0].innerHTML = "Face present";
-//            }
-//
-//            if (prediction.faceInViewConfidence > .9){
-//                headPresentDisplay.style.color = 'green';
-//                headPresentDisplay.innerHTML = "Face present";
-//            } else {
-//                headPresentDisplay.style.color = 'red';
-//                headPresentDisplay.innerHTML = "Face not present";
-//            }
-//
-//            if (prediction.faceInViewConfidence  > .9 && abs(faceGeom.curYaw) < .3){
-//                headLookingDisplay.style.color = 'green';
-//                headLookingDisplay.innerHTML = "Looking at screen";
-//                elem = document.getElementById("dotelem");
-//                elem.hidden = false;
-//            } else{
-//                headLookingDisplay.style.color = 'red';
-//                headLookingDisplay.innerHTML = "Looking away";
-//                elem = document.getElementById("dotelem");
-//                elem.hidden = true;
-//            }
+            // Hide dot if not all proper
+            elem = document.getElementById("dotelem");
+//            elem = document.getElementById("dotelem").style.backgroundColor;
+            if (truthArr.every((x) => x)){
+                elem.hidden = false;
+                elem.style.backgroundColor = "green";
+            } else if (truthArr.slice(0,2).every((x) => x)){
+                elem.hidden = false;
+//                elem.style.backgroundColor = "#0e5cab";
+                elem.style.backgroundColor = "red";
+            } else {
+                elem.hidden = true;
+            }
+
         }, 50);
 
     }, 500);
 }
 
+
+
+var heightInc = 0;
 function makeTextDisplay(){
     let tmp = document.createElement("h2");
     tmp.style.position = "absolute";
-    tmp.style.top = Math.trunc(window.innerHeight/3.6) + "px";
+    tmp.style.top = (Math.trunc(window.innerHeight/2)  + 450 + heightInc) + "px";
     tmp.style.left = "50px";
     tmp.style.fontSize = "4em";
 
     document.body.append(tmp);
+    heightInc += 20;
     return tmp;
 }
 
@@ -308,7 +311,6 @@ async function continualCopy(){
 
 
     facectx.fillStyle = "cyan";
-
     if (prediction.faceInViewConfidence > .9){
         facectx.beginPath();
         for (i of prediction.scaledMesh){
@@ -317,8 +319,6 @@ async function continualCopy(){
             facectx.fill();
         }
     }
-
-
     requestAnimationFrame(continualCopy);
 }
 
