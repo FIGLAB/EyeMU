@@ -5,70 +5,6 @@ function dotViz(){
     showPredictDot = true;
 }
 
-// Zoo #2, reading a passage and you get a text notification. Bring closer to your face to see more information
-var initialHeadSize
-var notification_elem
-function zoomForMore(){
-
-    // Create base content in page
-    if (document.getElementsByTagName("p").length == 0){
-        // Create some content
-        contentElem = document.createElement("p");
-        contentElem.innerHTML = "There are these two young fish swimming along, and they happen to meet an older fish swimming the other way, who nods at them and says, “Morning, boys, how's the water?” And the two young fish swim on for a bit, and then eventually one of them looks over at the other and goes, “What the hell is water?”"
-        contentElem.innerHTML += "<br><img src='https://i.pinimg.com/236x/02/bb/f4/02bbf448aa65f7d261c8703f597e5884--clip-art.jpg'>"
-        contentElem.style.fontSize = "300%";
-        contentElem.style.margin = "5%";
-        document.body.append(contentElem)
-
-    }
-
-    if (rBB == undefined){
-        setTimeout(zoomForMore, 100);
-        return;
-    }
-
-    console.log("Zoom For More demo started")
-
-    // Create popup on screen
-    notification_elem = document.createElement("p");
-    notification_elem.setAttribute("class", "top_notif");
-    notification_elem.innerHTML = "1 New Notification from Messages"
-    notification_elem.style.fontSize = "150%"
-
-    setTimeout(() => document.body.append(notification_elem), 1000);
-
-    initialHeadSize = faceGeom.getGeom()[3]
-    zoomedOnce = false;
-    headBigger = false;
-    headBiggerPrev = false;
-    // Set up while loop to check headSize
-    setInterval(() => {
-        curHeadSize = faceGeom.getGeom()[3];
-        headBiggerPrev = headBigger
-        headBigger = curHeadSize > 1.5*initialHeadSize;
-
-        // If user's face is closer, make the banner bigger
-        if (headBiggerPrev != headBigger){
-            console.log("trigger change")
-
-            if (headBigger){
-                notification_elem.setAttribute("class", "top_notif_selected")
-                notification_elem.innerHTML = "1 New Notification from Messages <br> Jane: What's the name of that waffle shop on Craig Street?"
-                zoomedOnce = true;
-            } else if (zoomedOnce){
-                notification_elem.setAttribute("class", "top_notif_deselected")
-                notification_elem.innerHTML = "1 New Notification from Messages"
-            }
-        }
-
-    }, 100);
-}
-
-
-
-
-
-
 // Zoo #3, one-handed photo editing
 // 12/7 CLARIFICATION: I'm setting all the style in javascript so I can edit it more easily on my end. Should probably move to a CSS global, but this will never see the light of the public so w/e
 
@@ -92,6 +28,10 @@ function clickIm(a){
     a.style.transform += " scale(3.05)";
 
     document.body.style.backgroundColor = "black";
+
+
+    header.style.opacity = 0;
+    footer.style.opacity = 0;
 }
 function unclickIm(a){
     a.style.transform = "";
@@ -100,7 +40,9 @@ function unclickIm(a){
     a.style.filter = tmp;
 
     showAll()
-    document.body.style.backgroundColor = "lightgrey";
+    document.body.style.backgroundColor = "white";
+    header.style.opacity = 1;
+    footer.style.opacity = 1;
 }
 
 function createGalIm(i){
@@ -112,12 +54,12 @@ function createGalIm(i){
         a.style.zIndex = 1;
 
         let col = i % 3;
-        let margin = 1.5
+        let margin = 2
         let row = Math.trunc(i/3);
         a.width = Math.trunc(window.innerWidth/3 - margin*2/3);
         a.height = a.width;
-        a.style.left = col*margin + col*Math.trunc(window.innerWidth/3) + "px";
-        a.style.top = row*margin + row*a.width + "px";
+        a.style.left = col*margin + col*a.width + "px";
+        a.style.top = (89 + row*margin + row*a.width) + "px";
         a.style.transformOrigin = "top left";
 
 
@@ -161,6 +103,8 @@ function showAll(){
 var cur;
 var origScroll;
 var heightBounds;
+var header;
+var footer;
 function imageGallery(){
     if (rBB == undefined || !AccelStarted){
         console.log("rBB undefined, image gallery restarting")
@@ -176,10 +120,9 @@ function imageGallery(){
 //    "blur(0px) hue-rotate(0deg) sepia(60%) contrast(100%)",
 //    "blur(0px) hue-rotate(0deg) sepia(0%) contrast(250%)",];
     filterList = ["hue-rotate(0deg) sepia(0%) contrast(100%)",
-    "hue-rotate(0deg) sepia(0%) contrast(100%)",
-    "hue-rotate(180deg) sepia(0%) contrast(100%)",
-    "hue-rotate(0deg) sepia(60%) contrast(100%)",
-    "hue-rotate(0deg) sepia(0%) contrast(250%)",];
+    "hue-rotate(30deg) sepia(0%) contrast(100%)",
+    "hue-rotate(0deg) sepia(300%) contrast(100%)",
+    "hue-rotate(0deg) sepia(0%) contrast(150%)",];
     numFilters = filterList.length
 
     // Attach event handler to detect keypresses
@@ -212,31 +155,46 @@ function imageGallery(){
 //    galleryDiv.classList.toggle("galleryContainer");
 //    document.body.append(galleryDiv);
 
+    // set up header and footer
+    header = document.createElement("img");
+    header.src = "/static/imagegallery/header.jpg";
+    header.style.left = "0px";
+    header.style.top = "0px";
+    header.style.position = "absolute";
+    header.width = window.innerWidth;
+    header.style.transition = "all .2s";
+    header.style.zIndex = 4;
+    document.body.append(header);
+
+    footer = document.createElement("img");
+    footer.src = "/static/imagegallery/footer.png";
+    footer.width = window.innerWidth;
+    footer.style.top = window.innerHeight-footer.height + "px";
+    footer.style.left = 0;
+    footer.style.position = 'absolute';
+    footer.style.transition = "all .2s";
+    footer.style.zIndex = 4;
+    document.body.append(footer);
+
+    // Fix footer top every once in a while
+    setInterval(() => {
+        footer.style.top = window.innerHeight-footer.height + "px";
+    }, 100);
+
     // Add all images to the page
     galleryElements = [];
     elemsClicked = [];
     elemsFilters = [];
+    imageGalleryIms = ["1.jpg", "2.png","3.png","4.jpg","5.jpg","6.jpg","7.jpg","8.jpg","9.jpg","10.jpg","11.jpg","12.jpg","13.jpg","14.png","15.png", "16.png"]
 
-    imageGalleryIms = ["1.png", "2.png", "3.jpeg", "4.jpg", "5.png", "6.jpeg", "7.jpeg","8.jpeg"]
+
     for (let i = 0; i<imageGalleryIms.length; i++){
         createGalIm(i);
     }
 
-    // set up header
-    header = document.createElement("img");
-    calen.src = calendarPath;
-    calen.style.left = "-45px";
-    calen.style.top = "-345px";
-    calen.style.position = "absolute";
-    calen.width = window.innerWidth;
-    calen.style.opacity = 0;
-    calen.style.transition = "all 0.4s";
-    calen.style.transform = "scale(0.1)";
-    calen.style.zIndex = 4;
-    document.body.append(calen);
 
     // Set up body
-    document.body.style.backgroundColor = "#222222";
+    document.body.style.backgroundColor = "white";
     document.body.style.transition = "all .2s";
 
 
@@ -284,7 +242,7 @@ function gestDetectLoop(){
         x = Math.max(Math.min(x, 3), 0);
         y = Math.max(Math.min(y, 2), 0);
         focusRegion = [x,y];
-        console.log(x,y);
+//        console.log(x,y);
 
         if (!imClicked){
             let tmp = galleryElements[x + y * 3];

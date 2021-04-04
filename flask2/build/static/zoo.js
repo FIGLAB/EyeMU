@@ -92,6 +92,10 @@ function clickIm(a){
     a.style.transform += " scale(3.05)";
 
     document.body.style.backgroundColor = "black";
+
+
+    header.style.opacity = 0;
+    footer.style.opacity = 0;
 }
 function unclickIm(a){
     a.style.transform = "";
@@ -100,7 +104,9 @@ function unclickIm(a){
     a.style.filter = tmp;
 
     showAll()
-    document.body.style.backgroundColor = "lightgrey";
+    document.body.style.backgroundColor = "white";
+    header.style.opacity = 1;
+    footer.style.opacity = 1;
 }
 
 function createGalIm(i){
@@ -112,12 +118,12 @@ function createGalIm(i){
         a.style.zIndex = 1;
 
         let col = i % 3;
-        let margin = 1.5
+        let margin = 2
         let row = Math.trunc(i/3);
         a.width = Math.trunc(window.innerWidth/3 - margin*2/3);
         a.height = a.width;
-        a.style.left = col*margin + col*Math.trunc(window.innerWidth/3) + "px";
-        a.style.top = row*margin + row*a.width + "px";
+        a.style.left = col*margin + col*a.width + "px";
+        a.style.top = (89 + row*margin + row*a.width) + "px";
         a.style.transformOrigin = "top left";
 
 
@@ -161,6 +167,8 @@ function showAll(){
 var cur;
 var origScroll;
 var heightBounds;
+var header;
+var footer;
 function imageGallery(){
     if (rBB == undefined || !AccelStarted){
         console.log("rBB undefined, image gallery restarting")
@@ -176,10 +184,9 @@ function imageGallery(){
 //    "blur(0px) hue-rotate(0deg) sepia(60%) contrast(100%)",
 //    "blur(0px) hue-rotate(0deg) sepia(0%) contrast(250%)",];
     filterList = ["hue-rotate(0deg) sepia(0%) contrast(100%)",
-    "hue-rotate(0deg) sepia(0%) contrast(100%)",
-    "hue-rotate(180deg) sepia(0%) contrast(100%)",
-    "hue-rotate(0deg) sepia(60%) contrast(100%)",
-    "hue-rotate(0deg) sepia(0%) contrast(250%)",];
+    "hue-rotate(30deg) sepia(0%) contrast(100%)",
+    "hue-rotate(0deg) sepia(300%) contrast(100%)",
+    "hue-rotate(0deg) sepia(0%) contrast(150%)",];
     numFilters = filterList.length
 
     // Attach event handler to detect keypresses
@@ -212,18 +219,46 @@ function imageGallery(){
 //    galleryDiv.classList.toggle("galleryContainer");
 //    document.body.append(galleryDiv);
 
+    // set up header and footer
+    header = document.createElement("img");
+    header.src = "/static/imagegallery/header.jpg";
+    header.style.left = "0px";
+    header.style.top = "0px";
+    header.style.position = "absolute";
+    header.width = window.innerWidth;
+    header.style.transition = "all .2s";
+    header.style.zIndex = 4;
+    document.body.append(header);
+
+    footer = document.createElement("img");
+    footer.src = "/static/imagegallery/footer.png";
+    footer.width = window.innerWidth;
+    footer.style.top = window.innerHeight-footer.height + "px";
+    footer.style.left = 0;
+    footer.style.position = 'absolute';
+    footer.style.transition = "all .2s";
+    footer.style.zIndex = 4;
+    document.body.append(footer);
+
+    // Fix footer top every once in a while
+    setInterval(() => {
+        footer.style.top = window.innerHeight-footer.height + "px";
+    }, 100);
+
     // Add all images to the page
     galleryElements = [];
     elemsClicked = [];
     elemsFilters = [];
+    imageGalleryIms = ["1.jpg", "2.png","3.png","4.jpg","5.jpg","6.jpg","7.jpg","8.jpg","9.jpg","10.jpg","11.jpg","12.jpg","13.jpg","14.png","15.png", "16.png"]
 
-    imageGalleryIms = ["1.png", "2.png", "3.jpeg", "4.jpg", "5.png", "6.jpeg", "7.jpeg","8.jpeg"]
+
     for (let i = 0; i<imageGalleryIms.length; i++){
         createGalIm(i);
     }
 
 
-    document.body.style.backgroundColor ="lightgrey";
+    // Set up body
+    document.body.style.backgroundColor = "white";
     document.body.style.transition = "all .2s";
 
 
@@ -264,14 +299,14 @@ function gestDetectLoop(){
     // Focus the element that is in focus
     let focusRegion;
     if (typeof(localPreds) != "undefined"){
-        let eyeXY = getMeanEyeXY(localPreds.slice(3))
+        let eyeXY = getMeanEyeXY(localPreds.slice(6))
         let x = Math.trunc(eyeXY[0]*3);
         let y = Math.trunc((eyeXY[1]-.15)*5);
 
         x = Math.max(Math.min(x, 3), 0);
         y = Math.max(Math.min(y, 2), 0);
         focusRegion = [x,y];
-        console.log(x,y);
+//        console.log(x,y);
 
         if (!imClicked){
             let tmp = galleryElements[x + y * 3];
