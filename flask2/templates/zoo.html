@@ -15,6 +15,7 @@
 <script src="{{url_for('static', filename='accel.js')}}"></script>
 <script src="{{url_for('static', filename='svr.js')}}"></script>
 <script src="{{url_for('static', filename='collectioncolor.js')}}"></script>
+<script src="{{url_for('static', filename='livegestandgaze.js')}}"></script>
 <script src="{{url_for('static', filename='zoo.js')}}"></script>
 
 
@@ -34,153 +35,14 @@
 
 
 
-
-<!-- CSS for the text notification interaction -->
-<style>
-
-    :root {
-        --maxheight: 15%;
-    }
-
-    @keyframes getSmaller {
-        from {
-            left: 1%;
-            right: 1%;
-            top: 1%;
-            height: var(--maxheight);
-            background-color: #dcdcdcdd;
-            font-size: 400%;
-        }
-
-        to {
-            background-color: #dcdcdcaa;
-
-        }
-    }
-
-    @keyframes getBigger {
-        from {
-            left: 2%;
-            right: 2%;
-            top: 1%;
-            height: 5%;
-            background-color: #dcdcdcaa;
-            font-size: 300%;
-        }
-
-        to {
-            height: var(--maxheight);
-        }
-    }
-
-    .top_notif_deselected {
-        margin: 0;
-        padding: 2%;
-
-        left: 2%;
-        right: 2%;
-        height: 5%;
-        top: 1%;
-
-        font-size: 300% !important;
-
-        background-color: #dcdcdcaa;
-        border-radius: 15px;
-        position:fixed;
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
-
-        animation: getSmaller 1s;
-    }
-
-    .top_notif_selected {
-        margin: 0;
-        padding: 2%;
-
-        left: 1%;
-        right: 1%;
-        top: 1%;
-        height: var(--maxheight);
-
-        font-size: 400% !important;
-
-        background-color: #dcdcdcee;
-        border-radius: 15px;
-        position:fixed;
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
-        overflow: hidden;
-
-        animation-iteration-count: infinite;
-        animation: getBigger 1s;
-    }
-
-
-    .top_notif {
-        margin: 0;
-        padding: 2%;
-
-        left: 2%;
-        right: 2%;
-        height: 5%;
-        top: 1%;
-
-        font-size: 300% !important;
-
-        background-color: #dcdcdcaa;
-        border-radius: 15px;
-        position:fixed;
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
-
-        animation: slideintop 1s;
-    }
-
-
-    @keyframes slideintop {
-        from {
-            top: -10%;
-        }
-    }
-</style>
-
 <!-- CSS for Image Gallery interaction -->
 <style>
     .photogallery {
-        /*width: 32.333%;*/
-        width: 49%;
-        margin: 0.5%;
-        margin-bottom: 0.25%;
-        object-fit: contain;
-        outline: none;
-        position: relative;
-
-        top: 0px;
-        left: 0px;
-        bottom: 0px;
-        right: 0px;
-
         transition: all 0.4s ease;
     }
 
     .photogallery:focus {
-        /*width: 32.333%;*/
-        width: 49%;
-        margin: 0.5%;
-        margin-bottom: 0.25%;
-        object-fit: contain;
-        outline: none;
-
-        top: 0px;
-        left: 0px;
-        bottom: 0px;
-        right: 0px;
-
-        transition: all 0.4s ease;
-
-        border-radius: 5%;
-        z-index: 2;
-        transform: scale(1.2);
+        border-color: red;
     }
 
     .galleryContainer {

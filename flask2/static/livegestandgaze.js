@@ -18,6 +18,13 @@ var lastGesture = -1;
 
 // Main loop of the trial running gesture detection and eye segmentation
 function liveloop(){
+    // If no curPred, restart yourself
+    if (typeof(curPred) == "undefined"){
+        console.log("live loop failed in livegestandgaze, restarting");
+        setTimeout(liveloop, 500);
+        return;
+    }
+
     /////////////////////////////// Accel, head, and eye tracking
    // Accel gesture detection
     condensed_arrays = accelArrayHandler(orient_short_history);
