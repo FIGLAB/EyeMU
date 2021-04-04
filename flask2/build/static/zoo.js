@@ -5,72 +5,28 @@ function dotViz(){
     showPredictDot = true;
 }
 
-// Zoo #2, reading a passage and you get a text notification. Bring closer to your face to see more information
-var initialHeadSize
-var notification_elem
-function zoomForMore(){
-
-    // Create base content in page
-    if (document.getElementsByTagName("p").length == 0){
-        // Create some content
-        contentElem = document.createElement("p");
-        contentElem.innerHTML = "There are these two young fish swimming along, and they happen to meet an older fish swimming the other way, who nods at them and says, “Morning, boys, how's the water?” And the two young fish swim on for a bit, and then eventually one of them looks over at the other and goes, “What the hell is water?”"
-        contentElem.innerHTML += "<br><img src='https://i.pinimg.com/236x/02/bb/f4/02bbf448aa65f7d261c8703f597e5884--clip-art.jpg'>"
-        contentElem.style.fontSize = "300%";
-        contentElem.style.margin = "5%";
-        document.body.append(contentElem)
-
-    }
-
-    if (rBB == undefined){
-        setTimeout(zoomForMore, 100);
-        return;
-    }
-
-    console.log("Zoom For More demo started")
-
-    // Create popup on screen
-    notification_elem = document.createElement("p");
-    notification_elem.setAttribute("class", "top_notif");
-    notification_elem.innerHTML = "1 New Notification from Messages"
-    notification_elem.style.fontSize = "150%"
-
-    setTimeout(() => document.body.append(notification_elem), 1000);
-
-    initialHeadSize = faceGeom.getGeom()[3]
-    zoomedOnce = false;
-    headBigger = false;
-    headBiggerPrev = false;
-    // Set up while loop to check headSize
-    setInterval(() => {
-        curHeadSize = faceGeom.getGeom()[3];
-        headBiggerPrev = headBigger
-        headBigger = curHeadSize > 1.5*initialHeadSize;
-
-        // If user's face is closer, make the banner bigger
-        if (headBiggerPrev != headBigger){
-            console.log("trigger change")
-
-            if (headBigger){
-                notification_elem.setAttribute("class", "top_notif_selected")
-                notification_elem.innerHTML = "1 New Notification from Messages <br> Jane: What's the name of that waffle shop on Craig Street?"
-                zoomedOnce = true;
-            } else if (zoomedOnce){
-                notification_elem.setAttribute("class", "top_notif_deselected")
-                notification_elem.innerHTML = "1 New Notification from Messages"
-            }
-        }
-
-    }, 100);
-}
-
-
-
-
-
-
 // Zoo #3, one-handed photo editing
 // 12/7 CLARIFICATION: I'm setting all the style in javascript so I can edit it more easily on my end. Should probably move to a CSS global, but this will never see the light of the public so w/e
+
+
+var disText
+
+function flashText(text){
+//    console.log("before", disText.offsetWidth);
+    disText.innerHTML = text;
+//    console.log("after text", disText.offsetWidth);
+    disText.style.left = (window.innerWidth/2 - disText.offsetWidth/2) + "px";
+    disText.style.transition = "";
+    disText.style.opacity = 1;
+    console.log("visible'd");
+
+    setTimeout(()=>{
+        disText.style.transition = "all 1s cubic-bezier(.61,.03,.37,.14)";
+        disText.style.opacity = 0;
+        console.log("invisible'd");
+    }, 50);
+}
+
 
 function clickIm(a){
     // Remember initial y position
@@ -78,26 +34,26 @@ function clickIm(a){
 
     hideAll();
     a.style.opacity = 1;
-
     a.style.zIndex = 2;
     a.blur();
 
+
     a.style.transform = "";
     a.style.transform += "translateX(-" + a.offsetLeft + "px)";
-
     start = a.offsetTop
     end = (window.innerHeight - window.innerWidth)-2
-
     a.style.transform += " translateY(" + (end/2-start) + "px)";
     a.style.transform += " scale(3.05)";
 
+    setTimeout(() => a.style.transition = "", 200);
+
+    // Change document level details
     document.body.style.backgroundColor = "black";
-
-
     header.style.opacity = 0;
     footer.style.opacity = 0;
 }
 function unclickIm(a){
+    a.style.transition = "all .2s ease";
     a.style.transform = "";
     a.zIndex = 1;
     let tmp = a.style.filter;
@@ -109,37 +65,58 @@ function unclickIm(a){
     footer.style.opacity = 1;
 }
 
+
+var bordWidth = 3;
 function createGalIm(i){
+        // Set up path and transition stuff
         let a = document.createElement("img")
         a.src = "/static/imagegallery/" + imageGalleryIms[i];
         a.tabIndex = 1; // Allows the images to be focused
-        a.style.transition = "all .3s ease";
+        a.style.transition = "all .2s ease";
         a.style.position = "absolute";
         a.style.zIndex = 1;
 
+        // Set the position
         let col = i % 3;
-        let margin = 2
+        let margin = 3
         let row = Math.trunc(i/3);
         a.width = Math.trunc(window.innerWidth/3 - margin*2/3);
+//        a.width = Math.trunc(window.innerWidth/3 - margin*2/3) - bordWidth*2;
         a.height = a.width;
         a.style.left = col*margin + col*a.width + "px";
         a.style.top = (89 + row*margin + row*a.width) + "px";
+//        a.style.left = col*margin + col*(a.width + bordWidth*2) + "px";
+//        a.style.top = (89 + row*margin + row*(a.width + bordWidth*2)) + "px";
         a.style.transformOrigin = "top left";
+//        a.style.padding = bordWidth + "px";
+        a.style.outline = "none";
+        a.style.outlineOffset = (-bordWidth) + "px";
 
 
 
         a.onclick = () => {
-                            elemsClicked[i] = !elemsClicked[i];
-                            if (elemsClicked[i]){
-                                console.log(i, 'selected');
-                                clickIm(a);
-                            } else{
-                                console.log(i, 'deselected');
-                                unclickIm(a);
-                            }
+            elemsClicked[i] = !elemsClicked[i];
+            if (elemsClicked[i]){
+                console.log(i, 'selected');
+                clickIm(a);
+            } else{
+                console.log(i, 'deselected');
+                unclickIm(a);
+            }
+        };
 
-                          };
-//        galleryDiv.append(a);
+        // Add padding, decrease width, add border
+        a.onfocus = () => {
+            a.style.outline = bordWidth + "px solid red";
+        };
+//
+        a.onblur = () => {
+            a.style.outline = "none";
+        };
+
+
+
+
         document.body.append(a)
 
         galleryElements.push(a);
@@ -178,36 +155,25 @@ function imageGallery(){
     console.log("image gallery starting")
 
     // Create filter variables
-//    filterList = ["blur(0px) hue-rotate(0deg) sepia(0%) contrast(100%)",
-//    "blur(5px) hue-rotate(0deg) sepia(0%) contrast(100%)",
-//    "blur(0px) hue-rotate(180deg) sepia(0%) contrast(100%)",
-//    "blur(0px) hue-rotate(0deg) sepia(60%) contrast(100%)",
-//    "blur(0px) hue-rotate(0deg) sepia(0%) contrast(250%)",];
     filterList = ["hue-rotate(0deg) sepia(0%) contrast(100%)",
     "hue-rotate(30deg) sepia(0%) contrast(100%)",
-    "hue-rotate(0deg) sepia(300%) contrast(100%)",
+    "hue-rotate(0deg) sepia(100%) contrast(100%)",
     "hue-rotate(0deg) sepia(0%) contrast(150%)",];
+    filterNames = ["Original", "Color Swap", "Sepia", "Contrast Up"]
+
     numFilters = filterList.length
 
-    // Attach event handler to detect keypresses
-    document.body.onkeydown = (event) => {
-        console.log(event);
-        if (elemsClicked.some(elem => elem)){
-            // Find which painting is selected when the keypress happened
-            const selectedElemIndex = elemsClicked.findIndex(elem => elem)
-            console.log("currently selected", selectedElemIndex, "key is", event.key)
+    disText = document.createElement("p");
+    document.body.append(disText);
+    disText.innerHTML = "";
+    disText.style.position = "absolute";
+    disText.style.color = "white";
+    disText.style.fontSize = "2em";
+    disText.style.zIndex = 10;
+    disText.style.top = "10%";
+    disText.style.left = (window.innerWidth/2 - disText.offsetWidth/2) + "px";
+    disText.style.opacity = 0;
 
-            // If left or right arrow, change filter number
-            if (event.key == "ArrowLeft"){
-                elemsFilters[selectedElemIndex] = (elemsFilters[selectedElemIndex] + numFilters - 1) % numFilters;
-            } else if (event.key == "ArrowRight"){
-                elemsFilters[selectedElemIndex] = (elemsFilters[selectedElemIndex] + numFilters + 1) % numFilters;
-            }
-
-            // Apply the filter to that element's CSS
-            galleryElements[selectedElemIndex].style.filter = filterList[elemsFilters[selectedElemIndex]];
-        }
-    };
 
     // Reset the focused image when user scrolls
     window.onscroll = function (e) {
@@ -301,10 +267,10 @@ function gestDetectLoop(){
     if (typeof(localPreds) != "undefined"){
         let eyeXY = getMeanEyeXY(localPreds.slice(6))
         let x = Math.trunc(eyeXY[0]*3);
-        let y = Math.trunc((eyeXY[1]-.15)*5);
+        let y = Math.trunc((eyeXY[1]-.1)*5);
 
-        x = Math.max(Math.min(x, 3), 0);
-        y = Math.max(Math.min(y, 2), 0);
+        x = Math.max(Math.min(x, 2), 0);
+        y = Math.max(Math.min(y, 4), 0);
         focusRegion = [x,y];
 //        console.log(x,y);
 
@@ -321,13 +287,22 @@ function gestDetectLoop(){
         curFocus.click();
         imClicked = true;
     } else if (imClicked){
+
         if (lastGesture == 6){
             curFocus.click();
             imClicked = false;
-        } else if (lastGesture == 3){
-            document.body.dispatchEvent(new KeyboardEvent('keydown',  {'key':'ArrowRight'}));
-        } else if (lastGesture == 1){
-            document.body.dispatchEvent(new KeyboardEvent('keydown',  {'key':'ArrowLeft'}));
+        } else if (lastGesture == 3 || lastGesture == 1){
+            const selectedElemIndex = elemsClicked.findIndex(elem => elem);
+            if (lastGesture == 3){
+//                document.body.dispatchEvent(new KeyboardEvent('keydown',  {'key':'ArrowRight'}));
+                elemsFilters[selectedElemIndex] = (elemsFilters[selectedElemIndex] + numFilters + 1) % numFilters;
+            } else if (lastGesture == 1){
+//                document.body.dispatchEvent(new KeyboardEvent('keydown',  {'key':'ArrowLeft'}));
+                elemsFilters[selectedElemIndex] = (elemsFilters[selectedElemIndex] + numFilters - 1) % numFilters;
+            }
+            galleryElements[selectedElemIndex].style.filter = filterList[elemsFilters[selectedElemIndex]];
+            flashText(filterNames[elemsFilters[selectedElemIndex]]);
+
         }
     }
 
@@ -350,14 +325,25 @@ function gestDetectLoop(){
 }
 
 
+//            // If left or right arrow, change filter number
+//            if (event.key == "ArrowLeft"){
+//                elemsFilters[selectedElemIndex] = (elemsFilters[selectedElemIndex] + numFilters - 1) % numFilters;
+//            } else if (event.key == "ArrowRight"){
+//                elemsFilters[selectedElemIndex] = (elemsFilters[selectedElemIndex] + numFilters + 1) % numFilters;
+//            }
+//
+//            // Apply the filter to that element's CSS
+//            galleryElements[selectedElemIndex].style.filter = filterList[elemsFilters[selectedElemIndex]];
+
 
 
 
 var i;
 function zooSelect(interactionNum){
-    i = interactionNum;
-    funcs = [dotViz, zoomForMore, imageGallery];
-    funcs[interactionNum-1]();
+//    i = interactionNum;
+//    funcs = [dotViz, zoomForMore, imageGallery];
+//    funcs[interactionNum-1]();
+    imageGallery();
 
     setTimeout(liveloop, 400);
 }

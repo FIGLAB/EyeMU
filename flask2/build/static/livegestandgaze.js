@@ -11,7 +11,7 @@ var localPreds = [];
 var eyeXY;
 
 
-var minGestWaitTime = 2000;
+var minGestWaitTime = 800;
 var gestTime = performance.now();
 var lastGestTime = performance.now();
 var lastGesture = -1;

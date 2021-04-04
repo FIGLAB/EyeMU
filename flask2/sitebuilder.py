@@ -93,8 +93,8 @@ def zoo1():
 def zoo2():
     return render_template("zoo.html", zooNum = 2)
 
-@app.route('/zoo/gallery/')
-def zoo3():
+@app.route('/photos/')
+def photos():
     return render_template("zoo.html", zooNum = 3)
 
 @app.route('/notif/')
