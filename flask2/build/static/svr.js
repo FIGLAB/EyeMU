@@ -171,6 +171,7 @@ async function drawTargetDot(){
 
 var markovNodes;
 var eyeHist = [];
+var tt
 function showDebug(){
     if (typeof(videoCanvas) == 'undefined'){
         console.log("showing debug failed since no videoCanvas, restarting");
@@ -230,6 +231,25 @@ function showDebug(){
         document.body.append(accelDisplay);
 
 
+        // Test Target
+        tt = document.createElement("div");
+        tt.style.position = "absolute";
+        tt.style.width = "500px";
+        tt.style.height = "265px";
+        tt.style.top = "1650px";
+        tt.style.left = Math.trunc(window.innerWidth/2 - 500/2) + "px";
+        tt.style.backgroundColor = "pink";
+
+        tt.innerHTML = "Test Target";
+        tt.style.textAlign = "center";
+        tt.style.fontSize = "3em";
+        tt.style.lineHeight = "100px";
+//        tt.style.fontSize = "3em";
+
+        document.body.append(tt);
+
+
+        // Text displays
         markovNodes = [];
         for (i of [1,2,3]){
             markovNodes.push(makeTextDisplay());
@@ -247,12 +267,12 @@ function showDebug(){
                             abs(faceGeom.curYaw) < .3,
                   ((Math.max(...xs) - Math.min(...xs)) < .3) && ((Math.max(...ys) - Math.min(...ys)) < .3)];
 
-            successText = ["User Present: True",
-                           "<br>Looking At Screen: True",
-                           "<br><br><br>Fixated On Target: True<br>Motion Gestures: Running"]
-            failText = ["User Present: False",
-                           "<br>Looking At Screen: False",
-                           "<br><br><br>Fixated On Target: False<br>Motion Gestures: Paused"]
+            successText = ["1. User Present: True",
+                           "<br>2. Looking At Screen: True",
+                           "<br><br>3. Fixated On Target: True<br>4. Motion Gestures: Running"]
+            failText = ["1. User Present: False",
+                           "<br>2. Looking At Screen: False",
+                           "<br><br>3. Fixated On Target: False<br>4. Motion Gestures: Paused"]
 
             for (i of [0,1,2]){
                 if (truthArr.slice(0,i+1).every((x) => x)){ // If true up to here,
@@ -271,12 +291,15 @@ function showDebug(){
             if (truthArr.every((x) => x)){
                 elem.hidden = false;
                 elem.style.backgroundColor = "green";
+                tt.style.backgroundColor = "lightgreen";
             } else if (truthArr.slice(0,2).every((x) => x)){
                 elem.hidden = false;
 //                elem.style.backgroundColor = "#0e5cab";
                 elem.style.backgroundColor = "red";
+                tt.style.backgroundColor = "pink";
             } else {
                 elem.hidden = true;
+                tt.style.backgroundColor = "pink";
             }
 
         }, 50);
@@ -290,12 +313,11 @@ var heightInc = 0;
 function makeTextDisplay(){
     let tmp = document.createElement("h2");
     tmp.style.position = "absolute";
-    tmp.style.top = (Math.trunc(window.innerHeight/2)  + 450 + heightInc) + "px";
+    tmp.style.top = (Math.trunc(window.innerHeight/2)  + 500) + "px";
     tmp.style.left = "50px";
-    tmp.style.fontSize = "4em";
+    tmp.style.fontSize = "2.5em";
 
     document.body.append(tmp);
-    heightInc += 20;
     return tmp;
 }
 
@@ -315,7 +337,7 @@ async function continualCopy(){
         facectx.beginPath();
         for (i of prediction.scaledMesh){
             facectx.beginPath();
-            facectx.ellipse(i[0]*factor, i[1]*factor, 5, 5, 0,0,6.28);
+            facectx.ellipse(i[0]*factor*672/720, i[1]*factor*896/960, 5, 5, 0,0,6.28);
             facectx.fill();
         }
     }
