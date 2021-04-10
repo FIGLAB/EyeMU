@@ -41,6 +41,22 @@ function addToStorageArray(key, arr){
     localStorage[key] = JSON.stringify(tmp);
 }
 
+function flashText(text){
+//    console.log("before", disText.offsetWidth);
+    disText.innerHTML = text;
+//    console.log("after text", disText.offsetWidth);
+    disText.style.left = (window.innerWidth/2 - disText.offsetWidth/2) + "px";
+    disText.style.transition = "";
+    disText.style.opacity = 1;
+    console.log("visible'd");
+
+    setTimeout(()=>{
+        disText.style.transition = "all 1s cubic-bezier(.61,.03,.37,.14)";
+        disText.style.opacity = 0;
+        console.log("invisible'd");
+    }, 50);
+}
+
 
 /////////// One liners
 var average = (array) => array.reduce((a, b) => a + b) / array.length;
@@ -60,6 +76,16 @@ for (thing in [1,2,3,4]){
     console.log(thing);
 }
 // Out: 0, 1, 2, 3
+
+
+
+
+
+
+
+
+
+
 
 
 

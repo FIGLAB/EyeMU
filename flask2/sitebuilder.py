@@ -109,6 +109,10 @@ def email():
 def homescreen():
     return render_template("homescreendemo.html")
 
+@app.route('/music/')
+def music():
+    return render_template("musicdemo.html")
+
 
 @app.after_request
 def add_header(response):

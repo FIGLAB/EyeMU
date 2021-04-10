@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block headextra %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<!-- Tensorflow core, model, and backend-->
+<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>-->
+<!-- TFjs version 2.7 local-->
+<script src="{{url_for('static', filename='tf.min.js')}}"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
+
+<!-- Javascript specific to this page -->
+<script src="{{url_for('static', filename='ML.js')}}"></script>
+<script src="{{url_for('static', filename='accel.js')}}"></script>
+<script src="{{url_for('static', filename='svr.js')}}"></script>
+<script src="{{url_for('static', filename='collectioncolor.js')}}"></script>
+<script src="{{url_for('static', filename='livegestandgaze.js')}}"></script>
+<script src="{{url_for('static', filename='musicdemo.js')}}"></script>
+
+
+<!--Other ML library-->
+<script src="{{url_for('static', filename='mlweb.js')}}"></script>
+<script src="https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/p5.js"></script>
+
+<script>
+    main();
+    showPredictDot = false;
+
+    // Wait until after the body loads before adding elements to it.
+    document.addEventListener("DOMContentLoaded", function(event) {
+        musicstarter();
+    })
+
+</script>
+
+<style>
+
+   .rtriangle {
+      width: 0;
+      height: 0;
+      position: absolute;
+      z-index: 3;
+      transition: all .5s;
+
+
+      border-top: 6px solid transparent;
+      border-left: 10.8px solid green;
+      border-bottom: 6px solid transparent;
+    }
+
+    .dot {
+      background-color: #ffffff;
+      border-radius: 50%;
+      position: absolute;
+    }
+
+
+</style>
+
+{% endblock %}
+
+
+{% block body %}
+<div id="accelbuttonholder" style="width:100%; height:100%; display: flex; justify-content: center; align-items: center;">
+
+    <br>
+
+    <button id="accelPermsButton" onclick="getAccel()">Get Accel</button>
+</div>
+
+
+
+<div id="main">
+    <div id="p5jscanvasholder">
+    <canvas hidden id="eyecache"></canvas>
+    <video hidden autoplay muted playsinline id="video"  style="
+              -webkit-transform: scaleX(-1);
+              transform: scaleX(-1);
+              visibility: hidden;
+              width: auto;
+              height: auto;
+              "></video>
+
+</div>
+{% endblock %}

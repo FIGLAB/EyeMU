@@ -95,12 +95,15 @@ function greyscaleImage(imTensor){
     });
 }
 
+
+var loopTimes = [];
 async function runSVRlive(){
     if (curEyes[0] == undefined && !stopFacemesh){
         console.log("curEyes undefined while running prediction, trying again")
         setTimeout(runSVRlive, 500);
         return
     }
+    let startTime = performance.now();
 
     rawPred = tf.tidy(() => {
                 let curGeom = tf.tensor(faceGeom.getGeom()).reshape([1,4]);
@@ -124,7 +127,10 @@ async function runSVRlive(){
     curPred[1] = Math.max(edge, Math.min(1-edge, curPred[1]))
 
 //    drawPrediction(curPred);
-    setTimeout(runSVRlive, 10);
+//    console.log(curPred, performance.now());
+//    loopTimes.push(performance.now()-startTime)
+//    setTimeout(runSVRlive, 10);
+    requestAnimationFrame(runSVRlive);
 
 }
 

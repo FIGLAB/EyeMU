@@ -4,3 +4,4 @@ flask/build/*
 *.xml
 gazecapturedata/eye_tracker_train_and_val.npz
 video/*
+Figs/*

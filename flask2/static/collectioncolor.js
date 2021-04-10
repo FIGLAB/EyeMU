@@ -143,7 +143,7 @@ function waitForIt(){
 
 async function setupCamera() {
   video = document.getElementById('video');
-  const stream = await navigator.mediaDevices.getUserMedia({
+  stream = await navigator.mediaDevices.getUserMedia({
     'audio': false,
     'video': {
       facingMode: 'user',
