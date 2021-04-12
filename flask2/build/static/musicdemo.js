@@ -271,15 +271,21 @@ function gestDetectLoop(){
     } else if (lastGesture == 6  && statemachine==3){
         pullDownLyrics();
         statemachine += 1;
-    } else if ((eyeXY[1] < .15) && lastGesture == 7 && statemachine>=4 && !volLock){
-        if ((orient_short_history[0][histLen-1] > 25 && orient_short_history[0][histLen-1] < 180) ||
-             orient_short_history[0][histLen-1] < 345 && orient_short_history[0][histLen-1] > 180){
+    } else if ((eyeXY[1] < .15) && statemachine>=4 && !volLock){
+//    } else if ((eyeXY[1] < .15) && lastGesture == 7 && statemachine>=4 && !volLock){
+        console.log(orient_short_history[0][histLen-1]);
+        console.log(orient_short_history[0][histLen-1] < 350)
+        console.log(orient_short_history[0][histLen-1] > 180)
+        console.log()
+        if (orient_short_history[0][histLen-1] < 350 && orient_short_history[0][histLen-1] > 180){
+            console.log("yea")
             increaseVol();
             volLock = true;
             setTimeout(() => volLock = false, 400);
         }
-
     }
+
+
 
 
     // Reset the last gesture var if we triggered on it
