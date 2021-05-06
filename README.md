@@ -1,8 +1,32 @@
 ## Welcome to the GAZEL repository!
 
-This is the code for the GAZEL: Gaze+Accelerometer Interactions on Mobile Devices. We explored the combination of gaze-tracking and motion gestures on the phone to enable enhanced single-handed interaction with mobile devices. To allow for remote user studies, we built the majority of our calibration and user testing into a webapp based on Flask, a python web framework. This repo also contains the training scripts for our base CNN gaze-tracking model.
+This is the code for the GAZEL: Gaze+Accelerometer Interactions on Mobile Devices. We explored the combination of gaze-tracking and motion gestures on the phone to enable enhanced single-handed interaction with mobile devices. This repository contains the code for:
+
+- Generating a Flask webapp running our calibration and user testing
+
+- Training script for our base CNN gaze-tracking model, based on [this paper](https://www.nature.com/articles/s41467-020-18360-5).
 
 ![GAZEL](/media/gazel.gif)
+
+## Building the webapp
+All site files are located in the `flask2/` directory. We're using Python 3.7, with the Flask and Flask-Frozen libraries. 
+
+First, set up a virtualenv and run 
+
+    $ pip install Flask Flask-Frozen
+
+Clone our github repo and navigate into the `flask2/` directory. 
+To host a local version of the site from the terminal, run
+
+
+    $ python sitebuilder.py
+
+
+To build a set of static pages, run 
+
+    $ python sitebuilder.py build
+
+Flask allows for separation of the JS and HTML files, which enables OOP-style web development, but it also makes it confusing to navigate the backend. To find the Javascript code behind a web endpoint (like "/svrtest"), open `sitebuilder.py` and find the function which serves it. This will give you an HTML filename, which are all stored in `templates/`. At the top, the HTML file will contain `<script>` tags for importing JS files, which are all stored in `static/`.
 
 ## Web Demo
 To try out our site, go to https://gazel.netlify.app/, which has a running copy of our current code. Our site works best on an iPhone 12 Pro.
@@ -16,27 +40,11 @@ Most pages will have a camera permissions popup as well as a motion+acceleration
 - **To test the gesture classifier**, go to https://gazel.netlify.app/gestures/. The gestures are flick left/right (CW/CCW rotation, axis coming out of the phone screen), page turn left/right (turn one edge towards the other, axis running up the phone centerline), forward flick (tilt back the top of the phone), and push away/pull close (bring phone towards you or away).
 
 
-## Building the webapp
-All webapp files are located in the `flask2/` directory. We're using Python3.7, with the Flask and Flask-Frozen libraries. 
-
-To host a local version of the site from the terminal run 
-
-
-    $ python sitebuilder.py
-
-
-To build a set of static pages, run 
-
-    $ python sitebuilder.py build
-
-Flask allows for separation of the JS and HTML files, which enables OOP-style web development, but it also makes it confusing to navigate the backend. To find the Javascript code behind a web endpoint (like "/svrtest"), open `sitebuilder.py` and find the function which serves it. This will give you an HTML filename, which are all stored in `templates/`. At the top, the HTML file will contain `<script>` tags for importing JS files, which are all stored in `static/`.
-
-
 ## Data Analysis 
 All Jupyter notebooks used to load and train the offline models are in the `data/` directory. The data is split into calibration (`calibdata.pkl`) and evaluation (`gazeldata.pkl`), and stored as Pandas Dataframes.
 
 
 ## Gaze-Tracking Base Model 
-Our gaze-tracking pipeline consists of a large CNN followed by a smaller regression model. Our CNN is based off of the architecture in [this paper](https://www.nature.com/articles/s41467-020-18360-5). We trained our own model from scratch using the same GazeCapture dataset. The code for this training is located in `trainingSetup/`
+Our gaze-tracking pipeline consists of a large CNN followed by a smaller regression model. Our CNN is based off of the architecture in [this paper](https://www.nature.com/articles/s41467-020-18360-5). We trained our own model from scratch using the same GazeCapture dataset. The code for this training is located in `trainingSetup/`. Due to the large size of the dataset, it will have to be downloaded separately. 
 
 
