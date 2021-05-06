@@ -191,10 +191,6 @@ def getAccAndErr(data):
 
 # print("Len of gesture data and
 #
-# Search Roboclub Members
-#
-#
-#
 #
 # 1
 #

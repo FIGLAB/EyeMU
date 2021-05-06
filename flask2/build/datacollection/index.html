@@ -128,62 +128,7 @@
     </style>
 
     
-<!--<script>-->
-<!--    if (console.everything === undefined)-->
-<!--    {-->
-<!--        console.everything = [];-->
 
-<!--        console.defaultLog = console.log.bind(console);-->
-<!--        console.log = function(){-->
-<!--            console.everything.push({"type":"log", "datetime":Date().toLocaleString(), "value":Array.from(arguments)});-->
-<!--            console.defaultLog.apply(console, arguments);-->
-<!--        }-->
-<!--        console.defaultError = console.error.bind(console);-->
-<!--        console.error = function(){-->
-<!--            console.everything.push({"type":"error", "datetime":Date().toLocaleString(), "value":Array.from(arguments)});-->
-<!--            console.defaultError.apply(console, arguments);-->
-<!--        }-->
-<!--        console.defaultWarn = console.warn.bind(console);-->
-<!--        console.warn = function(){-->
-<!--            console.everything.push({"type":"warn", "datetime":Date().toLocaleString(), "value":Array.from(arguments)});-->
-<!--            console.defaultWarn.apply(console, arguments);-->
-<!--        }-->
-<!--        console.defaultDebug = console.debug.bind(console);-->
-<!--        console.debug = function(){-->
-<!--            console.everything.push({"type":"debug", "datetime":Date().toLocaleString(), "value":Array.from(arguments)});-->
-<!--            console.defaultDebug.apply(console, arguments);-->
-<!--        }-->
-<!--    }-->
-
-<!--    function updateFakeLog(){-->
-<!--        if (document.getElementById("fakeconsole") == null){-->
-<!--            elem = document.createElement("p");-->
-<!--            elem.id = "fakeconsole";-->
-<!--            elem.hidden = true;-->
-<!--            elem.innerText = JSON.stringify(console.everything);-->
-<!--            document.body.append(elem);-->
-<!--        } else {-->
-<!--            tmp = document.getElementById("fakeconsole");-->
-<!--            tmp.innerText = JSON.stringify(console.everything);-->
-<!--        }-->
-<!--    }-->
-
-<!--    setInterval(updateFakeLog, 5000);-->
-<!--    function showFakeLog(){-->
-<!--        if (document.getElementById("fakeconsole") != null){-->
-<!--            const tmp = document.getElementById("fakeconsole");-->
-<!--            tmp.hidden = false;-->
-<!--        }-->
-<!--    };-->
-
-<!--    elem = document.createElement("button");-->
-<!--    elem.innerText = "Show Console"-->
-<!--    elem.addEventListener("click", showFakeLog);-->
-
-<!--    document.addEventListener("DOMContentLoaded", function(event) {-->
-<!--           document.body.append(elem)-->
-<!--    });-->
-<!--</script>-->
 
             <!--Tensorflow javascript import-->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>

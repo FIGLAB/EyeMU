@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+
+
+    <title>GAZEL</title>
+
+<!-- For drawing the predicted output directly onto the HTML page with an icon-->
+<!-- CSS comments are not //, and if you put them in the <style> header they break it -->
+    <style>
+    .placeholderdot{
+        width: 90px;
+        height: 90px;
+        background-color: #ffab56;
+        border-radius: 50%;
+        position:fixed;
+    }
+
+    .targetdot{
+        width: 150px;
+        height: 150px;
+        background-color: #0e5cab;
+        border-radius: 50%;
+        position:fixed;
+    }
+
+    .predicdot{
+        width: 90px;
+        height: 90px;
+        background-color: #ffab56;
+        border-radius: 50%;
+        position:fixed;
+    }
+
+    .evalTarget{
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        position:fixed;
+        transform: translate(-50%, -50%);
+    }
+
+    .onscreenregion{
+        position:fixed;
+        background-color:#00003010;
+        left: 0px;
+        top: 0px;
+        right:100px;
+        bottom:100px;
+    }
+
+
+    .widebutton {
+        display: block;
+        width: 100%;
+        border: none;
+        background-color: #CCC;
+        padding: 14px 28px;
+        font-size: 16px;
+        cursor: pointer;
+        text-align: center;
+    }
+
+    hr {
+        background-color:#ccc;
+        height:1px;
+        border:none;
+    }
+    </style>
+
+    <!--  Style for eval: grid and list   -->
+    <style>
+    .griddiv {
+        width: 49%;
+        height: 24%;
+        margin:0.5%;
+        align-items: center;
+
+        display: inline-block;
+    }
+
+    .griddivtext{
+        text-align: center;
+        line-height: 100%;
+        font-size: 0.8em;
+
+        top: calc(50% - 1em);
+        position: relative;
+    }
+
+    .listdiv {
+        width: 99%;
+        height: calc((100% - 3%)/6);
+        margin: 0.5%;
+        align-items: center;
+
+        display: inline-block;
+    }
+
+    .listdivtext{
+        text-align: center;
+        line-height: 100%;
+        font-size: 0.8em;
+
+        top: calc(50% - 0.5em);
+        position: relative;
+    }
+
+
+    .galleryContainer {
+        height:100%;
+        width: 100%;
+        line-height: 0px;
+        align-item: center;
+        position: relative;
+
+        overflow: hidden;
+    }
+    </style>
+
+    <!--  Style for results display -->
+    <style>
+        table,td {
+            border: 1px solid black;
+        }
+    </style>
+
+    
+<!--Other ML library-->
+<!--<script src="http://mlweb.loria.fr/ml.js"></script>-->
+<script src="/static/mlweb.js"></script>
+
+
+            <!--Tensorflow javascript import-->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+
+<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>-->
+<!-- Adds the WASM backend to the global backend registry -->
+<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/tf-backend-wasm.js"></script>-->
+
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/regression/2.0.1/regression.js"></script>-->
+<!--<script src="https://rawgit.com/chen0040/js-regression/master/build/jsregression.min.js"></script>-->
+
+<!--<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>-->
+<script src="/static/ML.js"></script>
+<script src="/static/hist.js"></script>
+<script src="/static/transfer.js"></script>
+<script src="/static/fileIO.js"></script>
+<script src="/static/mainTesting.js"></script>
+
+
+
+<script>
+    main()
+</script>
+
+
+</head>
+<body style="background-color:aliceblue; font-family: Verdana, sans-serif;">
+
+
+<input type="file" accept="application/json" id="eyeData" multiple onchange='openFile2(event)'></input>
+
+
+<!--<div class="predicdot" style="left:20px; top:40px"></div>-->
+
+<!--<div class="onscreenregion" style="width: 100px; height:100px;"></div>-->
+<!--<div class="onscreenregion" style="left: 10%; right:40%; top: 10%; bottom: 40%;"></div>-->
+<!--                                   left: 75%; right:100%; top:25%; bottom: 75%;-->
+
+<div id="main">
+    <div class="container">
+      <div class="canvas-wrapper">
+        <canvas id="output"></canvas>
+        <video id="video" playsinline style="
+          -webkit-transform: scaleX(-1);
+          transform: scaleX(-1);
+          visibility: hidden;
+          width: auto;
+          height: auto;
+          ">
+        </video>
+      </div>
+      <div id="scatter-gl-container"></div>
+        <button type="button" onclick="saveRegressionModels()">Save current regression models</button>
+        <br>
+
+        <button type="button" onclick="trainOnCurrentData()">Train Regression Model</button>
+        <button type="button" onclick="testOnCurrentData()">Test Model</button>
+
+        <br>
+        <button type="button" onclick="trainSVRs()">Train SVRs</button>
+        <button type="button" onclick="testSVRs()">Test SVRs</button>
+        <button type="button" onclick="exportWEBML()">Save SVRs</button>
+        <p id="svrstatus"></p>
+
+
+        <br><br>
+        <canvas id="eyecache"></canvas>
+        <canvas id="eyecache2"></canvas>
+
+
+    </div>
+  </div>
+
+
+
+</body>
+</html>

@@ -55,10 +55,8 @@ async function drawPrediction() {
     elem = document.getElementById("dotelem");
 
     if (regression){
-//        elem.setAttribute("style", "left:"+ predX +"%;top:"+ predY +"%;");
         elem.style.left = "calc(" + predX + "% - 50px)";
         elem.style.top = "calc(" + predY + "% - 50px)";
-//        console.log(elem.style.left, elem.style.top)
     } else{
         // Dividing regions, by percentage
         let x_bounds = [25, 75];
@@ -126,10 +124,6 @@ async function runSVRlive(){
     curPred[0] = Math.max(edge, Math.min(1-edge, curPred[0]))
     curPred[1] = Math.max(edge, Math.min(1-edge, curPred[1]))
 
-//    drawPrediction(curPred);
-//    console.log(curPred, performance.now());
-//    loopTimes.push(performance.now()-startTime)
-//    setTimeout(runSVRlive, 10);
     requestAnimationFrame(runSVRlive);
 
 }
@@ -152,12 +146,6 @@ async function drawTargetDot(){
     document.body.appendChild(targDot);
 
 
-    // Set its location and add it to the body
-//    if (showPredictDot){
-//        targDot.setAttribute("style", "left:" + nx_arr[targetNum] +"%; top:" + ny_arr[targetNum] + "%;");
-//    } else{
-//        targDot.setAttribute("style", "left:" + "-10" +"%; top:" + "-10" + "%;");
-//    }
 
     // update target number if enough time has passed. This is to make the target dot reactive
     targetTimerCount += 1;
@@ -204,7 +192,6 @@ function showDebug(){
         faceCanvas.width = 672;
         faceCanvas.height = 960/720*faceCanvas.width;
         faceCanvas.style.position = 'absolute';
-//        faceCanvas.style.top =  (window.innerHeight - faceCanvas.height + 140) + "px";
         faceCanvas.style.top =  400 + "px";
         faceCanvas.style.left = (window.innerWidth-faceCanvas.width)/2 + "px";
         faceCanvas.style.transform = "scaleX(-1)";
@@ -293,14 +280,12 @@ function showDebug(){
 
             // Hide dot if not all proper
             elem = document.getElementById("dotelem");
-//            elem = document.getElementById("dotelem").style.backgroundColor;
             if (truthArr.every((x) => x)){
                 elem.hidden = false;
                 elem.style.backgroundColor = "green";
                 tt.style.backgroundColor = "lightgreen";
             } else if (truthArr.slice(0,2).every((x) => x)){
                 elem.hidden = false;
-//                elem.style.backgroundColor = "#0e5cab";
                 elem.style.backgroundColor = "red";
                 tt.style.backgroundColor = "pink";
             } else {
@@ -333,7 +318,6 @@ async function continualCopy(){
     tmpy = 50;
     eyectx.drawImage(canvas, 0, 0, inx, iny,      factor*(inx+betweenEyes), tmpy, inx*factor, iny*factor);
     eyectx.drawImage(canvas, inx+10, 0, inx, iny,       0, tmpy, inx*factor, iny*factor);
-//    console.log("yea");
     facectx.drawImage(videoCanvas, 0,0, videoCanvas.width, videoCanvas.height,
                                     0, 0, faceCanvas.width, faceCanvas.height);
 
@@ -377,12 +361,10 @@ async function main() {
     // import custom model
     models = [];
     console.log("Loading base model");
-//    await loadTFJSModel("/static/models/tfjsmodel2");
     await loadTFJSModel("/static/models/tfjsmodel4");
     naturemodel = models[0];
+
     // Set up embeddings output
-//    natureModelEmbeddings = tf.model({inputs: naturemodel.inputs,
-//            outputs: [naturemodel.layers[29].output, naturemodel.layers[33].output, naturemodel.layers[36].output]});
     natureModelEmbeddings = tf.model({
         inputs: naturemodel.inputs,
         outputs: [naturemodel.layers[39].output, naturemodel.layers[43].output, naturemodel.layers[46].output]
@@ -423,7 +405,6 @@ async function main() {
     if (regtoggle != undefined){
         regtoggle.style.width = windowWidth + "px"
     }
-//    drawTargetDot()
 
     console.log("Gaze prediction setup complete");
 }

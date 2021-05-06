@@ -5,3 +5,5 @@ flask/build/*
 gazecapturedata/eye_tracker_train_and_val.npz
 video/*
 Figs/*
+confsubmission/*
+archive.zip

@@ -390,4 +390,31 @@ function tmp_testNormedAndNormalX(){
 //}, 1000)
 
 
+async function trainNatureRegHead(){
+    stopFacemesh = true;
+
+
+    // Assemble the data into mlweb's format
+    x_vect_as_array = Xs
+    x_mat = array2mat(x_vect_as_array)
+    console.log("x_vect assembled")
+
+    ground_x = array2mat(Ys_x)
+    ground_y = array2mat(Ys_y)
+    console.log("y_vects assembled")
+
+    // Model init and training
+    svr_x = newModel();
+    svr_x.train(x_mat, ground_x);
+
+    svr_y = newModel();
+    svr_y.train(x_mat, ground_y);
+    console.log("x and y regression are trained")
+
+    // Save model into localstorage
+    exportWEBML()
+    console.log("x and y regression are exported")
+}
+
+
 

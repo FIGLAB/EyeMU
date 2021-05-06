@@ -47,12 +47,36 @@ function getUserDataAsString(){
     });
 }
 
+function openFile2(event){
+    var input = event.target;
+
+    // Read each and append all eye pics
+    input.files.forEach(function (fileObject, ind){
+        fileObject.text().then(fileContents => {
+            parsedData = JSON.parse(fileContents);
+
+            // if we have old checkpoints load them as arrays
+            parsedData.forEach((elem, ind) => {
+                parsedData[ind] = JSON.parse(elem);
+            }); // Now they look like [[x,y], [x,y], ...]
+
+            tmp = parsedData;
+            Xs = tmp.map(elem => elem[0]).flat()
+            Ys = tmp.map(elem => elem[1]).flat()
+            Ys_x = Ys.map(elem => elem[0])
+            Ys_y = Ys.map(elem => elem[1])
+
+            console.log("Done with openFile2")
+            return [Xs, Ys_x, Ys_y]
+        });
+    });
+}
+
 
 var expose;
 var expose2;
 function openFile(event) {
     var input = event.target;
-    expose2 = input;
 
     // Read each and append all eye pics
     input.files.forEach(function (fileObject, ind){

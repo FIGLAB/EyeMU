@@ -1,17 +1,12 @@
 from flask import Flask, render_template
-from flask_flatpages import FlatPages
 from flask_frozen import Freezer
 import os, sys, datetime
-
-from flask_cors import CORS
 
 
 app = Flask(__name__)
 app.config.from_object(__name__)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 freezer = Freezer(app)
-
-
 
 @app.route('/')
 def index():
@@ -22,6 +17,11 @@ def index():
 @app.route('/datacollection/')
 def datacollect():
     return render_template("datacollection.html")
+
+# Trains a model offline
+@app.route('/offlinetraining/')
+def offlinetraining():
+    return render_template("mainTesting.html")
 
 ################# Live testing for debugging
 # Tests the original model in real-time
@@ -128,12 +128,7 @@ def add_header(response):
 
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "build":
-        # Builds the website into a static site and runs "firebase deploy" to update the site
-        if len(sys.argv) > 2 and sys.argv[2] == "local":
-            app.config["FREEZER_DESTINATION"] = "/firebase/public"
-            freezer.freeze()
-        else:
-            print("Built at " + datetime.datetime.now().ctime())
-            freezer.freeze()
+        print("Built at " + datetime.datetime.now().ctime())
+        freezer.freeze()
     else:
         app.run(port=8000)

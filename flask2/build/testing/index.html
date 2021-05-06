@@ -161,7 +161,7 @@
 <body style="background-color:aliceblue; font-family: Verdana, sans-serif;">
 
 
-<input type="file" accept="application/json" id="eyeData" multiple onchange='openFile(event)'></input>
+<input type="file" accept="application/json" id="eyeData" multiple onchange='openFile2(event)'></input>
 
 
 <!--<div class="predicdot" style="left:20px; top:40px"></div>-->
@@ -186,11 +186,7 @@
       <div id="scatter-gl-container"></div>
         <button type="button" onclick="saveRegressionModels()">Save current regression models</button>
         <br>
-        <button type="button" onclick="greyscaleEyes()">Greyscale images</button>
-        <button type="button" onclick="getBaseline()">Test Baseline Model</button>
-        <br>
 
-        <button type="button" onclick="saveEyes()">Save Eyes</button>
         <button type="button" onclick="trainOnCurrentData()">Train Regression Model</button>
         <button type="button" onclick="testOnCurrentData()">Test Model</button>
 

@@ -41,9 +41,6 @@ async function eyeSelfie(continuous){
         return
     }
 
-    // Draw from video onto canvas BEFORE you try to clip it out of the canvas
-//    drawCache();
-
     // Calculate X vect variables (embeddings, corners, face geom)
     let curGeom = faceGeom.getGeom();
     let curCorners = tf.tensor(eyeCorners);
@@ -66,8 +63,6 @@ async function eyeSelfie(continuous){
     faceGeom_x.push(curGeom);
 
     // Calculate and accumulate y vars
-//    console.log("In eyeselfie, X and Y, and window width height", X, Y, windowWidth, windowHeight)
-//    console.log("In eyeselfie, innerheight", window.innerWidth, window.innerHeight)
     const nowVals = [X/windowWidth, Y/windowHeight];
     screenXYs_y.push(nowVals);
 }
@@ -81,7 +76,6 @@ async function trainNatureRegHead(){
     stopFacemesh = true;
 
     dataVecs = retrieveRoundsAsArrays()
-    // Offer to save the embeddings data  //    saveTensors(x_vect, y_vect);
 
     // Assemble the data into mlweb's format
     x_vect_as_array = dataVecs[0]
