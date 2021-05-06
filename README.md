@@ -2,7 +2,7 @@
 
 This is the code for the GAZEL: Gaze+Accelerometer Interactions on Mobile Devices. We explored the combination of gaze-tracking and motion gestures on the phone to enable enhanced single-handed interaction with mobile devices. To allow for remote user studies, we built the majority of our calibration and user testing into a webapp based on Flask, a python web framework. This repo also contains the training scripts for our base CNN gaze-tracking model.
 
-![GAZEL]("media/gazel.gif")
+![GAZEL](/media/gazel.gif)
 
 ## Web Demo
 To try out our site, go to https://gazel.netlify.app/, which has a running copy of our current code. Our site works best on an iPhone 12 Pro.
