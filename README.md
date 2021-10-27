@@ -1,6 +1,6 @@
 ## Research repository for EyeMU
 
-This repository houses the code for the paper EyeMU Interactions: Gaze + IMU Gestures on Mobile Devices. We explored the combination of gaze-tracking and motion gestures on the phone to enable enhanced single-handed interaction with mobile devices. Please see our [open-access paper](https://dl.acm.org/doi/abs/10.1145/3462244.3479938) for further details, or [watch our video](https://www.youtube.com/watch?v=-HwcmWRAsaA) instead. This repository contains the code for:
+This repository houses the code for the paper EyeMU Interactions: Gaze + IMU Gestures on Mobile Devices. We explored the combination of gaze-tracking and motion gestures on the phone to enable enhanced single-handed interaction with mobile devices. Please see our [open-access paper](https://dl.acm.org/doi/abs/10.1145/3462244.3479938) for further details, or [watch our video](https://www.youtube.com/watch?v=-HwcmWRAsaA)! This repository contains the code for:
 
 - Generating a Flask webapp running our calibration and user testing webapps
 
