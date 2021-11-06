@@ -6,7 +6,6 @@ function dotViz(){
 }
 
 // Zoo #3, one-handed photo editing
-// 12/7 CLARIFICATION: I'm setting all the style in javascript so I can edit it more easily on my end. Should probably move to a CSS global, but this will never see the light of the public so w/e
 
 
 var disText
