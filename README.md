@@ -45,7 +45,10 @@ All Jupyter notebooks used to load and train the offline models are in the `data
 
 
 ## Gaze-Tracking Base Model 
-Our gaze-tracking pipeline consists of a large CNN followed by a smaller regression model. We trained our own model from scratch using the same GazeCapture dataset. The code for this training is located in `trainingSetup/`. Due to the large size of the dataset, it will have to be downloaded separately. 
+Our gaze-tracking pipeline consists of a large CNN followed by a smaller regression model. We trained our own model from scratch using the GazeCapture dataset. The code for this training is located in `trainingSetup/`. Due to the large size of the dataset, it will have to be downloaded separately. 
+
+## License
+This work is licensed under a GPL v 2.0 License file present in the repo. Please contact innovation@cmu.edu if you would like another license for your use. Note that the GazeCapture dataset used for training the base model has a non-commercial license.
 
 ## Reference
 
